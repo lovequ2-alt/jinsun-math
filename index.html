@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>중1 수학 - 수의 체계 완전판 (12문제 & 0 개념 강화)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #f0f2f5;
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #game-container {
+      position: relative;
+      width: 960px;
+      height: 580px; 
+      background: #ffffff;
+      border: 3px solid #222;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+      overflow: hidden;
+    }
+    canvas { 
+      position: absolute;
+      top: 0; left: 0;
+      display: block; width: 100%; height: 100%; 
+      z-index: 1;
+    }
+    #ui-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 14px 28px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      border: 1px solid #ddd;
+      max-width: 95%;
+      z-index: 9999; 
+    }
+    .btn-row { display: flex; gap: 10px; align-items: center; }
+    .nav-btn {
+      background: #2c3e50; color: #fff; border: none;
+      padding: 10px 20px; font-size: 15px; font-weight: bold;
+      border-radius: 14px; cursor: pointer; transition: all 0.2s;
+    }
+    .nav-btn:hover { background: #1a252f; }
+    .nav-btn:active { transform: scale(0.96); }
+    
+    .split-btn { 
+      background: #3498db; color: #fff; border: none;
+      padding: 8px 16px; font-size: 14px; font-weight: bold;
+      border-radius: 12px; cursor: pointer;
+    }
+    .split-btn:hover { background: #2980b9; }
+    .split-btn.neg { background: #27ae60; }
+    .split-btn.neg:hover { background: #219653; }
+
+    #quiz-box { display: none; flex-direction: column; align-items: center; gap: 12px; }
+    .quiz-title { font-size: 17px; font-weight: 800; color: #8e44ad; }
+    .quiz-options { display: flex; gap: 8px; }
+    .quiz-btn {
+      background: #8e44ad; color: #fff; border: none;
+      font-size: 15px; font-weight: bold; padding: 10px 20px;
+      border-radius: 12px; cursor: pointer;
+    }
+    .quiz-btn:hover { background: #732d91; }
+
+    #result-controls { display: none; gap: 15px; align-items: center; }
+    
+    #status-text { font-size: 15px; color: #333; font-weight: 800; text-align: center; }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <canvas id="canvas" width="960" height="580"></canvas>
+  <div id="ui-panel">
+    <span id="status-text">1단계: 선 긋기</span>
+    
+    <div class="btn-row" id="normal-controls">
+      <button id="prev-btn" class="nav-btn" onclick="goPrev()" style="display:none;">◀ 이전</button>
+      
+      <div id="pos-splits" style="display: none; gap: 6px;">
+        <button class="split-btn" onclick="splitPositive(2)">1/2</button>
+        <button class="split-btn" onclick="splitPositive(4)">1/4</button>
+        <button class="split-btn" onclick="splitPositive(10)">1/10</button>
+        <button class="split-btn" onclick="splitPositive(100)">1/100</button>
+      </div>
+
+      <div id="neg-splits" style="display: none; gap: 6px;">
+        <button class="split-btn neg" onclick="splitNegative(2)">-1/2</button>
+        <button class="split-btn neg" onclick="splitNegative(4)">-1/4</button>
+        <button class="split-btn neg" onclick="splitNegative(10)">-1/10</button>
+        <button class="split-btn neg" onclick="splitNegative(100)">-1/100</button>
+      </div>
+
+      <button id="next-btn" class="nav-btn" onclick="goNext()">다음 ▶</button>
+    </div>
+
+    <div id="result-controls">
+      <button class="nav-btn" onclick="loadScene(16, -1)">◀ 전 설명화면으로</button>
+      <button class="nav-btn" style="background: #8e44ad;" onclick="loadScene(17, 1)">🔄 다시 하기</button>
+    </div>
+
+    <div id="quiz-box">
+      <div class="quiz-title">🤔 Q. 다음 중 가장 큰 수는 무엇일까요? (클릭해보세요)</div>
+      <div class="quiz-options">
+        <button class="quiz-btn" onclick="checkAnswer('-5', -5)">① -5</button>
+        <button class="quiz-btn" onclick="checkAnswer('-1', -1)">② -1</button>
+        <button class="quiz-btn" onclick="checkAnswer('-1/2', -0.5)">③ -1/2</button>
+        <button class="quiz-btn" onclick="checkAnswer('-1/100', -0.01)">④ -1/100</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const statusText = document.getElementById('status-text');
+  const posSplits = document.getElementById('pos-splits');
+  const negSplits = document.getElementById('neg-splits');
+  const quizBox = document.getElementById('quiz-box');
+  const normalControls = document.getElementById('normal-controls');
+  const resultControls = document.getElementById('result-controls');
+
+  let scene = 0;
+  const maxScene = 18; 
+  let animProgress = 0;
+  
+  let charX = 480; let charY = 280; 
+  let poopList = [];
+  let speechBubble1 = { text: "" }; let speechBubble2 = { text: "" };
+  let cameraOffset = 0;
+
+  let zoomMode = 'none'; 
+  let zoomLeftX = 180; let zoomRightX = 780;
+  let currentDivisions = 0; let quizPins = [];
+  
+  let zoomCharX = 230; let targetZoomCharX = 230; let zoomFriendX = 730;
+
+  let replyTimer = null; window.animTimer = null; let posSplitClicked = false;
+
+  // --- 미니게임 변수 ---
+  const gameData = [
+    { num: "3", type: "int", exp: "자연수는 양의 정수지!" },
+    { num: "-0.5", type: "frac", exp: "소수니까 정수가 아닌 유리수!" },
+    { num: "0", type: "int", exp: "0은 양수도 음수도 아니지만 정수야!" }, 
+    { num: "1/4", type: "frac", exp: "나누어 떨어지지 않는 분수!" },
+    { num: "4/2", type: "int", exp: "속을 뻔했지? 약분하면 2니까 정수!" }, 
+    { num: "0/5", type: "int", exp: "분자가 0이면 0이니까 0도 정수지!" },
+    { num: "-10", type: "int", exp: "음의 정수지!" },
+    { num: "3.14", type: "frac", exp: "소수점 아래가 있으면 정수가 아니야!" },
+    { num: "-5/5", type: "int", exp: "약분하면 -1이니까 음의 정수!" }, 
+    { num: "7/3", type: "frac", exp: "약분 안 되는 분수는 정수가 아닌 유리수!" },
+    { num: "-2.7", type: "frac", exp: "음수이면서 소수 모양이네!" },
+    { num: "+7", type: "int", exp: "앞에 +가 붙어도 똑같은 자연수(정수)야!" }
+  ];
+  let gameIndex = 0; let gameScore = 0;
+  let gameStatus = 'falling'; 
+  let fallingX = 480; let fallingY = -50; let fallingScale = 1.0; let fallingSpeed = 1.5; 
+  let targetBasketX = 480; let targetBasketY = 400;
+  let gameSelectedType = ""; let gameResultMark = ""; let gameResultExp = "";
+
+  function setDialogue(speaker1, text1, speaker2, text2, delay = 1000) {
+    if (replyTimer) clearTimeout(replyTimer);
+    speechBubble1.text = ""; speechBubble2.text = "";
+    if (speaker1 === 'char') speechBubble1.text = text1; else if (speaker1 === 'friend') speechBubble2.text = text1;
+    if (text2 && speaker2) {
+      replyTimer = setTimeout(() => {
+        if (speaker2 === 'char') speechBubble1.text = text2; else if (speaker2 === 'friend') speechBubble2.text = text2;
+      }, delay);
+    }
+  }
+
+  function loadScene(newScene, dir) {
+    scene = newScene;
+    if (window.animTimer) clearInterval(window.animTimer);
+    if (replyTimer) clearTimeout(replyTimer);
+    
+    nextBtn.innerText = "다음 ▶";
+    
+    speechBubble1.text = ""; speechBubble2.text = "";
+    posSplits.style.display = 'none'; negSplits.style.display = 'none'; quizBox.style.display = 'none';
+    normalControls.style.display = 'flex'; resultControls.style.display = 'none';
+    nextBtn.style.display = scene < maxScene ? 'inline-block' : 'none';
+    prevBtn.style.display = scene > 0 ? 'inline-block' : 'none';
+    
+    zoomMode = 'none'; currentDivisions = 0; quizPins = []; charY = 280; posSplitClicked = false;
+    
+    if (scene === 0) { 
+      statusText.innerText = "1단계: 선 긋기"; animProgress = 0; charX = 480; let prog = 0; 
+      setDialogue('char', "아 똥마려... 똥싸면서 수나 알아볼까 ㅋㅋ", null, null);
+      window.animTimer = setInterval(() => { prog += 0.03; animProgress = Math.min(prog, 1); if (prog >= 1) clearInterval(window.animTimer); }, 30); 
+    } 
+    else if (scene === 1) { statusText.innerText = "2단계: 기준점 0의 탄생"; charX = 480; cameraOffset = 0; poopList = []; setDialogue('char', "기준점 0이야!", null, null); } 
+    else if (scene === 2) { statusText.innerText = "3단계: 양의 정수 질주"; setDialogue('char', "1, 2, 3... 끝이 없네?!", null, null); poopList = []; cameraOffset = 0; charX = 480; let step = 1; window.animTimer = setInterval(() => { charX = 480 + step * 60; poopList.push({ num: step, type: 'yellow' }); step++; if (step > 10) { clearInterval(window.animTimer); cameraOffset = 420; } }, 250); } 
+    else if (scene === 3) { statusText.innerText = "4단계: 0으로 복귀"; charX = 480; cameraOffset = 0; poopList = []; for(let i=1; i<=10; i++) poopList.push({num: i, type: 'yellow'}); setDialogue('char', "일단 0으로 도망가자!", null, null); } 
+    else if (scene === 4) { statusText.innerText = "5단계: 음의 정수 뒷걸음질"; setDialogue('char', "-1, -2... 뒤도 끝이 없어!", null, null); charX = 480; cameraOffset = 0; poopList = []; for(let i=1; i<=10; i++) poopList.push({num: i, type: 'yellow'}); let step = -1; window.animTimer = setInterval(() => { charX = 480 + step * 60; poopList.push({ num: step, type: 'green' }); step--; if (step < -10) { clearInterval(window.animTimer); cameraOffset = -300; } }, 250); } 
+    else if (scene === 5) { statusText.innerText = "6단계: 막막함"; charX = 480; cameraOffset = 0; poopList = []; for(let i=1; i<=10; i++) poopList.push({num: i, type: 'yellow'}); for(let i=-1; i>=-10; i--) poopList.push({num: i, type: 'green'}); setDialogue('char', "오른쪽도 왼쪽도 끝이 없어... 어디로 가지?", null, null); } 
+    else if (scene === 6) { statusText.innerText = "7단계: 친구 등장"; charX = 480; cameraOffset = 0; setDialogue('friend', "난 0하고 1 사이에서 놀 거야.", 'char', "넌 너무 좁은 데서 논다.", 1500); } 
+    else if (scene === 7) { 
+      statusText.innerText = "8단계: 양수 쪼개기"; zoomMode = 'positive'; posSplits.style.display = 'flex'; 
+      zoomCharX = zoomLeftX + 50; targetZoomCharX = zoomCharX; 
+      zoomFriendX = zoomRightX - 140; 
+      setDialogue('friend', "여기가 0과 1 사이야! 직접 쪼개봐!", null, null); 
+    } 
+    else if (scene === 8) { statusText.innerText = "9단계: 음수 쪼개기"; zoomMode = 'negative'; negSplits.style.display = 'flex'; zoomCharX = zoomRightX - 80; targetZoomCharX = zoomCharX; zoomFriendX = zoomLeftX + 50; setDialogue('char', "음수 쪽도 똑같이 쪼개진다고?", 'friend', "버튼을 순서대로 눌러봐!", 1200); } 
+    else if (scene === 9) { statusText.innerText = "🚨 10단계: 대소관계 퀴즈"; zoomMode = 'negative'; currentDivisions = 100; zoomCharX = zoomRightX - 50; targetZoomCharX = zoomCharX; zoomFriendX = zoomLeftX + 50; quizBox.style.display = 'flex'; setDialogue('char', "누가 제일 큰 거지...?", null, null); }
+    else if (scene === 10) { statusText.innerText = "11단계: 점들로 이루어진 수직선"; charX = 480; cameraOffset = 0; setDialogue('char', "0과 1, 0과 -1 사이도 수없이 수가 많네!", 'friend', "수직선은 다 점(수)들로 이뤄져 있어!", 1500); }
+    else if (scene === 11) { statusText.innerText = "12단계: 이름표 붙이기 (실수)"; charX = 480; setDialogue('friend', "사람도 이름이 있듯, 수직선 위 점들은 다 '실수'야.", 'char', "앗 실수ㅋㅋ 그 실수?", 1500); }
+    else if (scene === 12) { statusText.innerText = "13단계: 실수(Real Number)"; charX = 480; setDialogue('friend', "이름만 같지 실제 수(Real)라는 뜻이야 똥쟁아.", 'char', "아하...", 1500); }
+    else if (scene === 13) { 
+      statusText.innerText = "14단계: 정수로 점프!"; charX = 480; 
+      // ★ 14단계 대사 수정: 0 포함 설명 추가
+      setDialogue('friend', "실수 안엔 '정수'가 있어. 0 포함 네가 똥 싼 데가 정수야!", null, null); 
+      poopList = []; for(let i=1; i<=3; i++) poopList.push({num: i, type: 'yellow'}); for(let i=-1; i>=-3; i--) poopList.push({num: i, type: 'green'}); let jumps = [1, 2, -1, -2, 0]; let jIdx = 0; window.animTimer = setInterval(() => { charY = 230; setTimeout(() => { if (scene === 13) charY = 280; }, 150); charX = 480 + jumps[jIdx] * 60; jIdx++; if(jIdx >= jumps.length) clearInterval(window.animTimer); }, 700); }
+    else if (scene === 14) { statusText.innerText = "15단계: 정수가 아닌 유리수로 점프!"; charX = 480 - 60; setDialogue('friend', "여기 0.3은 '정수가 아닌 유리수' 중 하나야.", 'char', "왜 굳이 '아닌'이란 말을 붙여?", 1500); }
+    else if (scene === 15) { 
+      statusText.innerText = "16단계: 수의 포함 관계 (이름의 비밀)"; 
+      charX = 240; 
+      setDialogue('friend', "유리수 안에서 정수가 차지하고 남은 바깥 공간 보이지?", 'char', "아하! 저 도넛 모양이 '정수가 아닌' 애들 전용석이구나!", 1600); 
+    }
+    else if (scene === 16) {
+      statusText.innerText = "17단계: 게임 준비!"; 
+      charX = 240; cameraOffset = 0; 
+      setDialogue('friend', "자, 이제 바구니 게임으로 복습해볼까?", 'char', "약분되는 함정 문제도 있으니 조심해!", 1500);
+      nextBtn.innerText = "게임 시작하기 ▶";
+    }
+    else if (scene === 17) {
+      normalControls.style.display = 'none'; 
+      statusText.innerText = "🎮 직접 화면의 바구니를 클릭해서 숫자를 담아보세요!";
+      gameIndex = 0; gameScore = 0; gameStatus = 'falling';
+      fallingX = 480; fallingY = -50; fallingScale = 1.0; fallingSpeed = 1.5;
+      gameResultMark = ""; gameResultExp = "";
+    }
+    else if (scene === 18) {
+      statusText.innerText = "🎉 게임 종료! 결과를 확인하세요.";
+      setDialogue('char', `난 12문제 중에 ${gameScore}문제를 맞췄어!`, 'friend', gameScore >= 10 ? "수고했어! 넌 수의 체계 마스터야!" : "잘했어! 함정 문제만 조금 더 복습하자!", 1500);
+      normalControls.style.display = 'none';
+      resultControls.style.display = 'flex'; 
+    }
+  }
+
+  function drawDoodleChar(x, y, scale = 1, isFriend = false, eyeType = 'normal') {
+    ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
+    ctx.lineWidth = 3 / scale; ctx.strokeStyle = "#111"; ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.arc(0, -50, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (isFriend) { ctx.fillStyle = "#3498db"; ctx.beginPath(); ctx.arc(0, -62, 14, Math.PI, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+    ctx.fillStyle = "#111";
+    if (eyeType === 'sigh') { ctx.fillRect(-10, -52, 6, 2); ctx.fillRect(4, -52, 6, 2); } else { ctx.beginPath(); ctx.arc(-5, -52, 2.5, 0, Math.PI * 2); ctx.arc(5, -52, 2.5, 0, Math.PI * 2); ctx.fill(); }
+    ctx.beginPath(); ctx.moveTo(0, -34); ctx.lineTo(0, -10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -25); ctx.lineTo(-12, -15); ctx.moveTo(0, -25); ctx.lineTo(12, -15);
+    ctx.moveTo(0, -10); ctx.lineTo(-8, 0); ctx.moveTo(0, -10); ctx.lineTo(8, 0); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPoop(x, y, color) { ctx.save(); ctx.fillStyle = color === 'yellow' ? '#f1c40f' : '#2ecc71'; ctx.strokeStyle = '#222'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y - 6, 8, 0, Math.PI * 2); ctx.arc(x, y - 14, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore(); }
+  
+  function drawBubble(x, y, text, isFriend = false, offsetY = 0) {
+    if (!text) return; ctx.save(); ctx.font = "bold 15px 'Pretendard', sans-serif";
+    const textWidth = ctx.measureText(text).width; const boxW = Math.max(textWidth + 28, 120); const boxH = 40;
+    const targetY = (isFriend ? y - 170 : y - 120) + offsetY;
+    ctx.fillStyle = isFriend ? "#e8f4fd" : "rgba(255, 255, 255, 0.98)"; ctx.strokeStyle = isFriend ? "#2980b9" : "#222"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(x - boxW / 2, targetY, boxW, boxH, 8); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#111"; ctx.textAlign = "center"; ctx.fillText(text, x, targetY + 25); ctx.restore();
+  }
+  
+  function drawFlag(x, y, label, isCorrect) { ctx.save(); ctx.lineWidth = 2; ctx.strokeStyle = "#333"; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 65); ctx.stroke(); ctx.fillStyle = isCorrect ? "#e74c3c" : "#7f8c8d"; ctx.beginPath(); ctx.moveTo(x, y - 65); ctx.lineTo(x + 55, y - 50); ctx.lineTo(x, y - 35); ctx.fill(); ctx.stroke(); ctx.fillStyle = "#fff"; ctx.font = "bold 13px sans-serif"; ctx.fillText(label, x + 10, y - 46); ctx.restore(); }
+
+  function drawMatryoshka(x, y) {
+    ctx.save();
+    ctx.fillStyle = "#ecf0f1"; ctx.strokeStyle = "#34495e"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y - 70, 75, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = "#34495e"; ctx.font = "bold 18px sans-serif"; ctx.fillText("실수", x - 60, y - 110);
+    ctx.fillStyle = "#d6eaf8"; ctx.strokeStyle = "#2980b9"; ctx.beginPath(); ctx.arc(x, y - 55, 55, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = "#2980b9"; ctx.font = "bold 16px sans-serif"; ctx.fillText("유리수", x - 40, y - 85);
+    ctx.fillStyle = "#d5f5e3"; ctx.strokeStyle = "#27ae60"; ctx.beginPath(); ctx.arc(x, y - 40, 35, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = "#27ae60"; ctx.font = "bold 14px sans-serif"; ctx.fillText("정수", x - 15, y - 45);
+    
+    ctx.strokeStyle = "#c0392b"; ctx.lineWidth = 2; 
+    ctx.beginPath(); ctx.moveTo(x + 110, y - 40); ctx.lineTo(x + 45, y - 40); ctx.stroke(); 
+    ctx.beginPath(); ctx.moveTo(x + 52, y - 45); ctx.lineTo(x + 45, y - 40); ctx.lineTo(x + 52, y - 35); ctx.stroke();
+    
+    ctx.fillStyle = "#c0392b"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "left"; 
+    ctx.fillText("정수가 아닌", x + 115, y - 45); 
+    ctx.fillText("유리수", x + 115, y - 25);
+    ctx.restore();
+  }
+
+  function drawBasket(x, y, label1, color, isHover = false) {
+    ctx.save();
+    if(isHover) { ctx.translate(x, y); ctx.scale(1.05, 1.05); ctx.translate(-x, -y); }
+    
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x - 55, y - 20); ctx.lineTo(x + 55, y - 20);
+    ctx.lineTo(x + 40, y + 45); ctx.lineTo(x - 40, y + 45);
+    ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = "#333"; ctx.stroke();
+    
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
+    ctx.beginPath(); ctx.ellipse(x, y - 20, 55, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#111"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(label1, x, y + 75);
+    ctx.restore();
+  }
+
+  function drawFallingBubble(x, y, num, scale = 1) {
+    ctx.save();
+    ctx.translate(x, y); ctx.scale(scale, scale);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.95)"; ctx.strokeStyle = "#f39c12"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 35, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#2c3e50"; ctx.font = "bold 22px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(num, 0, 8);
+    ctx.restore();
+  }
+
+  let mouseX = 0; let mouseY = 0;
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const baselineY = 280; const unit = 60;
+    ctx.save();
+
+    if (scene === 17) {
+      ctx.fillStyle = "#fdfdfd"; ctx.fillRect(0, 0, 960, 580);
+      
+      ctx.fillStyle = "#d35400"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("✨ 내려오는 숫자가 정수면 [정수 바구니],", 550, 35);
+      ctx.fillText("아니면 [정수가 아닌 유리수 바구니]를 직접 누르세요! ✨", 550, 60);
+
+      ctx.fillStyle = "#34495e"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "left";
+      ctx.fillText(`진행: ${gameIndex + 1} / 12`, 30, 35);
+      ctx.fillText(`정답: ${gameScore} 개`, 30, 65);
+
+      let hoverInt = (mouseX > 150 && mouseX < 350 && mouseY > 350 && mouseY < 550);
+      let hoverFrac = (mouseX > 610 && mouseX < 810 && mouseY > 350 && mouseY < 550);
+
+      const basketIntX = 250; const basketY = 420;
+      const basketFracX = 710;
+      
+      drawBasket(basketIntX, basketY, "정수", "#2ecc71", hoverInt);
+      drawBasket(basketFracX, basketY, "정수가 아닌 유리수", "#f39c12", hoverFrac);
+
+      drawDoodleChar(130, basketY + 30, 1.2, false, 'normal');
+      drawDoodleChar(830, basketY + 30, 1.2, true, 'smile');
+
+      if (gameIndex < gameData.length) {
+        if (gameStatus === 'falling') {
+          fallingY += fallingSpeed;
+          drawFallingBubble(fallingX, fallingY, gameData[gameIndex].num, 1.0);
+          
+          if (fallingY > 440) { 
+            gameResultMark = "앗, 놓쳤다! ❌";
+            gameResultExp = "화면에 있는 바구니 그림을 직접 눌러야 해!";
+            gameStatus = 'result';
+            setTimeout(nextGameQuestion, 1500);
+          }
+        } 
+        else if (gameStatus === 'moving') {
+          fallingX += (targetBasketX - fallingX) * 0.15;
+          fallingY += (targetBasketY - fallingY) * 0.15;
+          fallingScale -= 0.03; 
+
+          if (fallingScale <= 0.2) { 
+            const correctType = gameData[gameIndex].type;
+            if (gameSelectedType === correctType) {
+              gameScore++; gameResultMark = "정답! 🎉";
+            } else {
+              gameResultMark = "오답! ❌";
+            }
+            gameResultExp = gameData[gameIndex].exp;
+            gameStatus = 'result';
+            setTimeout(nextGameQuestion, 1800);
+          } else {
+            drawFallingBubble(fallingX, fallingY, gameData[gameIndex].num, Math.max(fallingScale, 0));
+          }
+        }
+      }
+
+      if (gameStatus === 'result' && gameResultMark) {
+        ctx.fillStyle = gameResultMark.includes("정답") ? "#27ae60" : "#c0392b";
+        ctx.textAlign = "center"; ctx.font = "bold 32px sans-serif";
+        ctx.fillText(gameResultMark, 480, 200);
+        ctx.fillStyle = "#333"; ctx.font = "bold 22px sans-serif";
+        ctx.fillText(gameResultExp, 480, 240);
+      }
+
+    } else if (scene === 18) {
+      drawMatryoshka(480, 250);
+      drawDoodleChar(300, 400, 1.1, false, gameScore >= 10 ? 'smile' : 'sigh');
+      drawBubble(300, 400, speechBubble1.text);
+      drawDoodleChar(660, 400, 1.1, true, 'smile');
+      drawBubble(660, 400, speechBubble2.text, true);
+      
+      ctx.fillStyle = "#8e44ad"; ctx.font = "bold 40px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(`최종 결과: 12문제 중 ${gameScore}문제 정답!`, 480, 100);
+    }
+    else if (zoomMode === 'positive' || zoomMode === 'negative') {
+      const leftLabel = zoomMode === 'positive' ? "0" : "-1"; const rightLabel = zoomMode === 'positive' ? "1" : "0";
+      ctx.lineWidth = 5; ctx.strokeStyle = "#111"; ctx.beginPath(); ctx.moveTo(zoomLeftX - 40, baselineY); ctx.lineTo(zoomRightX + 40, baselineY); ctx.stroke();
+      ctx.lineWidth = 4; ctx.strokeStyle = zoomMode === 'positive' ? "#e74c3c" : "#27ae60"; ctx.beginPath(); ctx.moveTo(zoomLeftX, baselineY - 35); ctx.lineTo(zoomLeftX, baselineY + 35); ctx.stroke(); ctx.fillStyle = ctx.strokeStyle; ctx.font = "bold 26px sans-serif"; ctx.textAlign = "center"; ctx.fillText(leftLabel, zoomLeftX, baselineY + 70);
+      ctx.lineWidth = 4; ctx.strokeStyle = zoomMode === 'positive' ? "#f39c12" : "#e74c3c"; ctx.beginPath(); ctx.moveTo(zoomRightX, baselineY - 35); ctx.lineTo(zoomRightX, baselineY + 35); ctx.stroke(); ctx.fillStyle = ctx.strokeStyle; ctx.fillText(rightLabel, zoomRightX, baselineY + 70);
+      if (currentDivisions > 0) { const stepPx = (zoomRightX - zoomLeftX) / currentDivisions; for (let i = 1; i < currentDivisions; i++) { const tickX = zoomLeftX + i * stepPx; ctx.lineWidth = currentDivisions > 20 ? 1 : 2; ctx.strokeStyle = "#2980b9"; ctx.beginPath(); ctx.moveTo(tickX, baselineY - 18); ctx.lineTo(tickX, baselineY + 18); ctx.stroke(); } }
+      quizPins.forEach(pin => { let px = (pin.val < -1) ? zoomLeftX - 40 : zoomLeftX + (pin.val - (-1)) * (zoomRightX - zoomLeftX); drawFlag(px, baselineY, pin.label, pin.isRight); });
+      zoomCharX += (targetZoomCharX - zoomCharX) * 0.1;
+      drawDoodleChar(zoomCharX, baselineY, 0.9, false, 'normal'); drawBubble(zoomCharX, baselineY, speechBubble1.text);
+      drawDoodleChar(zoomFriendX, baselineY, 0.9, true, 'smile'); drawBubble(zoomFriendX, baselineY, speechBubble2.text, true);
+    } else {
+      ctx.translate(-cameraOffset, 0);
+      if (scene === 0) { 
+        ctx.lineWidth = 4; ctx.strokeStyle = "#222"; ctx.beginPath(); ctx.moveTo(180, baselineY); ctx.lineTo(180 + animProgress * 600, baselineY); ctx.stroke(); 
+        ctx.fillStyle = "#f5cd79"; ctx.fillRect(180, baselineY + 10, animProgress * 600, 26); ctx.strokeRect(180, baselineY + 10, animProgress * 600, 26); 
+        drawDoodleChar(180 + animProgress * 600, baselineY, 1.1, false); 
+        drawBubble(180 + animProgress * 600, baselineY, speechBubble1.text);
+      }
+      if (scene >= 1) {
+        ctx.lineWidth = 4; ctx.strokeStyle = "#111"; if (scene >= 10 && scene <= 16 && ctx.setLineDash) { ctx.setLineDash([4, 8]); ctx.lineCap = "round"; }
+        ctx.beginPath(); ctx.moveTo(-2000, baselineY); ctx.lineTo(2000, baselineY); ctx.stroke(); if (ctx.setLineDash) ctx.setLineDash([]); 
+        ctx.fillStyle = "#111"; ctx.beginPath(); ctx.moveTo(2000, baselineY); ctx.lineTo(1980, baselineY-10); ctx.lineTo(1980, baselineY+10); ctx.fill(); ctx.beginPath(); ctx.moveTo(-2000, baselineY); ctx.lineTo(-1980, baselineY-10); ctx.lineTo(-1980, baselineY+10); ctx.fill();
+        ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center";
+        for (let n = -20; n <= 20; n++) { const xPos = 480 + n * unit; const isZero = n === 0; ctx.lineWidth = isZero ? 3 : 1.5; ctx.strokeStyle = isZero ? "#e74c3c" : "#333"; ctx.beginPath(); ctx.moveTo(xPos, baselineY - (isZero ? 20 : 10)); ctx.lineTo(xPos, baselineY + (isZero ? 20 : 10)); ctx.stroke(); ctx.fillStyle = isZero ? "#e74c3c" : "#555"; ctx.fillText(n, xPos, baselineY + 32); }
+        for(let i = 0; i < poopList.length; i++) drawPoop(480 + poopList[i].num * unit, baselineY - 2, poopList[i].type);
+        
+        let charOffsetY = (scene >= 16) ? -50 : 0;
+        let friendOffsetY = (scene >= 16) ? -50 : 0;
+
+        drawDoodleChar(charX, charY, 0.75, false, scene === 5 || scene === 6 ? 'sigh' : 'normal'); 
+        drawBubble(charX, charY, speechBubble1.text, false, charOffsetY);
+        
+        if (scene >= 6) { 
+          let friendX = 480 + 60; 
+          if (scene === 14) friendX = 480 + 0.3 * 60; 
+          else if (scene >= 15) friendX = charX + 150; 
+          drawDoodleChar(friendX, 280, 0.75, true, 'smile'); 
+          drawBubble(friendX, 280, speechBubble2.text, true, friendOffsetY); 
+        }
+        if (scene >= 15) {
+          drawMatryoshka(700, 240);
+        }
+      }
+    }
+    ctx.restore();
+    requestAnimationFrame(render);
+  }
+
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+    mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+    
+    if (scene === 17 && gameStatus === 'falling') {
+      if ((mouseX > 150 && mouseX < 350 && mouseY > 350 && mouseY < 550) || 
+          (mouseX > 610 && mouseX < 810 && mouseY > 350 && mouseY < 550)) {
+        canvas.style.cursor = 'pointer';
+      } else {
+        canvas.style.cursor = 'default';
+      }
+    } else {
+      canvas.style.cursor = 'default';
+    }
+  });
+
+  canvas.addEventListener('click', function(e) {
+    if (scene !== 17 || gameStatus !== 'falling') return;
+    if (mouseX > 150 && mouseX < 350 && mouseY > 350 && mouseY < 550) {
+      catchNumber('int');
+    } else if (mouseX > 610 && mouseX < 810 && mouseY > 350 && mouseY < 550) {
+      catchNumber('frac');
+    }
+  });
+
+  window.splitPositive = function(n) { currentDivisions = n; targetZoomCharX = zoomLeftX + (zoomRightX - zoomLeftX) / n; if (!posSplitClicked) { posSplitClicked = true; if (replyTimer) clearTimeout(replyTimer); speechBubble1.text = "막 쪼개도 되는 거야?"; speechBubble2.text = ""; replyTimer = setTimeout(() => { speechBubble2.text = "0과 1사이는 무수히 많은 수로 되어 있어서 무한히 쪼갤 수 있어"; }, 1000); } statusText.innerText = `0과 1 사이 ${n}등분 분할 완료!`; };
+  window.splitNegative = function(n) { currentDivisions = n; targetZoomCharX = zoomRightX - (zoomRightX - zoomLeftX) / n; if (replyTimer) clearTimeout(replyTimer); speechBubble1.text = ""; if (n === 100) speechBubble2.text = "0에 가장 가까운 걸 혹시 눈치 챘나?"; else speechBubble2.text = "무수히 많이 쪼갤 수 있어"; statusText.innerText = `-1과 0 사이 ${n}등분 분할 완료!`; };
+  window.checkAnswer = function(label, val) { const isCorrect = (label === '-1/100'); quizPins = [{ label, val, isRight: isCorrect }]; if (isCorrect) { setDialogue('friend', "맨 오른쪽의 수가 큰 거야!", 'char', "아하! -1/100이 제일 오른쪽이네!", 1500); statusText.innerText = `🎉 정답!`; } else { setDialogue('friend', "맨 오른쪽의 수가 큰 거야!", 'char', "어라? 내가 고른 건 더 왼쪽이네?", 1500); statusText.innerText = `❌ 오답!`; } };
+
+  window.catchNumber = function(selectedType) {
+    gameSelectedType = selectedType;
+    targetBasketX = selectedType === 'int' ? 250 : 710;
+    targetBasketY = 400; 
+    gameStatus = 'moving';
+    canvas.style.cursor = 'default';
+  };
+
+  function nextGameQuestion() {
+    gameStatusMsg = ""; gameResultMark = ""; gameResultExp = "";
+    gameIndex++;
+    if (gameIndex >= gameData.length) {
+      loadScene(18, 1);
+    } else {
+      fallingX = 480; fallingY = -50; fallingScale = 1.0;
+      fallingSpeed += 0.2; 
+      gameStatus = 'falling';
+    }
+  }
+
+  window.goPrev = function() { if (scene > 0) loadScene(scene - 1, -1); };
+  window.goNext = function() { if (scene === 16) nextBtn.innerText = "다음 ▶"; if (scene < maxScene) loadScene(scene + 1, 1); };
+
+  loadScene(0, 1);
+  render();
+</script>
+</body>
+</html>

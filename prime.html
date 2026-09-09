@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>중1 수학 - 소수와 합성수 (휴지통 추가 & 15문제 바구니 게임)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #f0f2f5;
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #game-container {
+      position: relative;
+      width: 960px;
+      height: 580px; 
+      background: #ffffff;
+      border: 3px solid #222;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+      overflow: hidden;
+    }
+    canvas { 
+      position: absolute;
+      top: 0; left: 0;
+      display: block; width: 100%; height: 100%; 
+      z-index: 1;
+    }
+    #ui-panel {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 8px 24px;
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      border: 1px solid #ddd;
+      max-width: 95%;
+      z-index: 9999; 
+    }
+    .btn-row { display: flex; gap: 10px; align-items: center; }
+    .nav-btn {
+      background: #2c3e50; color: #fff; border: none;
+      padding: 8px 18px; font-size: 14px; font-weight: bold;
+      border-radius: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .nav-btn:hover { background: #1a252f; }
+    .nav-btn:active { transform: scale(0.96); }
+    
+    #result-controls { display: none; gap: 10px; align-items: center; }
+    #status-text { font-size: 14px; color: #333; font-weight: 800; text-align: center; }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <canvas id="canvas" width="960" height="580"></canvas>
+  <div id="ui-panel">
+    <span id="status-text">준비</span>
+    
+    <div class="btn-row" id="normal-controls">
+      <button id="prev-btn" class="nav-btn" onclick="goPrev()">◀ 이전</button>
+      <button id="next-btn" class="nav-btn" onclick="goNext()">다음 ▶</button>
+    </div>
+
+    <div id="result-controls">
+      <button class="nav-btn" onclick="loadScene(16, -1)">◀ 설명 화면으로</button>
+      <button class="nav-btn" style="background: #8e44ad;" onclick="loadScene(18, 1)">🔄 게임 다시 하기</button>
+      <button class="nav-btn" style="background: #27ae60;" onclick="loadScene(0, 1)">🏠 처음으로</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const statusText = document.getElementById('status-text');
+  const normalControls = document.getElementById('normal-controls');
+  const resultControls = document.getElementById('result-controls');
+
+  let scene = 0;
+  const maxScene = 19;
+
+  let speechBubble1 = { text: "" };
+  let speechBubble2 = { text: "" };
+  let replyTimer = null;
+  let replyTimer2 = null;
+  let animTimer = null;
+  let cutOffset = 0;
+
+  let scissorX = 480;
+  let scissorY = -100;
+  let scissorScale = 1.0;
+  let scissorAngle = 0;
+  let isCutting = false;
+
+  let quizFriendX = 230;
+  let quizFriendY = 400;
+
+  const gameData = [
+    { num: "3", type: "prime", formula: "3 = 1 × 3", divs: "1, 3", exp: "약수가 1과 자신뿐인 소수!" },
+    { num: "6", type: "comp", formula: "6 = 2 × 3", divs: "1, 2, 3, 6", exp: "약수가 4개인 합성수!" },
+    { num: "2", type: "prime", formula: "2 = 1 × 2", divs: "1, 2", exp: "소수 중 유일한 짝수!" },
+    { num: "9", type: "comp", formula: "9 = 3 × 3", divs: "1, 3, 9", exp: "3으로 나누어떨어지니 합성수!" },
+    { num: "5", type: "prime", formula: "5 = 1 × 5", divs: "1, 5", exp: "1과 5로만 쪼개지는 소수!" },
+    { num: "1", type: "trash", formula: "1은 약수가 1개뿐!", divs: "1", exp: "1은 소수도 합성수도 아니니 휴지통으로!" },
+    { num: "7", type: "prime", formula: "7 = 1 × 7", divs: "1, 7", exp: "약수가 1, 7뿐인 소수!" },
+    { num: "12", type: "comp", formula: "12 = 3 × 4", divs: "1, 2, 3, 4, 6, 12", exp: "약수가 6개나 되는 합성수!" },
+    { num: "11", type: "prime", formula: "11 = 1 × 11", divs: "1, 11", exp: "1과 11로만 나누어지는 소수!" },
+    { num: "15", type: "comp", formula: "15 = 3 × 5", divs: "1, 3, 5, 15", exp: "3과 5로도 나누어떨어지는 합성수!" },
+    { num: "13", type: "prime", formula: "13 = 1 × 13", divs: "1, 13", exp: "더 이상 쪼갤 수 없는 소수!" },
+    { num: "21", type: "comp", formula: "21 = 3 × 7", divs: "1, 3, 7, 21", exp: "3과 7의 배수인 합성수!" },
+    { num: "17", type: "prime", formula: "17 = 1 × 17", divs: "1, 17", exp: "약수가 1과 17뿐인 소수!" },
+    { num: "27", type: "comp", formula: "27 = 3 × 9", divs: "1, 3, 9, 27", exp: "3과 9로도 잘리는 합성수!" },
+    { num: "19", type: "prime", formula: "19 = 1 × 19", divs: "1, 19", exp: "약수가 2개뿐인 소수!" }
+  ];
+
+  let gameIndex = 0;
+  let gameScore = 0;
+  let gameStatus = 'falling';
+  let fallingX = 480;
+  let fallingY = -50;
+  let fallingScale = 1.0;
+  let fallingSpeed = 1.4;
+  let targetBasketX = 220;
+  let targetBasketY = 390;
+  let gameSelectedType = "";
+  let gameResultMark = "";
+  let gameResultFormula = "";
+  let gameResultDivs = "";
+  let gameResultExp = "";
+  let mouseX = 0;
+  let mouseY = 0;
+
+  function clearAllTimers() {
+    if (replyTimer) clearTimeout(replyTimer);
+    if (replyTimer2) clearTimeout(replyTimer2);
+    if (animTimer) clearInterval(animTimer);
+  }
+
+  function setDialogue(speaker1, text1, speaker2, text2, delay = 1200) {
+    clearAllTimers();
+    speechBubble1.text = ""; speechBubble2.text = "";
+    if (speaker1 === 'char') speechBubble1.text = text1; 
+    else if (speaker1 === 'friend') speechBubble2.text = text1;
+
+    if (text2 && speaker2) {
+      replyTimer = setTimeout(() => {
+        if (speaker2 === 'char') speechBubble1.text = text2; 
+        else if (speaker2 === 'friend') speechBubble2.text = text2;
+      }, delay);
+    }
+  }
+
+  function jumpFriendTo(targetNum, onComplete) {
+    const originX = 260; 
+    const unitPx = 54;
+    const destX = originX + targetNum * unitPx;
+    const startX = quizFriendX;
+    let t = 0;
+
+    if (animTimer) clearInterval(animTimer);
+    animTimer = setInterval(() => {
+      t += 0.05;
+      quizFriendX = startX + (destX - startX) * t;
+      quizFriendY = 400 - Math.sin(t * Math.PI) * 55;
+      if (t >= 1) {
+        quizFriendX = destX;
+        quizFriendY = 400;
+        clearInterval(animTimer);
+        if (onComplete) onComplete();
+      }
+    }, 25);
+  }
+
+  function loadScene(newScene) {
+    scene = newScene;
+    clearAllTimers();
+
+    normalControls.style.display = 'flex';
+    resultControls.style.display = 'none';
+    prevBtn.style.display = scene > 0 ? 'inline-block' : 'none';
+    nextBtn.innerText = (scene === 17) ? "게임 시작하기 🎮" : "다음 ▶";
+    cutOffset = 0;
+    isCutting = false;
+
+    if (scene === 0) {
+      statusText.innerText = "1단계: 수 막대기 살펴보기";
+      setDialogue('char', "3과 6 막대기가 나란히 놓여 있네?", null, null);
+    }
+    else if (scene === 1) {
+      statusText.innerText = "2단계: 가위 소환!";
+      setDialogue('char', "이제부터 수를 자를 거야. 도구 나와라 얏!", null, null);
+      scissorX = 480; scissorY = -120; scissorScale = 1.6;
+      let sy = -120;
+      animTimer = setInterval(() => {
+        sy += 14;
+        scissorY = Math.min(sy, 160);
+        if (sy >= 160) clearInterval(animTimer);
+      }, 30);
+    }
+    else if (scene === 2) {
+      statusText.innerText = "3단계: 막대기 3을 1씩 자르기";
+      setDialogue('char', "먼저 3을 1씩 똑같이 잘라보자! 싹둑!", null, null);
+      startCuttingProcess(140, 160, 3, 1);
+    }
+    else if (scene === 3) {
+      statusText.innerText = "4단계: 막대기 6을 1씩 자르기";
+      setDialogue('char', "이번엔 6을 1씩 잘라볼까? 총 6조각!", null, null);
+      startCuttingProcess(140, 230, 6, 1);
+    }
+    else if (scene === 4) {
+      statusText.innerText = "5단계: 막대기 6을 2씩 자르기";
+      setDialogue('char', "어? 6은 2씩 잘라도 딱 나누어 떨어지네!", null, null);
+      startCuttingProcess(140, 230, 6, 2);
+    }
+    else if (scene === 5) {
+      statusText.innerText = "6단계: 막대기 6을 3씩 자르기";
+      setDialogue('char', "심지어 3씩 잘라도 2개로 딱 맞아떨어져!", null, null);
+      startCuttingProcess(140, 230, 6, 3);
+    }
+    else if (scene === 6) {
+      statusText.innerText = "7단계: 친구의 질문";
+      setDialogue('friend', "6은 왜 이렇게 여러 방법으로 잘랐어?", 'char', "몰라… 6은 여러 방법으로 잘라지던데?", 1500);
+    }
+    else if (scene === 7) {
+      statusText.innerText = "8단계: 주인공의 발견";
+      setDialogue('char', "똑같이 자르는 방법이 6은 여러 개네!", 'friend', "아… 맞아! 3은 1씩 자르는 한 가지뿐이었잖아!", 1400);
+    }
+    else if (scene === 8) {
+      statusText.innerText = "9단계: 약수의 정의";
+      setDialogue('char', "이렇게 나누는 수를 약수라 하나?", 'friend', "맞아! 나누어떨어지는 수를 약수라고 해.", 1500);
+    }
+    else if (scene === 9) {
+      statusText.innerText = "10단계: 3과 6의 약수 비교";
+      setDialogue('friend', "3은 약수가 1, 3 두 개뿐이고, 6은 1, 2, 3, 6 네 개나 돼!", 'char', "나누어떨어지는 크기가 곧 약수였구나!", 1600);
+    }
+    else if (scene === 10) {
+      statusText.innerText = "11단계: 소수와 합성수 최종 정리";
+      setDialogue('friend', "약수가 1과 자기 자신뿐이면 '소수', 3개 이상이면 '합성수'야!", 'char', "그럼 3은 소수, 6은 합성수네!", 2800);
+    }
+    else if (scene === 11) {
+      statusText.innerText = "12단계: 수직선 위 퀴즈 대결!";
+      quizFriendX = 230; quizFriendY = 400;
+      setDialogue('friend', "내가 수 위에 올라가면 네가 합성수인지 소수인지 말해봐!", null, null);
+    }
+    else if (scene === 12) {
+      statusText.innerText = "13단계: 10으로 이동!";
+      jumpFriendTo(10, () => {
+        setDialogue('friend', "10! 이건 무슨 수일까?", 'char', "약수가 1, 2, 5, 10이니까 '합성수'!", 1200);
+      });
+    }
+    else if (scene === 13) {
+      statusText.innerText = "14단계: 5로 이동!";
+      jumpFriendTo(5, () => {
+        setDialogue('friend', "그럼 5는?", 'char', "1과 5로만 쪼개지니까 '소수'!", 1200);
+      });
+    }
+    else if (scene === 14) {
+      statusText.innerText = "15단계: 4로 이동!";
+      jumpFriendTo(4, () => {
+        setDialogue('friend', "그럼 4는?", 'char', "1, 2, 4로 잘라지니까 '합성수'!", 1200);
+      });
+    }
+    else if (scene === 15) {
+      statusText.innerText = "16단계: -1로 이동 (음수 함정!)";
+      jumpFriendTo(-1, () => {
+        clearAllTimers();
+        speechBubble1.text = "어? -1...? 그건 잘 모르겠는데...";
+        speechBubble2.text = "";
+
+        replyTimer = setTimeout(() => {
+          speechBubble2.text = "자연수 즉, 1보다 큰 양의 정수에서만 따지는 거야!";
+          replyTimer2 = setTimeout(() => {
+            speechBubble1.text = "에이.. 얼른 자연수 쪽으로 가!";
+          }, 2000);
+        }, 1500);
+      });
+    }
+    else if (scene === 16) {
+      statusText.innerText = "17단계: 2로 이동 (유일한 짝수 소수)";
+      jumpFriendTo(2, () => {
+        setDialogue('char', "2는 약수가 1, 2뿐인 '소수'야!", 'friend', "맞아! 게다가 2는 소수 중 유일하게 '짝수'란 특별한 점이 있어!", 1600);
+      });
+    }
+    else if (scene === 17) {
+      statusText.innerText = "18단계: 소수·휴지통·합성수 게임 룰 안내";
+      setDialogue('char', "난 소수를 담을 거야!", 'friend', "난 합성수를 담을게! 1이 나오면 가운데 휴지통으로 버려!", 1200);
+    }
+    else if (scene === 18) {
+      normalControls.style.display = 'none';
+      statusText.innerText = "🎮 떨어지는 수를 보고 [소수] · [휴지통] · [합성수]를 누르세요!";
+      gameIndex = 0; gameScore = 0; gameStatus = 'falling';
+      fallingX = 480; fallingY = -50; fallingScale = 1.0; fallingSpeed = 1.4;
+      gameResultMark = ""; gameResultFormula = ""; gameResultDivs = ""; gameResultExp = "";
+    }
+    else if (scene === 19) {
+      normalControls.style.display = 'none';
+      resultControls.style.display = 'flex';
+      statusText.innerText = "🎉 소수와 합성수 게임 종료! 최종 결과를 확인하세요.";
+      setDialogue('char', `총 15문제 중 ${gameScore}문제를 맞혔어!`, 'friend', gameScore >= 12 ? "대단해! 약수 분해와 1의 성질까지 완벽히 마스터했네!" : "잘했어! 헷갈리는 약수들만 조금 더 복습해 보자!", 1500);
+    }
+  }
+
+  function startCuttingProcess(startX, startY, totalUnits, splitUnit) {
+    isCutting = true;
+    scissorScale = 1.0;
+    const unitPx = 60;
+    const cuts = [];
+    for (let i = 1; i < totalUnits / splitUnit; i++) {
+      cuts.push(startX + i * splitUnit * unitPx);
+    }
+
+    let cutIdx = 0;
+    scissorX = startX + splitUnit * unitPx;
+    scissorY = startY - 25;
+
+    let step = 0;
+    animTimer = setInterval(() => {
+      step++;
+      if (cutIdx < cuts.length) {
+        let targetX = cuts[cutIdx];
+        scissorX += (targetX - scissorX) * 0.35;
+        scissorY = startY - 10 + Math.sin(step * 0.8) * 8;
+        scissorAngle = Math.sin(step * 1.5) * 0.25;
+
+        if (Math.abs(scissorX - targetX) < 3) cutIdx++;
+      } else {
+        scissorY -= 4;
+        cutOffset = Math.min(cutOffset + 0.6, 9);
+        if (scissorY < startY - 70) {
+          clearInterval(animTimer);
+          isCutting = false;
+        }
+      }
+    }, 40);
+  }
+
+  function drawScissors(x, y, scale = 1, angle = 0) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#e74c3c";
+    ctx.fillStyle = "#ffffff";
+
+    ctx.beginPath(); ctx.arc(-14, 26, 12, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(14, 26, 12, 0, Math.PI * 2); ctx.stroke();
+
+    ctx.save();
+    ctx.rotate(angle);
+    ctx.fillStyle = "#bdc3c7"; ctx.strokeStyle = "#7f8c8d"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-4, 10); ctx.lineTo(-2, -35); ctx.lineTo(-12, -30); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.rotate(-angle);
+    ctx.fillStyle = "#ecf0f1"; ctx.strokeStyle = "#7f8c8d"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(4, 10); ctx.lineTo(2, -35); ctx.lineTo(12, -30); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = "#f39c12"; ctx.beginPath(); ctx.arc(0, 5, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#333"; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawScissorBubble(x, y, text) {
+    ctx.save();
+    ctx.font = "bold 15px 'Pretendard', sans-serif";
+    const textWidth = ctx.measureText(text).width;
+    const boxW = textWidth + 24; const boxH = 36;
+    const boxX = x + 35; const boxY = y - 30;
+
+    ctx.fillStyle = "#fff0f0"; ctx.strokeStyle = "#e74c3c"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(boxX, boxY, boxW, boxH, 8); ctx.fill(); ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(boxX, boxY + 14); ctx.lineTo(boxX - 10, boxY + 18); ctx.lineTo(boxX, boxY + 22);
+    ctx.fillStyle = "#fff0f0"; ctx.fill(); ctx.stroke();
+
+    ctx.strokeStyle = "#fff0f0"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(boxX, boxY + 15); ctx.lineTo(boxX, boxY + 21); ctx.stroke();
+
+    ctx.fillStyle = "#c0392b"; ctx.textAlign = "left";
+    ctx.fillText(text, boxX + 12, boxY + 23);
+    ctx.restore();
+  }
+
+  function drawDoodleChar(x, y, scale = 1, isFriend = false) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.lineWidth = 3 / scale; ctx.strokeStyle = "#111"; ctx.fillStyle = "#fff";
+    
+    ctx.beginPath(); ctx.arc(0, -50, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    if (isFriend) {
+      ctx.fillStyle = "#3498db";
+      ctx.beginPath(); ctx.arc(0, -62, 14, Math.PI, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+
+    ctx.fillStyle = "#111";
+    ctx.beginPath(); ctx.arc(-5, -52, 2.5, 0, Math.PI * 2); ctx.arc(5, -52, 2.5, 0, Math.PI * 2); ctx.fill();
+
+    ctx.beginPath(); ctx.moveTo(0, -34); ctx.lineTo(0, -10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -25); ctx.lineTo(-12, -15); ctx.moveTo(0, -25); ctx.lineTo(12, -15);
+    ctx.moveTo(0, -10); ctx.lineTo(-8, 0); ctx.moveTo(0, -10); ctx.lineTo(8, 0); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawBubble(x, y, text, isFriend = false, offsetY = 0) {
+    if (!text) return;
+    ctx.save();
+    ctx.font = "bold 15px 'Pretendard', sans-serif";
+    const textWidth = ctx.measureText(text).width;
+    const boxW = Math.max(textWidth + 28, 120); const boxH = 40;
+    
+    const baseY = isFriend ? y - 145 : y - 105;
+    const targetY = baseY + offsetY;
+
+    let boxX = x - boxW / 2;
+    if (boxX < 20) boxX = 20;
+    if (boxX + boxW > 940) boxX = 940 - boxW;
+
+    ctx.fillStyle = isFriend ? "#e8f4fd" : "rgba(255, 255, 255, 0.98)";
+    ctx.strokeStyle = isFriend ? "#2980b9" : "#222"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(boxX, targetY, boxW, boxH, 8); ctx.fill(); ctx.stroke();
+
+    const tailX = Math.min(Math.max(x, boxX + 15), boxX + boxW - 15);
+    ctx.beginPath();
+    ctx.moveTo(tailX - 6, targetY + boxH); ctx.lineTo(tailX, targetY + boxH + 8); ctx.lineTo(tailX + 6, targetY + boxH);
+    ctx.fillStyle = isFriend ? "#e8f4fd" : "rgba(255, 255, 255, 0.98)";
+    ctx.fill(); ctx.stroke();
+
+    ctx.strokeStyle = isFriend ? "#e8f4fd" : "rgba(255, 255, 255, 0.98)";
+    ctx.beginPath(); ctx.moveTo(tailX - 5, targetY + boxH); ctx.lineTo(tailX + 5, targetY + boxH); ctx.stroke();
+
+    ctx.fillStyle = "#111"; ctx.textAlign = "center";
+    ctx.fillText(text, boxX + boxW / 2, targetY + 25);
+    ctx.restore();
+  }
+
+  function drawBar(x, y, totalUnits, splitUnit = 0, label = "", offsetGap = 0, color = "#f39c12", unitWidth = 60, barHeight = 44) {
+    ctx.save();
+    if (splitUnit === 0) {
+      const w = totalUnits * unitWidth;
+      ctx.fillStyle = color; ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect(x, y, w, barHeight, 6); ctx.fill(); ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255,255,255,0.45)"; ctx.lineWidth = 1.5;
+      for (let i = 1; i < totalUnits; i++) {
+        ctx.beginPath(); ctx.moveTo(x + i * unitWidth, y + 4); ctx.lineTo(x + i * unitWidth, y + barHeight - 4); ctx.stroke();
+      }
+    } else {
+      const pieceCount = totalUnits / splitUnit; const piecePx = splitUnit * unitWidth;
+      for (let i = 0; i < pieceCount; i++) {
+        const pieceX = x + i * (piecePx + offsetGap * 2);
+        ctx.fillStyle = color; ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.roundRect(pieceX, y, piecePx, barHeight, 6); ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#2c3e50"; ctx.font = `bold ${Math.min(15, barHeight * 0.45)}px sans-serif`;
+        ctx.textAlign = "center"; ctx.fillText(`${splitUnit}씩`, pieceX + piecePx / 2, y + barHeight * 0.65);
+      }
+    }
+
+    const endX = x + totalUnits * unitWidth + (splitUnit > 0 ? (totalUnits / splitUnit - 1) * offsetGap * 2 : 0);
+    ctx.fillStyle = "#111"; ctx.font = `bold ${Math.min(22, barHeight * 0.7)}px sans-serif`;
+    ctx.textAlign = "left"; ctx.fillText(`= ${totalUnits}`, endX + 15, y + barHeight * 0.7);
+
+    if (label) {
+      ctx.font = "bold 13px sans-serif"; ctx.fillStyle = "#7f8c8d";
+      ctx.fillText(`(${label})`, endX + 60, y + barHeight * 0.7);
+    }
+    ctx.restore();
+  }
+
+  function drawNumberLine(originX, baselineY, unitPx) {
+    ctx.save();
+    ctx.lineWidth = 3; ctx.strokeStyle = "#2c3e50";
+    ctx.beginPath(); ctx.moveTo(30, baselineY); ctx.lineTo(930, baselineY); ctx.stroke();
+
+    ctx.fillStyle = "#2c3e50";
+    ctx.beginPath(); ctx.moveTo(930, baselineY); ctx.lineTo(915, baselineY - 6); ctx.lineTo(915, baselineY + 6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(30, baselineY); ctx.lineTo(45, baselineY - 6); ctx.lineTo(45, baselineY + 6); ctx.fill();
+
+    ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center";
+    for (let n = -3; n <= 11; n++) {
+      let x = originX + n * unitPx;
+      if (x < 45 || x > 915) continue;
+      let isZero = (n === 0);
+      ctx.lineWidth = isZero ? 3 : 1.5; ctx.strokeStyle = isZero ? "#e74c3c" : "#7f8c8d";
+      ctx.beginPath(); ctx.moveTo(x, baselineY - (isZero ? 14 : 8)); ctx.lineTo(x, baselineY + (isZero ? 14 : 8)); ctx.stroke();
+      ctx.fillStyle = isZero ? "#e74c3c" : "#333"; ctx.fillText(n, x, baselineY + 28);
+    }
+    ctx.restore();
+  }
+
+  function drawBasket(x, y, label, color, isHover = false) {
+    ctx.save();
+    if(isHover) { ctx.translate(x, y); ctx.scale(1.06, 1.06); ctx.translate(-x, -y); }
+    
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x - 55, y - 20); ctx.lineTo(x + 55, y - 20);
+    ctx.lineTo(x + 40, y + 45); ctx.lineTo(x - 40, y + 45);
+    ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = "#2c3e50"; ctx.stroke();
+    
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
+    ctx.beginPath(); ctx.ellipse(x, y - 20, 55, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#111"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(label, x, y + 70);
+    ctx.restore();
+  }
+
+  function drawTrashCan(x, y, isHover = false) {
+    ctx.save();
+    if(isHover) { ctx.translate(x, y); ctx.scale(1.06, 1.06); ctx.translate(-x, -y); }
+
+    ctx.fillStyle = "#95a5a6";
+    ctx.beginPath();
+    ctx.moveTo(x - 40, y - 10); ctx.lineTo(x + 40, y - 10);
+    ctx.lineTo(x + 32, y + 45); ctx.lineTo(x - 32, y + 45);
+    ctx.closePath(); ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = "#2c3e50"; ctx.stroke();
+
+    ctx.fillStyle = "#7f8c8d";
+    ctx.beginPath(); ctx.roundRect(x - 46, y - 22, 92, 12, 4); ctx.fill(); ctx.stroke();
+
+    ctx.beginPath(); ctx.arc(x, y - 22, 8, Math.PI, 0); ctx.stroke();
+
+    ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x - 16, y - 5); ctx.lineTo(x - 12, y + 38); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 38); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + 16, y - 5); ctx.lineTo(x + 12, y + 38); ctx.stroke();
+
+    ctx.fillStyle = "#c0392b"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("🗑️ 휴지통", x, y + 66);
+
+    ctx.fillStyle = "#d35400"; ctx.font = "bold 13px sans-serif";
+    ctx.fillText("어느 쪽도 아니면 여기!", x, y + 83);
+    ctx.restore();
+  }
+
+  function drawFallingBubble(x, y, num, scale = 1) {
+    ctx.save();
+    ctx.translate(x, y); ctx.scale(scale, scale);
+    ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#e67e22"; ctx.lineWidth = 3.5;
+    ctx.beginPath(); ctx.arc(0, 0, 36, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#2c3e50"; ctx.font = "bold 26px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(num, 0, 9);
+    ctx.restore();
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (scene <= 10) {
+      ctx.save();
+      ctx.strokeStyle = "#eef0f3"; ctx.lineWidth = 1;
+      for(let y = 80; y <= 450; y += 60) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(920, y); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    if (scene === 0) {
+      drawBar(140, 160, 3, 0, "길이 3", 0, "#f1c40f");
+      drawBar(140, 240, 6, 0, "길이 6", 0, "#3498db");
+    }
+    else if (scene === 1) {
+      drawBar(140, 230, 3, 0, "길이 3", 0, "#f1c40f");
+      drawBar(140, 300, 6, 0, "길이 6", 0, "#3498db");
+
+      if (scissorY > -50) {
+        drawScissors(scissorX, scissorY, scissorScale, 0.25);
+        drawScissorBubble(scissorX, scissorY, "수를 자르러 왔다! ✂️");
+      }
+    }
+    else if (scene === 2) {
+      drawBar(140, 160, 3, 1, "1씩 3개", cutOffset, "#f1c40f");
+      drawBar(140, 250, 6, 0, "길이 6 (대기 중)", 0, "#bdc3c7");
+      if (isCutting) drawScissors(scissorX, scissorY, scissorScale, scissorAngle);
+    }
+    else if (scene === 3) {
+      drawBar(140, 150, 3, 1, "1씩 3개", 8, "#f1c40f");
+      drawBar(140, 230, 6, 1, "1씩 6개", cutOffset, "#3498db");
+      if (isCutting) drawScissors(scissorX, scissorY, scissorScale, scissorAngle);
+    }
+    else if (scene === 4) {
+      drawBar(140, 150, 3, 1, "1씩 3개", 8, "#f1c40f");
+      drawBar(140, 230, 6, 2, "2씩 3개", cutOffset, "#2ecc71");
+      if (isCutting) drawScissors(scissorX, scissorY, scissorScale, scissorAngle);
+    }
+    else if (scene === 5) {
+      drawBar(140, 150, 3, 1, "1씩 3개", 8, "#f1c40f");
+      drawBar(140, 230, 6, 3, "3씩 2개", cutOffset, "#9b59b6");
+      if (isCutting) drawScissors(scissorX, scissorY, scissorScale, scissorAngle);
+    }
+    else if (scene >= 6 && scene <= 8) {
+      drawBar(120, 100, 3, 1, "1로만 쪼개짐", 6, "#f1c40f");
+      drawBar(120, 165, 6, 1, "1씩 자르기 가능", 4, "#3498db");
+      drawBar(120, 225, 6, 2, "2씩 자르기 가능", 6, "#2ecc71");
+      drawBar(120, 285, 6, 3, "3씩 자르기 가능", 8, "#9b59b6");
+    }
+    else if (scene === 9) {
+      ctx.save();
+      ctx.fillStyle = "#fffcf2"; ctx.strokeStyle = "#f39c12"; ctx.lineWidth = 2;
+      ctx.roundRect(40, 40, 410, 310, 12); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#d35400"; ctx.font = "bold 20px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("📌 3의 약수 : 1, 3 (2개)", 245, 75);
+
+      drawBar(70, 110, 3, 1, "1씩 3개", 4, "#f1c40f", 38, 32);
+      drawBar(70, 170, 3, 3, "3씩 1개 (통째)", 0, "#f39c12", 38, 32);
+
+      ctx.fillStyle = "#555"; ctx.font = "14px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("👉 1과 자기 자신(3)으로만 나누어 떨어짐!", 245, 270);
+      ctx.fillText("=> 나눌 수 있는 방법이 딱 1가지뿐!", 245, 295);
+
+      ctx.fillStyle = "#f4faff"; ctx.strokeStyle = "#2980b9"; ctx.lineWidth = 2;
+      ctx.roundRect(480, 40, 440, 310, 12); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#2980b9"; ctx.font = "bold 20px sans-serif";
+      ctx.fillText("📌 6의 약수 : 1, 2, 3, 6 (4개)", 700, 75);
+
+      drawBar(505, 100, 6, 1, "1씩 6개", 3, "#3498db", 32, 28);
+      drawBar(505, 145, 6, 2, "2씩 3개", 4, "#2ecc71", 32, 28);
+      drawBar(505, 190, 6, 3, "3씩 2개", 5, "#9b59b6", 32, 28);
+      drawBar(505, 235, 6, 6, "6씩 1개", 0, "#34495e", 32, 28);
+
+      ctx.fillStyle = "#555"; ctx.font = "14px sans-serif";
+      ctx.fillText("👉 1과 자신(6) 외에도 2, 3으로 똑같이 잘림!", 700, 295);
+      ctx.restore();
+    }
+    else if (scene === 10) {
+      ctx.save();
+      ctx.fillStyle = "#f8f9fa"; ctx.strokeStyle = "#34495e"; ctx.lineWidth = 2;
+      ctx.roundRect(140, 70, 320, 270, 14); ctx.fill(); ctx.stroke();
+      ctx.roundRect(500, 70, 320, 270, 14); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#e67e22"; ctx.font = "bold 22px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("소수 (Prime Number)", 300, 115);
+      ctx.fillStyle = "#2c3e50"; ctx.font = "bold 17px sans-serif"; ctx.fillText("예: 3 (약수: 1, 3)", 300, 155);
+      ctx.font = "15px sans-serif";
+      ctx.fillText("• 1보다 큰 자연수 중", 300, 195);
+      ctx.fillText("• 1과 자기 자신만을 약수로 가짐", 300, 225);
+      ctx.fillText("• 즉, 약수가 2개뿐인 수!", 300, 255);
+
+      ctx.fillStyle = "#2980b9"; ctx.font = "bold 22px sans-serif"; ctx.fillText("합성수 (Composite Number)", 660, 115);
+      ctx.fillStyle = "#2c3e50"; ctx.font = "bold 17px sans-serif"; ctx.fillText("예: 6 (약수: 1, 2, 3, 6)", 660, 155);
+      ctx.font = "15px sans-serif";
+      ctx.fillText("• 1보다 큰 자연수 중", 660, 195);
+      ctx.fillText("• 소수가 아닌 수", 660, 225);
+      ctx.fillText("• 즉, 약수가 3개 이상인 수!", 660, 255);
+      ctx.restore();
+    }
+    else if (scene >= 11 && scene <= 16) {
+      const originX = 260; const baselineY = 400; const unitPx = 54;
+
+      ctx.save();
+      ctx.fillStyle = "#fcf3cf"; ctx.strokeStyle = "#f39c12"; ctx.lineWidth = 2;
+      ctx.roundRect(180, 25, 600, 50, 12); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#b7950b"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("🎯 친구가 밟고 있는 수는 소수일까? 합성수일까?", 480, 56);
+      ctx.restore();
+
+      drawNumberLine(originX, baselineY, unitPx);
+
+      const heroX = 140;
+      drawDoodleChar(heroX, baselineY, 0.95, false);
+      drawBubble(heroX, baselineY, speechBubble1.text, false, 0);
+
+      const friendBubbleOffsetY = (scene >= 15) ? -55 : -35;
+      drawDoodleChar(quizFriendX, quizFriendY, 0.95, true);
+      drawBubble(quizFriendX, quizFriendY, speechBubble2.text, true, friendBubbleOffsetY);
+    }
+    else if (scene === 17) {
+      ctx.save();
+      ctx.fillStyle = "#fdfdfd"; ctx.fillRect(0, 0, 960, 580);
+      
+      const basketY = 380;
+      drawBasket(220, basketY, "소수 바구니", "#2ecc71", false);
+      drawTrashCan(480, basketY, false);
+      drawBasket(740, basketY, "합성수 바구니", "#f39c12", false);
+
+      drawDoodleChar(100, basketY + 30, 1.1, false);
+      drawBubble(100, basketY + 30, speechBubble1.text, false, -20);
+
+      drawDoodleChar(860, basketY + 30, 1.1, true);
+      drawBubble(860, basketY + 30, speechBubble2.text, true, -20);
+
+      ctx.fillStyle = "#8e44ad"; ctx.font = "bold 30px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("🧺 소수 · 합성수 & 휴지통 게임 (15문제)", 480, 110);
+
+      ctx.fillStyle = "#444"; ctx.font = "16px sans-serif";
+      ctx.fillText("소수는 [소수 바구니], 합성수는 [합성수 바구니]를 누르세요!", 480, 160);
+      ctx.fillStyle = "#c0392b"; ctx.font = "bold 16px sans-serif";
+      ctx.fillText("⚠️ 주의: 1은 소수도 합성수도 아니므로 가운데 [휴지통]에 버려야 합니다!", 480, 195);
+      ctx.restore();
+    }
+    else if (scene === 18) {
+      ctx.fillStyle = "#fdfdfd"; ctx.fillRect(0, 0, 960, 580);
+
+      ctx.fillStyle = "#2c3e50"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "left";
+      ctx.fillText(`진행: ${gameIndex + 1} / 15`, 30, 36);
+      ctx.fillText(`정답: ${gameScore} 개`, 30, 64);
+
+      ctx.fillStyle = "#7f8c8d"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("숫자를 보고 알맞은 바구니 또는 휴지통을 누르세요!", 480, 32);
+
+      let hoverPrime = (mouseX > 120 && mouseX < 320 && mouseY > 330 && mouseY < 520);
+      let hoverTrash = (mouseX > 400 && mouseX < 560 && mouseY > 330 && mouseY < 520);
+      let hoverComp = (mouseX > 640 && mouseX < 840 && mouseY > 330 && mouseY < 520);
+
+      const basketPrimeX = 220;
+      const trashX = 480;
+      const basketCompX = 740;
+      const basketY = 385;
+
+      drawBasket(basketPrimeX, basketY, "소수 바구니", "#2ecc71", hoverPrime);
+      drawTrashCan(trashX, basketY, hoverTrash);
+      drawBasket(basketCompX, basketY, "합성수 바구니", "#f39c12", hoverComp);
+
+      drawDoodleChar(90, basketY + 30, 1.05, false);
+      drawBubble(90, basketY + 30, "난 소수를 담을 거야!", false, -15);
+
+      drawDoodleChar(870, basketY + 30, 1.05, true);
+      drawBubble(870, basketY + 30, "난 합성수를 담을 거야!", true, -15);
+
+      if (gameIndex < gameData.length) {
+        if (gameStatus === 'falling') {
+          fallingY += fallingSpeed;
+          drawFallingBubble(fallingX, fallingY, gameData[gameIndex].num, 1.0);
+
+          if (fallingY > 430) {
+            gameResultMark = "시간 초과! ❌";
+            gameResultFormula = "";
+            gameResultDivs = "";
+            gameResultExp = "망설이지 말고 바구니나 휴지통을 클릭해봐!";
+            gameStatus = 'result';
+            setTimeout(nextGameQuestion, 1600);
+          }
+        }
+        else if (gameStatus === 'moving') {
+          fallingX += (targetBasketX - fallingX) * 0.18;
+          fallingY += (targetBasketY - fallingY) * 0.18;
+          fallingScale -= 0.04;
+
+          if (fallingScale <= 0.2) {
+            const currentItem = gameData[gameIndex];
+            if (gameSelectedType === currentItem.type) {
+              gameScore++;
+              gameResultMark = "정답! 🎉";
+            } else {
+              gameResultMark = "오답! ❌";
+            }
+            gameResultFormula = currentItem.formula;
+            gameResultDivs = `약수: ${currentItem.divs}`;
+            gameResultExp = currentItem.exp;
+            gameStatus = 'result';
+            setTimeout(nextGameQuestion, 2300);
+          } else {
+            drawFallingBubble(fallingX, fallingY, gameData[gameIndex].num, Math.max(fallingScale, 0));
+          }
+        }
+      }
+
+      if (gameStatus === 'result' && gameResultMark) {
+        ctx.save();
+        ctx.fillStyle = gameResultMark.includes("정답") ? "#27ae60" : "#c0392b";
+        ctx.textAlign = "center"; ctx.font = "bold 30px sans-serif";
+        ctx.fillText(gameResultMark, 480, 145);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#34495e";
+        ctx.lineWidth = 2;
+        ctx.roundRect(280, 168, 400, 102, 10);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#2980b9";
+        ctx.font = "bold 20px sans-serif";
+        ctx.fillText(gameResultFormula, 480, 198);
+
+        ctx.fillStyle = "#d35400";
+        ctx.font = "bold 17px sans-serif";
+        ctx.fillText(gameResultDivs, 480, 226);
+
+        ctx.fillStyle = "#555";
+        ctx.font = "14px sans-serif";
+        ctx.fillText(gameResultExp, 480, 252);
+        ctx.restore();
+      }
+    }
+    else if (scene === 19) {
+      ctx.fillStyle = "#fdfdfd"; ctx.fillRect(0, 0, 960, 580);
+
+      ctx.fillStyle = "#8e44ad"; ctx.font = "bold 36px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(`🎉 최종 결과: 15문제 중 ${gameScore}문제 정답!`, 480, 90);
+
+      ctx.save();
+      ctx.fillStyle = "#f8f9fa"; ctx.strokeStyle = "#34495e"; ctx.lineWidth = 2;
+      ctx.roundRect(180, 120, 600, 175, 14); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#2c3e50"; ctx.font = "bold 18px sans-serif";
+      ctx.fillText("🌟 완벽 정리: 자연수의 세 가지 분류", 480, 150);
+      ctx.font = "15px sans-serif"; ctx.fillStyle = "#555";
+      ctx.fillText("1️⃣ 1 : 약수가 1개뿐! (소수도 합성수도 아님)", 480, 185);
+      ctx.fillText("2️⃣ 소수 : 1보다 큰 자연수 중 약수가 2개뿐인 수 (2, 3, 5, 7, ...)", 480, 215);
+      ctx.fillText("3️⃣ 합성수 : 1보다 큰 자연수 중 약수가 3개 이상인 수 (4, 6, 8, 9, ...)", 480, 245);
+      ctx.fillStyle = "#d35400"; ctx.font = "bold 14px sans-serif";
+      ctx.fillText("💡 2는 소수 중 유일한 짝수라는 점 꼭 기억하세요!", 480, 275);
+      ctx.restore();
+
+      const charBaseY = 445;
+      drawDoodleChar(260, charBaseY, 1.1, false);
+      drawBubble(260, charBaseY, speechBubble1.text, false, -35);
+
+      drawDoodleChar(700, charBaseY, 1.1, true);
+      drawBubble(700, charBaseY, speechBubble2.text, true, 5);
+    }
+
+    if (scene <= 10) {
+      const charBaseY = (scene >= 6 && scene <= 8) ? 470 : (scene >= 9 ? 480 : (scene === 1 ? 460 : 420));
+      let charX = (scene >= 6) ? 280 : 480;
+      drawDoodleChar(charX, charBaseY, 1.0, false);
+      drawBubble(charX, charBaseY, speechBubble1.text, false);
+
+      if (scene >= 6) {
+        let friendX = 680;
+        drawDoodleChar(friendX, charBaseY, 1.0, true);
+        drawBubble(friendX, charBaseY, speechBubble2.text, true);
+      }
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+    mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+    
+    if (scene === 18 && gameStatus === 'falling') {
+      if ((mouseX > 120 && mouseX < 320 && mouseY > 320 && mouseY < 510) || 
+          (mouseX > 400 && mouseX < 560 && mouseY > 320 && mouseY < 510) || 
+          (mouseX > 640 && mouseX < 840 && mouseY > 320 && mouseY < 510)) {
+        canvas.style.cursor = 'pointer';
+      } else {
+        canvas.style.cursor = 'default';
+      }
+    } else {
+      canvas.style.cursor = 'default';
+    }
+  });
+
+  canvas.addEventListener('click', function(e) {
+    if (scene !== 18 || gameStatus !== 'falling') return;
+    
+    if (mouseX > 120 && mouseX < 320 && mouseY > 320 && mouseY < 510) {
+      catchNumber('prime', 220);
+    } 
+    else if (mouseX > 400 && mouseX < 560 && mouseY > 320 && mouseY < 510) {
+      catchNumber('trash', 480);
+    }
+    else if (mouseX > 640 && mouseX < 840 && mouseY > 320 && mouseY < 510) {
+      catchNumber('comp', 740);
+    }
+  });
+
+  function catchNumber(selectedType, targetX) {
+    gameSelectedType = selectedType;
+    targetBasketX = targetX;
+    targetBasketY = 385;
+    gameStatus = 'moving';
+    canvas.style.cursor = 'default';
+  }
+
+  function nextGameQuestion() {
+    gameResultMark = "";
+    gameResultFormula = "";
+    gameResultDivs = "";
+    gameResultExp = "";
+    gameIndex++;
+    if (gameIndex >= gameData.length) {
+      loadScene(19);
+    } else {
+      fallingX = 480;
+      fallingY = -50;
+      fallingScale = 1.0;
+      fallingSpeed += 0.07;
+      gameStatus = 'falling';
+    }
+  }
+
+  window.goPrev = function() {
+    if (scene > 0) loadScene(scene - 1);
+  };
+
+  window.goNext = function() {
+    if (scene < maxScene) loadScene(scene + 1);
+    else loadScene(0);
+  };
+
+  loadScene(0);
+  render();
+</script>
+</body>
+</html>
