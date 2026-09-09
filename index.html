@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>중1 수학 - 약수와 공약수 (완전판 & 함정 강화 15문제)</title>
+  <title>중1 수학 개념 탐구 자료실</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -13,727 +13,241 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      overflow: hidden;
+      padding: 20px;
     }
-    #game-container {
+    .wrapper {
       position: relative;
-      width: 960px;
-      height: 580px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 960px;
+    }
+    .side-canvas {
+      width: 150px;
+      height: 300px;
+    }
+    .menu-card {
       background: #ffffff;
+      width: 100%;
+      max-width: 580px;
+      padding: 34px 28px;
+      border-radius: 20px;
       border: 3px solid #222;
-      border-radius: 24px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+      text-align: center;
+      z-index: 2;
     }
-    canvas { 
-      position: absolute;
-      top: 0; left: 0;
-      display: block; width: 100%; height: 100%; 
-      z-index: 1;
+    h1 {
+      font-size: 26px;
+      color: #2c3e50;
+      margin-bottom: 6px;
     }
-    #ui-panel {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+    p.sub {
+      font-size: 16px;
+      font-weight: 700;
+      color: #34495e;
+      margin-bottom: 12px;
+    }
+    #lineCanvas {
+      display: block;
+      margin: 0 auto 22px auto;
+    }
+    .btn-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 14px;
+    }
+    .lesson-btn {
+      display: flex;
       align-items: center;
-      background: rgba(255, 255, 255, 0.96);
-      padding: 12px 28px;
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.12);
-      border: 1.5px solid #e2e8f0;
-      max-width: 95%;
-      z-index: 9999; 
+      justify-content: space-between;
+      padding: 18px 22px;
+      background: #f8f9fa;
+      border: 2px solid #ddd;
+      border-radius: 14px;
+      text-decoration: none;
+      color: #2c3e50;
+      font-size: 17px;
+      font-weight: bold;
+      transition: all 0.2s;
     }
-    .btn-row { display: flex; gap: 10px; align-items: center; }
-    .nav-btn {
-      background: #1e293b; color: #fff; border: none;
-      padding: 9px 22px; font-size: 15px; font-weight: bold;
-      border-radius: 12px; cursor: pointer; transition: all 0.2s;
+    .lesson-btn:hover {
+      background: #eef7ff;
+      border-color: #3498db;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
     }
-    .nav-btn:hover { background: #334155; }
-    .nav-btn:active { transform: scale(0.96); }
-    #status-text { font-size: 15px; color: #1e293b; font-weight: 800; text-align: center; }
+    .badge {
+      font-size: 13px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 800;
+    }
   </style>
 </head>
 <body>
 
-<div id="game-container">
-  <canvas id="canvas" width="960" height="580"></canvas>
-  <div id="ui-panel">
-    <span id="status-text">1단계: 막대기 9 소개</span>
-    <div class="btn-row" id="normal-controls">
-      <button id="prev-btn" class="nav-btn" onclick="goPrev()" style="display:none;">◀ 이전</button>
-      <button id="next-btn" class="nav-btn" onclick="goNext()">다음 ▶</button>
-    </div>
-    <div class="btn-row" id="result-controls" style="display:none;">
-      <button class="nav-btn" onclick="loadScene(0)">🏠 처음 화면으로</button>
-      <button class="nav-btn" onclick="loadScene(8)">◀ 설명 화면으로</button>
-      <button class="nav-btn" style="background:#8e44ad;" onclick="loadScene(9)">🔄 게임 다시하기</button>
+<div class="wrapper">
+  <!-- 왼쪽: 주인공 캔버스 -->
+  <canvas id="heroCanvas" class="side-canvas" width="150" height="300"></canvas>
+
+  <!-- 중앙: 메뉴 카드 -->
+  <div class="menu-card">
+    <h1>📐 중1 수학 개념 탐구</h1>
+    <p class="sub">뭐 부터 볼까?</p>
+
+    <!-- 카드 내부 수직선 표시 -->
+    <canvas id="lineCanvas" width="480" height="42"></canvas>
+
+    <div class="btn-list">
+      <a href="line.html" class="lesson-btn">
+        <span>1. 수직선에서 수 알아보기</span>
+        <span class="badge" style="background:#8e44ad;">수야수야</span>
+      </a>
+
+      <a href="prime.html" class="lesson-btn">
+        <span>2. 소수와 합성수 탐구</span>
+        <span class="badge" style="background:#27ae60;">이런수저런수</span>
+      </a>
+
+      <a href="gcd.html" class="lesson-btn">
+        <span>3. 공약수와 최대공약수</span>
+        <span class="badge" style="background:#e67e22;">약수약수</span>
+      </a>
     </div>
   </div>
+
+  <!-- 오른쪽: 친구 캔버스 -->
+  <canvas id="friendCanvas" class="side-canvas" width="150" height="300"></canvas>
 </div>
 
 <script>
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  const prevBtn = document.getElementById('prev-btn');
-  const nextBtn = document.getElementById('next-btn');
-  const statusText = document.getElementById('status-text');
-  const normalControls = document.getElementById('normal-controls');
-  const resultControls = document.getElementById('result-controls');
+  // 메뉴 카드 내부 미니 수직선 렌더링
+  function drawMiniNumberLine() {
+    const canvas = document.getElementById('lineCanvas');
+    const ctx = canvas.getContext('2d');
+    const baselineY = 16;
+    const startX = 25;
+    const endX = 455;
+    const unit = 70;
+    const originX = 240; // 0의 위치
 
-  let scene = 0;
-  let replyTimer = null;
-
-  let speechBubble1 = { text: "" };
-  let speechBubble2 = { text: "" };
-  let cancelProgress = 0;
-
-  let mouseX = 0;
-  let mouseY = 0;
-
-  // --- '최대공약수' vs '최대공약수가 아닌 공약수' 15문제 데이터 ---
-  const gameData = [
-    { pair: "12와 18", num: "6", type: "gcd", exp: "12와 18을 나눌 수 있는 가장 큰 수니까 [최대공약수]!" },
-    { pair: "12와 18", num: "2", type: "cd", exp: "공약수(1, 2, 3, 6)이지만 제일 큰 6은 아니므로 [최대공약수 아닌 공약수]!" },
-    { pair: "8과 20", num: "4", type: "gcd", exp: "8과 20을 둘 다 가장 크게 자를 수 있으므로 [최대공약수]!" },
-    { pair: "8과 20", num: "2", type: "cd", exp: "최대공약수 4보다 작은 공약수니까 [최대공약수 아닌 공약수]!" },
-    { pair: "15와 30", num: "15", type: "gcd", exp: "15 자체가 30을 나누므로 둘의 가장 큰 공약수는 바로 [최대공약수 15]!" },
-    { pair: "15와 30", num: "5", type: "cd", exp: "15의 약수(1, 3, 5, 15) 중 하나지만 최대는 아니니 [최대공약수 아닌 공약수]!" },
-    { pair: "9와 24", num: "3", type: "gcd", exp: "9와 24를 나눌 수 있는 제일 큰 수! 바로 [최대공약수]!" },
-    { pair: "9와 24", num: "1", type: "cd", exp: "1은 두 수의 공약수이지만 최대인 3이 아니니 [최대공약수 아닌 공약수]!" },
-    { pair: "16과 24", num: "8", type: "gcd", exp: "16과 24를 가장 크게 나누는 수는 [최대공약수 8]!" },
-    { pair: "16과 24", num: "4", type: "cd", exp: "8보다 작은 공약수니까 [최대공약수 아닌 공약수]!" },
-    { pair: "18과 24", num: "6", type: "gcd", exp: "함정 조심! 둘을 동시에 나누는 수 중 가장 큰 [최대공약수]는 6!" },
-    { pair: "14와 28", num: "14", type: "gcd", exp: "28이 14의 배수이므로 작은 수인 14 자체가 [최대공약수]!" },
-    { pair: "8과 9", num: "1", type: "gcd", exp: "공약수가 1밖에 없는 서로소 관계! 따라서 1이 곧 [최대공약수]!" },
-    { pair: "18과 36", num: "9", type: "cd", exp: "9로도 나누어지지만 더 큰 18이 최대공약수! 따라서 9는 [최대공약수 아닌 공약수]!" },
-    { pair: "20과 30", num: "5", type: "cd", exp: "둘의 최대공약수는 10이야! 따라서 5는 [최대공약수 아닌 공약수]!" }
-  ];
-
-  let gameIndex = 0;
-  let gameScore = 0;
-  let gameStatus = 'falling';
-  let fallingX = 480;
-  let fallingY = -30;
-  let fallingScale = 1.0;
-  let targetBasketX = 480;
-  let targetBasketY = 360;
-  let gameSelectedType = "";
-  let gameResultMark = "";
-  let gameResultExp = "";
-
-  function drawRoundedRect(x, y, width, height, radius) {
+    // 중심선
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#34495e";
     ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
+    ctx.moveTo(startX, baselineY);
+    ctx.lineTo(endX, baselineY);
+    ctx.stroke();
+
+    // 양쪽 화살표
+    ctx.fillStyle = "#34495e";
+    ctx.beginPath();
+    ctx.moveTo(endX, baselineY); ctx.lineTo(endX - 8, baselineY - 4); ctx.lineTo(endX - 8, baselineY + 4); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(startX, baselineY); ctx.lineTo(startX + 8, baselineY - 4); ctx.lineTo(startX + 8, baselineY + 4); ctx.fill();
+
+    // 눈금 및 라벨 (-3 ~ 3)
+    ctx.font = "bold 13px sans-serif";
+    ctx.textAlign = "center";
+    for (let n = -3; n <= 3; n++) {
+      const x = originX + n * unit;
+      const isZero = (n === 0);
+
+      ctx.lineWidth = isZero ? 2.5 : 1.5;
+      ctx.strokeStyle = isZero ? "#e74c3c" : "#7f8c8d";
+      ctx.beginPath();
+      ctx.moveTo(x, baselineY - (isZero ? 7 : 4));
+      ctx.lineTo(x, baselineY + (isZero ? 7 : 4));
+      ctx.stroke();
+
+      ctx.fillStyle = isZero ? "#e74c3c" : "#555";
+      ctx.fillText(n, x, baselineY + 18);
+    }
   }
 
-  function drawDoodleChar(x, y, scale = 1, isFriend = false, eyeType = 'normal') {
-    ctx.save(); 
-    ctx.translate(x, y); 
-    ctx.scale(scale, scale);
-    ctx.lineWidth = 3 / scale; 
-    ctx.strokeStyle = "#111"; 
+  // 양쪽 캐릭터 그리기
+  function drawChar(ctx, x, y, isFriend = false) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#111";
     ctx.fillStyle = "#fff";
     
     // 머리
-    ctx.beginPath(); 
-    ctx.arc(0, -50, 16, 0, Math.PI * 2); 
-    ctx.fill(); 
-    ctx.stroke();
-    
+    ctx.beginPath();
+    ctx.arc(0, -50, 18, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
     // 친구 모자
-    if (isFriend) { 
-      ctx.fillStyle = "#3498db"; 
-      ctx.beginPath(); 
-      ctx.arc(0, -62, 14, Math.PI, Math.PI * 2); 
-      ctx.fill(); 
-      ctx.stroke(); 
+    if (isFriend) {
+      ctx.fillStyle = "#3498db";
+      ctx.beginPath();
+      ctx.arc(0, -64, 15, Math.PI, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
     }
-    
-    // 눈 모양
+
+    // 눈
     ctx.fillStyle = "#111";
-    if (eyeType === 'sigh' || eyeType === 'dizzy') { 
-      ctx.fillRect(-10, -52, 6, 2); ctx.fillRect(4, -52, 6, 2); 
-    } else if (eyeType === 'doubt') {
-      ctx.beginPath(); ctx.arc(-5, -52, 2.5, 0, Math.PI * 2); ctx.fill();
-      ctx.fillRect(3, -53, 7, 2.5);
-    } else { 
-      ctx.beginPath(); 
-      ctx.arc(-5, -52, 2.5, 0, Math.PI * 2); 
-      ctx.arc(5, -52, 2.5, 0, Math.PI * 2); 
-      ctx.fill(); 
-    }
-    
+    ctx.beginPath();
+    ctx.arc(-5, -52, 2.5, 0, Math.PI * 2);
+    ctx.arc(5, -52, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
     // 몸통 & 팔다리
-    ctx.beginPath(); ctx.moveTo(0, -34); ctx.lineTo(0, -10); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, -25); ctx.lineTo(-12, -15); ctx.moveTo(0, -25); ctx.lineTo(12, -15); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(-8, 0); ctx.moveTo(0, -10); ctx.lineTo(8, 0); ctx.stroke();
-    
+    ctx.beginPath();
+    ctx.moveTo(0, -32); ctx.lineTo(0, -6); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, -22); ctx.lineTo(-14, -12);
+    ctx.moveTo(0, -22); ctx.lineTo(14, -12);
+    ctx.moveTo(0, -6); ctx.lineTo(-9, 8);
+    ctx.moveTo(0, -6); ctx.lineTo(9, 8);
+    ctx.stroke();
     ctx.restore();
   }
 
-  function drawBubble(x, y, text, isFriend = false, offsetX = 0, offsetY = 0) {
-    if (!text) return;
+  // 말풍선 그리기
+  function drawBubble(ctx, x, y, text, isFriend = false) {
     ctx.save();
-    ctx.font = "bold 15px 'Pretendard', sans-serif";
-    const lines = text.split('\n');
-    let maxW = 0;
-    lines.forEach(l => { maxW = Math.max(maxW, ctx.measureText(l).width); });
-    
-    const boxW = Math.max(maxW + 28, 140);
-    const boxH = Math.max(lines.length * 22 + 18, 46);
+    ctx.font = "bold 13px 'Pretendard', sans-serif";
+    const textW = ctx.measureText(text).width;
+    const boxW = textW + 20;
+    const boxH = 34;
 
-    const drawX = x + offsetX;
-    const targetY = (isFriend ? y - 165 : y - 135) + offsetY - (lines.length > 1 ? 18 : 0);
-    
-    ctx.fillStyle = isFriend ? "#e8f4fd" : "rgba(255, 255, 255, 0.98)";
+    ctx.fillStyle = isFriend ? "#e8f4fd" : "#fff";
     ctx.strokeStyle = isFriend ? "#2980b9" : "#222";
     ctx.lineWidth = 2;
-
-    drawRoundedRect(drawX - boxW / 2, targetY, boxW, boxH, 10);
-    ctx.fill(); 
-    ctx.stroke();
+    ctx.beginPath();
+    ctx.roundRect(x - boxW / 2, y, boxW, boxH, 8);
+    ctx.fill(); ctx.stroke();
 
     ctx.beginPath();
-    const tailBaseX = drawX - offsetX * 0.4;
-    ctx.moveTo(tailBaseX - 5, targetY + boxH);
-    ctx.lineTo(x, targetY + boxH + 8);
-    ctx.lineTo(tailBaseX + 5, targetY + boxH);
-    ctx.fillStyle = isFriend ? "#e8f4fd" : "#fff";
-    ctx.fill();
-    ctx.stroke();
+    ctx.moveTo(x - 5, y + boxH);
+    ctx.lineTo(x, y + boxH + 6);
+    ctx.lineTo(x + 5, y + boxH);
+    ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = "#111";
     ctx.textAlign = "center";
-    lines.forEach((l, idx) => {
-      ctx.fillText(l, drawX, targetY + 22 + (idx * 21));
-    });
+    ctx.fillText(text, x, y + 21);
     ctx.restore();
   }
 
-  const U = 44;
-  function drawBar(x, y, length, label, color = "#f1c40f", alpha = 1.0) {
-    const width = length * U;
-    const height = 52;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = color;
-    ctx.strokeStyle = "#222";
-    ctx.lineWidth = 2.5;
-
-    drawRoundedRect(x, y, width, height, 8);
-    ctx.fill();
-    ctx.stroke();
-    
-    ctx.fillStyle = "#111";
-    ctx.font = "bold 16px 'Pretendard', sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(label, x + width / 2, y + height / 2);
-    ctx.restore();
-    return width;
-  }
-
-  function drawBigFraction(x, y, num, den, numColor = "#111", denColor = "#111") {
-    ctx.save();
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = "bold 46px 'Pretendard', sans-serif";
-    
-    ctx.fillStyle = numColor;
-    ctx.fillText(num, x, y - 34);
-
-    ctx.strokeStyle = "#222";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(x - 32, y);
-    ctx.lineTo(x + 32, y);
-    ctx.stroke();
-
-    ctx.fillStyle = denColor;
-    ctx.fillText(den, x, y + 34);
-    ctx.restore();
-  }
-
-  function drawBasket(x, y, labelTop, labelBottom, color, isHover = false) {
-    ctx.save();
-    if(isHover) { ctx.translate(x, y); ctx.scale(1.04, 1.04); ctx.translate(-x, -y); }
-    
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(x - 90, y - 25); ctx.lineTo(x + 90, y - 25);
-    ctx.lineTo(x + 68, y + 55); ctx.lineTo(x - 68, y + 55);
-    ctx.fill();
-    ctx.lineWidth = 3; ctx.strokeStyle = "#222"; ctx.stroke();
-    
-    ctx.fillStyle = "rgba(0,0,0,0.12)";
-    ctx.beginPath(); ctx.ellipse(x, y - 25, 90, 16, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-
-    ctx.fillStyle = "#111"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
-    if (labelBottom) {
-      ctx.fillText(labelTop, x, y + 84);
-      ctx.font = "bold 14px sans-serif"; ctx.fillStyle = "#475569";
-      ctx.fillText(labelBottom, x, y + 104);
-    } else {
-      ctx.fillText(labelTop, x, y + 90);
-    }
-    ctx.restore();
-  }
-
-  function drawFallingBubble(x, y, num, scale = 1) {
-    ctx.save();
-    ctx.translate(x, y); ctx.scale(scale, scale);
-    ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#e67e22"; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.arc(0, 0, 38, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#1e293b"; ctx.font = "bold 26px sans-serif"; ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(num, 0, 0);
-    ctx.restore();
-  }
-
-  function setDialogue(speaker1, text1, speaker2, text2, delay = 850) {
-    if (replyTimer) clearTimeout(replyTimer);
-    speechBubble1.text = ""; 
-    speechBubble2.text = "";
-
-    if (speaker1 === 'char') speechBubble1.text = text1; 
-    else if (speaker1 === 'friend') speechBubble2.text = text1;
-
-    if (text2 && speaker2) {
-      replyTimer = setTimeout(() => {
-        if (speaker2 === 'char') speechBubble1.text = text2; 
-        else if (speaker2 === 'friend') speechBubble2.text = text2;
-      }, delay);
-    }
-  }
-
-  function loadScene(newScene) {
-    scene = newScene;
-    if (replyTimer) clearTimeout(replyTimer);
-    cancelProgress = 0;
-
-    prevBtn.style.display = (scene > 0 && scene <= 8) ? "inline-block" : "none";
-    
-    if (scene <= 8) {
-      normalControls.style.display = "flex";
-      resultControls.style.display = "none";
-      nextBtn.innerText = (scene === 8) ? "게임 시작하기 ▶" : "다음 ▶";
-    } else if (scene === 9) {
-      normalControls.style.display = "none";
-      resultControls.style.display = "none";
-      statusText.innerText = `🎮 문제 ${gameIndex + 1} / 15 : 알맞은 바구니를 클릭하세요!`;
-      gameIndex = 0;
-      gameScore = 0;
-      gameStatus = 'falling';
-      fallingX = 480;
-      fallingY = -30;
-      fallingScale = 1.0;
-      gameResultMark = "";
-      gameResultExp = "";
-    } else if (scene === 10) {
-      normalControls.style.display = "none";
-      resultControls.style.display = "flex";
-      statusText.innerText = "🎉 15문제 완료! 복습 결과를 확인하세요.";
-      setDialogue('char', `15문제 중 ${gameScore}문제를 맞췄어!`, 
-                  'friend', gameScore >= 12 ? "똥쟁이 대단해! 함정 문제까지 완벽하게 간파했네!" : "똥쟁이 수고했어! 헷갈렸던 문제만 조금 더 복습해보자!", 800);
-    }
-
-    switch(scene) {
-      case 0:
-        statusText.innerText = "1단계: 막대기 9 소개";
-        setDialogue('char', "짜잔~ 하하 내가 막대기 9를 줏어왔어", 
-                    'friend', "9라 ~ 흠 1, 3, 9를 약수로\n가진 친구군", 800);
-        break;
-
-      case 1:
-        statusText.innerText = "2단계: 막대기 6 소개";
-        setDialogue('char', "이번엔 막대기 6을 보여줄게", 
-                    'friend', "6은 9보다 작은데 약수는\n1, 2, 3, 6  —  총 4개다 ㅋㅋ", 800);
-        break;
-
-      case 2:
-        statusText.innerText = "3단계: 공통 약수 3 발견";
-        setDialogue('char', "약수 중 3이 공통이네?", 
-                    'friend', "그래 둘이 똑같이 3으로 나눌 수 있어!", 800);
-        break;
-
-      case 3:
-        statusText.innerText = "4단계: 2로는 못 나누나?";
-        setDialogue('char', "그럼 2로는 못 나누나?", 
-                    'friend', "맞아 2는 9를 나누면\n나머지가 남잖아!", 800);
-        break;
-
-      case 4:
-        statusText.innerText = "5단계: 공약수 3으로 비교하기";
-        setDialogue('char', "그럼 둘 다 같이 똑같이 나눌 수 있는 수는\n뭐라고 불러?", 
-                    'friend', "공통으로 둘 다 같이 쪼갤 수 있어서\n'공약수'라고 해! 바로 3처럼!", 800);
-        break;
-
-      case 5:
-        statusText.innerText = "6단계: 분수 약분할 때 쓴다!";
-        setDialogue('char', "근데 이 공약수는 어디다가 쓰냐…\n점점 알수록 이름만 새로 생기네", 
-                    'friend', "예를 들면 분수 약분할 때!\n같은 크기 2가 싹 지워지면서 1이 돼.", 800);
-        break;
-
-      case 6:
-        statusText.innerText = "7단계: 6과 12의 공약수와 최대공약수";
-        setDialogue('char', "그럼 6하고 12는 1, 2, 3, 6\n약수를 가지고 있네.", 
-                    'friend', "맞아 공약수 중 제일 큰 애 6을\n최대공약수라고 해.", 800);
-        break;
-
-      case 7:
-        // ★ 요청 피드백 반영: 친구 멘트 수정
-        statusText.innerText = "8단계: 최대공약수와 약수의 관계";
-        setDialogue('char', "최대공약수 6으로 자를 수 있다는 얘기네", 
-                    'friend', "그래 ! 1, 2, 3, 6 공약수로\n두 수를 다 자를 수 있는데\n그중 6이 제일 크지", 850);
-        break;
-
-      case 8:
-        statusText.innerText = "9단계: 알쏭달쏭한 정리";
-        setDialogue('char', "수가 두 개 나와야 공약수를 구한다는 건 알겠다.", 
-                    'friend', "최대공약수를 먼저 구하면 공약수들\n구하기 쉬운데... 그거 이해했나?", 850);
-        break;
-    }
-  }
-
-  function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.strokeStyle = "#f1f5f9";
-    ctx.lineWidth = 1.5;
-    for (let y = 60; y <= 360; y += 45) {
-      ctx.beginPath(); ctx.moveTo(50, y); ctx.lineTo(910, y); ctx.stroke();
-    }
-
-    const startX = 80;
-
-    // 시나리오 화면 (0~8단계)
-    if (scene <= 8) {
-      if (scene === 0) {
-        drawBar(startX, 105, 9, "막대기 9  (약수: 1, 3, 9)", "#f1c40f");
-      } 
-      else if (scene === 1) {
-        drawBar(startX, 75, 9, "막대기 9  (약수: 1, 3, 9)", "#f1c40f");
-        drawBar(startX, 145, 6, "막대기 6  (약수: 1, 2, 3, 6)", "#38bdf8");
-      }
-      else if (scene === 2) {
-        let total9W = 3 * (3 * U + 6);
-        drawBar(startX, 75, 3, "3씩", "#2ecc71");
-        drawBar(startX + 3*U + 6, 75, 3, "3씩", "#2ecc71");
-        drawBar(startX + 6*U + 12, 75, 3, "3씩", "#2ecc71");
-        
-        ctx.fillStyle = "#1e293b"; ctx.font = "bold 17px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("= 9 (3도막)", startX + total9W + 25, 107);
-
-        let total6W = 2 * (3 * U + 6);
-        drawBar(startX, 145, 3, "3씩", "#9b59b6");
-        drawBar(startX + 3*U + 6, 145, 3, "3씩", "#9b59b6");
-        ctx.fillText("= 6 (2도막)", startX + total6W + 25, 177);
-      }
-      else if (scene === 3) {
-        let curX = startX;
-        for (let i = 0; i < 4; i++) {
-          drawBar(curX, 75, 2, "2씩", "#f1c40f");
-          curX += 2 * U + 6;
-        }
-        drawBar(curX, 75, 1, "남음 1", "#e74c3c");
-        ctx.fillStyle = "#c0392b"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("≠ 9 (나머지 1 남음!)", curX + 1*U + 25, 107);
-
-        curX = startX;
-        for (let i = 0; i < 3; i++) {
-          drawBar(curX, 145, 2, "2씩", "#38bdf8");
-          curX += 2 * U + 6;
-        }
-        ctx.fillStyle = "#27ae60"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("= 6 (2로 나누어떨어짐)", curX + 25, 177);
-      }
-      else if (scene === 4) {
-        const leftX = 75;
-        const rightX = 520;
-
-        ctx.fillStyle = "#d97706"; ctx.font = "bold 17px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("막대기 9 (3으로 3도막)", leftX, 70);
-        drawBar(leftX, 85, 3, "3", "#2ecc71");
-        drawBar(leftX + 3*U + 6, 85, 3, "3", "#2ecc71");
-        drawBar(leftX + 6*U + 12, 85, 3, "3", "#2ecc71");
-
-        ctx.fillStyle = "#0284c7"; ctx.font = "bold 17px sans-serif";
-        ctx.fillText("막대기 6 (3으로 2도막)", rightX, 70);
-        drawBar(rightX, 85, 3, "3", "#2ecc71");
-        drawBar(rightX + 3*U + 6, 85, 3, "3", "#2ecc71");
-
-        ctx.fillStyle = "#047857"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText("✨ 둘 다 똑같이 잘라낼 수 있는 공통 크기 = '3' (공약수) ✨", 480, 185);
-      }
-      else if (scene === 5) {
-        if (cancelProgress < 1) cancelProgress += 0.015;
-
-        const fracX = 140;
-        const barStartX = 290;
-        const barY_num = 70;
-        const barY_den = 145;
-
-        drawBigFraction(fracX, 125, "2", "4", "#0284c7", "#7c3aed");
-
-        ctx.fillStyle = "#333"; ctx.font = "bold 38px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText("=", 225, 127);
-
-        const alphaVal = Math.max(1 - cancelProgress * 1.3, 0);
-        drawBar(barStartX, barY_num, 2, "2", "#38bdf8", alphaVal);
-        drawBar(barStartX, barY_den, 2, "2", "#c084fc", alphaVal);
-        drawBar(barStartX + 2*U + 6, barY_den, 2, "2", "#c084fc", 1.0);
-
-        if (cancelProgress > 0.1) {
-          ctx.save();
-          ctx.strokeStyle = "#e11d48"; ctx.lineWidth = 4;
-          const lineLen = Math.min(cancelProgress * 1.5, 1);
-          ctx.beginPath();
-          ctx.moveTo(barStartX - 5, barY_num + 56);
-          ctx.lineTo(barStartX - 5 + (2*U + 12) * lineLen, barY_num + 56 - 60 * lineLen);
-          ctx.stroke();
-
-          ctx.beginPath();
-          ctx.moveTo(barStartX - 5, barY_den + 56);
-          ctx.lineTo(barStartX - 5 + (2*U + 12) * lineLen, barY_den + 56 - 60 * lineLen);
-          ctx.stroke();
-          ctx.restore();
-        }
-
-        if (cancelProgress > 0.4) {
-          ctx.save();
-          ctx.fillStyle = "#e11d48"; ctx.font = "bold 28px 'Pretendard', sans-serif"; ctx.textAlign = "center";
-          const numAlpha = Math.min((cancelProgress - 0.4) * 2, 1);
-          ctx.globalAlpha = numAlpha;
-          ctx.fillText("1", barStartX + U, barY_num + 30);
-          ctx.fillText("1", barStartX + U, barY_den + 30);
-          ctx.restore();
-        }
-
-        if (cancelProgress > 0.6) {
-          ctx.save();
-          const resAlpha = Math.min((cancelProgress - 0.6) * 2.5, 1);
-          ctx.globalAlpha = resAlpha;
-          ctx.fillStyle = "#333"; ctx.font = "bold 36px sans-serif"; ctx.textAlign = "center";
-          ctx.fillText("➔", 630, 127);
-          drawBigFraction(730, 125, "1", "2", "#e11d48", "#7c3aed");
-          ctx.fillStyle = "#047857"; ctx.font = "bold 16px sans-serif";
-          ctx.fillText("공약수 2로 약분 완료!", 730, 205);
-          ctx.restore();
-        }
-      }
-      else if (scene === 6) {
-        drawBar(startX, 75, 6, "6의 약수: [1, 2, 3, 6]", "#38bdf8");
-        drawBar(startX, 145, 12, "12의 약수: [1, 2, 3, 4, 6, 12]", "#fb923c");
-        ctx.fillStyle = "#8e44ad"; ctx.font = "bold 17px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("공통 약수 = 1, 2, 3, 6   ➔   이 중 제일 큰 애 '6'이 바로 최대공약수!", startX, 230);
-      }
-      else if (scene === 7) {
-        ctx.fillStyle = "#0f172a"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("🔍 12와 18의 최대공약수(6)로 두 수 자르기", startX, 55);
-
-        ctx.fillStyle = "#0284c7"; ctx.font = "bold 15px sans-serif";
-        ctx.fillText("막대기 12 (6씩 2도막)", startX, 80);
-        drawBar(startX, 88, 6, "최대공약수 6", "#06b6d4");
-        drawBar(startX + 6*U + 6, 88, 6, "최대공약수 6", "#06b6d4");
-
-        ctx.fillStyle = "#7c3aed"; ctx.font = "bold 15px sans-serif";
-        ctx.fillText("막대기 18 (6씩 3도막)", startX, 160);
-        drawBar(startX, 168, 6, "최대공약수 6", "#a855f7");
-        drawBar(startX + 6*U + 6, 168, 6, "최대공약수 6", "#a855f7");
-        drawBar(startX + 12*U + 12, 168, 6, "최대공약수 6", "#a855f7");
-      }
-      else if (scene === 8) {
-        ctx.fillStyle = "#0f172a"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText("💡 최대공약수 6을 알면?  ➔  6의 약수 [1, 2, 3, 6]이 곧 모든 공약수!", 480, 80);
-        drawBar(250, 115, 5, "최대공약수 6의 약수", "#ec4899");
-        drawBar(500, 115, 5, "두 수의 모든 공약수!", "#f43f5e");
-      }
-
-      // 시나리오 캐릭터 높이
-      const charLineX = 290;
-      const charFriendX = 670;
-      const groundY = 470;
-
-      const lineBubbleOffsetX = (scene === 7 || scene === 8) ? 45 : 15;
-      drawDoodleChar(charLineX, groundY, 1.1, false, 'normal');
-      drawBubble(charLineX, groundY, speechBubble1.text, false, lineBubbleOffsetX);
-
-      drawDoodleChar(charFriendX, groundY, 1.1, true, scene === 8 ? 'doubt' : 'normal');
-      drawBubble(charFriendX, groundY, speechBubble2.text, true, -10);
-    }
-
-    // 15문제 바구니 게임 (scene === 9)
-    else if (scene === 9) {
-      const q = gameData[gameIndex];
-
-      ctx.fillStyle = "#1e293b"; ctx.font = "bold 22px sans-serif"; ctx.textAlign = "center";
-      ctx.fillText(`두 수: [ ${q.pair} ]`, 480, 45);
-
-      ctx.fillStyle = "#64748b"; ctx.font = "bold 15px sans-serif";
-      ctx.fillText("떨어지는 숫자는 어느 바구니에 들어갈까요?", 480, 75);
-
-      ctx.fillStyle = "#0284c7"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "left";
-      ctx.fillText(`진행: ${gameIndex + 1} / 15`, 40, 45);
-      ctx.fillText(`점수: ${gameScore} 점`, 40, 75);
-
-      const basketGcdX = 290;
-      const basketCdX = 670;
-      const basketY = 360;
-
-      let hoverGcd = (mouseX > 190 && mouseX < 390 && mouseY > 300 && mouseY < 460);
-      let hoverCd = (mouseX > 570 && mouseX < 770 && mouseY > 300 && mouseY < 460);
-
-      drawBasket(basketGcdX, basketY, "최대공약수 바구니", "(가장 큰 공약수)", "#ef4444", hoverGcd);
-      drawBasket(basketCdX, basketY, "공약수 바구니", "(최대공약수가 아닌 공약수)", "#3b82f6", hoverCd);
-
-      drawDoodleChar(120, basketY + 30, 1.1, false, 'normal');
-      drawDoodleChar(840, basketY + 30, 1.1, true, 'normal');
-
-      if (gameStatus === 'falling') {
-        fallingY += 1.8;
-        drawFallingBubble(fallingX, fallingY, q.num, 1.0);
-
-        if (fallingY > 370) {
-          gameResultMark = "앗, 놓쳤다! ❌";
-          gameResultExp = "화면의 바구니를 직접 클릭해야 해!";
-          gameStatus = 'result';
-          setTimeout(nextGameQuestion, 1600);
-        }
-      } 
-      else if (gameStatus === 'moving') {
-        fallingX += (targetBasketX - fallingX) * 0.15;
-        fallingY += (targetBasketY - fallingY) * 0.15;
-        fallingScale -= 0.035;
-
-        if (fallingScale <= 0.2) {
-          if (gameSelectedType === q.type) {
-            gameScore++;
-            gameResultMark = "정답! 🎉";
-          } else {
-            gameResultMark = "오답! ❌";
-          }
-          gameResultExp = q.exp;
-          gameStatus = 'result';
-          setTimeout(nextGameQuestion, 1800);
-        } else {
-          drawFallingBubble(fallingX, fallingY, q.num, Math.max(fallingScale, 0));
-        }
-      }
-
-      if (gameStatus === 'result' && gameResultMark) {
-        ctx.fillStyle = gameResultMark.includes("정답") ? "#16a34a" : "#dc2626";
-        ctx.textAlign = "center"; ctx.font = "bold 32px sans-serif";
-        ctx.fillText(gameResultMark, 480, 180);
-        ctx.fillStyle = "#1e293b"; ctx.font = "bold 19px sans-serif";
-        ctx.fillText(gameResultExp, 480, 220);
-      }
-    }
-
-    // 최종 결과 화면 (scene === 10)
-    else if (scene === 10) {
-      ctx.fillStyle = "#8e44ad"; ctx.font = "bold 36px sans-serif"; ctx.textAlign = "center";
-      ctx.fillText(`최종 결과: 15문제 중 ${gameScore}문제 정답!`, 480, 75);
-
-      ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
-      drawRoundedRect(250, 105, 460, 95, 16);
-      ctx.fill(); ctx.stroke();
-
-      ctx.fillStyle = "#0f172a"; ctx.font = "bold 16px sans-serif";
-      ctx.fillText("★ 핵심 정리 복습", 480, 132);
-      ctx.font = "14.5px sans-serif"; ctx.fillStyle = "#475569";
-      ctx.fillText("1. 두 수를 동시에 똑같이 나눌 수 있는 수는 '공약수'", 480, 158);
-      ctx.fillText("2. 그 공약수들 중 가장 큰 대장은 '최대공약수'", 480, 178);
-
-      const charLineX = 270;
-      const charFriendX = 690;
-      const groundY = 410;
-
-      drawDoodleChar(charLineX, groundY, 1.1, false, gameScore >= 12 ? 'normal' : 'sigh');
-      drawBubble(charLineX, groundY, speechBubble1.text, false, 30);
-
-      drawDoodleChar(charFriendX, groundY, 1.1, true, 'normal');
-      drawBubble(charFriendX, groundY, speechBubble2.text, true, -30);
-    }
-
-    requestAnimationFrame(render);
-  }
-
-  canvas.addEventListener('mousemove', function(e) {
-    const rect = canvas.getBoundingClientRect();
-    mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
-    mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
-
-    if (scene === 9 && gameStatus === 'falling') {
-      if ((mouseX > 190 && mouseX < 390 && mouseY > 300 && mouseY < 460) ||
-          (mouseX > 570 && mouseX < 770 && mouseY > 300 && mouseY < 460)) {
-        canvas.style.cursor = 'pointer';
-      } else {
-        canvas.style.cursor = 'default';
-      }
-    } else {
-      canvas.style.cursor = 'default';
-    }
-  });
-
-  canvas.addEventListener('click', function(e) {
-    if (scene !== 9 || gameStatus !== 'falling') return;
-
-    if (mouseX > 190 && mouseX < 390 && mouseY > 300 && mouseY < 460) {
-      catchNumber('gcd');
-    } else if (mouseX > 570 && mouseX < 770 && mouseY > 300 && mouseY < 460) {
-      catchNumber('cd');
-    }
-  });
-
-  function catchNumber(type) {
-    gameSelectedType = type;
-    targetBasketX = (type === 'gcd') ? 290 : 670;
-    targetBasketY = 360;
-    gameStatus = 'moving';
-    canvas.style.cursor = 'default';
-  }
-
-  function nextGameQuestion() {
-    gameIndex++;
-    if (gameIndex >= gameData.length) {
-      loadScene(10);
-    } else {
-      statusText.innerText = `🎮 문제 ${gameIndex + 1} / 15 : 알맞은 바구니를 클릭하세요!`;
-      fallingX = 480;
-      fallingY = -30;
-      fallingScale = 1.0;
-      gameStatus = 'falling';
-      gameResultMark = "";
-      gameResultExp = "";
-    }
-  }
-
-  window.goPrev = function() {
-    if (scene > 0) loadScene(scene - 1);
-  };
-
-  window.goNext = function() {
-    if (scene < 9) loadScene(scene + 1);
-  };
-
-  // 초기 실행
-  loadScene(0);
-  render();
+  // 실행
+  drawMiniNumberLine();
+
+  const heroCanvas = document.getElementById('heroCanvas');
+  const hCtx = heroCanvas.getContext('2d');
+  drawChar(hCtx, 75, 235, false);
+  drawBubble(hCtx, 75, 125, "수학 놀자!", false);
+
+  const friendCanvas = document.getElementById('friendCanvas');
+  const fCtx = friendCanvas.getContext('2d');
+  drawChar(fCtx, 75, 235, true);
+  drawBubble(fCtx, 75, 125, "골라봐!", true);
 </script>
+
 </body>
 </html>
