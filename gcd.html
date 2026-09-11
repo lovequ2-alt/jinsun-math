@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>중1 수학 - 약수와 공약수 (모바일 세로 맞춤 반응형)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>중1 수학 - 약수와 공약수 (모바일 강제 맞춤 완벽판)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -13,14 +13,15 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      width: 100vw;
+      height: 100vh;
       overflow: hidden;
       touch-action: manipulation;
     }
     #game-container {
       position: relative;
-      width: 840px;  /* 모바일에 최적화된 가로 폭 */
-      height: 460px; /* 모바일에 최적화된 세로 높이 */
+      width: 800px;  /* 가로 기준 크기 */
+      height: 420px; /* 세로 기준 크기를 대폭 낮춰 모바일 잘림 원천 방지 */
       background: #ffffff;
       border: 3px solid #222;
       border-radius: 20px;
@@ -36,36 +37,36 @@
     }
     #ui-panel {
       position: absolute;
-      bottom: 10px;
+      bottom: 8px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
       align-items: center;
       background: rgba(255, 255, 255, 0.96);
-      padding: 8px 20px;
-      border-radius: 16px;
+      padding: 6px 16px;
+      border-radius: 14px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.12);
       border: 1.5px solid #e2e8f0;
       max-width: 95%;
       z-index: 9999; 
     }
-    .btn-row { display: flex; gap: 8px; align-items: center; }
+    .btn-row { display: flex; gap: 6px; align-items: center; }
     .nav-btn {
       background: #1e293b; color: #fff; border: none;
-      padding: 7px 16px; font-size: 14px; font-weight: bold;
-      border-radius: 10px; cursor: pointer; transition: all 0.2s;
+      padding: 6px 14px; font-size: 13px; font-weight: bold;
+      border-radius: 8px; cursor: pointer; transition: all 0.2s;
     }
     .nav-btn:hover { background: #334155; }
     .nav-btn:active { transform: scale(0.96); }
-    #status-text { font-size: 14px; color: #1e293b; font-weight: 800; text-align: center; }
+    #status-text { font-size: 13px; color: #1e293b; font-weight: 800; text-align: center; }
   </style>
 </head>
 <body>
 
 <div id="game-container">
-  <canvas id="canvas" width="840" height="460"></canvas>
+  <canvas id="canvas" width="800" height="420"></canvas>
   <div id="ui-panel">
     <span id="status-text">1단계: 막대기 9 소개</span>
     <div class="btn-row" id="normal-controls">
@@ -120,11 +121,11 @@
   let gameIndex = 0;
   let gameScore = 0;
   let gameStatus = 'falling';
-  let fallingX = 420;
-  let fallingY = -30;
+  let fallingX = 400;
+  let fallingY = -25;
   let fallingScale = 1.0;
-  let targetBasketX = 420;
-  let targetBasketY = 280;
+  let targetBasketX = 400;
+  let targetBasketY = 240;
   let gameSelectedType = "";
   let gameResultMark = "";
   let gameResultExp = "";
@@ -151,48 +152,48 @@
     ctx.strokeStyle = "#111"; 
     ctx.fillStyle = "#fff";
     
-    ctx.beginPath(); ctx.arc(0, -45, 15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, -40, 14, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     
     if (isFriend) { 
       ctx.fillStyle = "#3498db"; 
-      ctx.beginPath(); ctx.arc(0, -56, 13, Math.PI, Math.PI * 2); ctx.fill(); ctx.stroke(); 
+      ctx.beginPath(); ctx.arc(0, -50, 12, Math.PI, Math.PI * 2); ctx.fill(); ctx.stroke(); 
     }
     
     ctx.fillStyle = "#111";
     if (eyeType === 'sigh' || eyeType === 'dizzy') { 
-      ctx.fillRect(-9, -47, 5, 2); ctx.fillRect(4, -47, 5, 2); 
+      ctx.fillRect(-8, -42, 4, 2); ctx.fillRect(3, -42, 4, 2); 
     } else if (eyeType === 'doubt') {
-      ctx.beginPath(); ctx.arc(-4, -47, 2, 0, Math.PI * 2); ctx.fill();
-      ctx.fillRect(2, -48, 6, 2);
+      ctx.beginPath(); ctx.arc(-3, -42, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(2, -43, 5, 2);
     } else { 
-      ctx.beginPath(); ctx.arc(-4, -47, 2, 0, Math.PI * 2); ctx.arc(4, -47, 2, 0, Math.PI * 2); ctx.fill(); 
+      ctx.beginPath(); ctx.arc(-3, -42, 1.8, 0, Math.PI * 2); ctx.arc(3, -42, 1.8, 0, Math.PI * 2); ctx.fill(); 
     }
     
-    ctx.beginPath(); ctx.moveTo(0, -30); ctx.lineTo(0, -10); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(-10, -12); ctx.moveTo(0, -22); ctx.lineTo(10, -12); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(-7, 0); ctx.moveTo(0, -10); ctx.lineTo(7, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -26); ctx.lineTo(0, -8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(-9, -10); ctx.moveTo(0, -20); ctx.lineTo(9, -10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(-6, 0); ctx.moveTo(0, -8); ctx.lineTo(6, 0); ctx.stroke();
     ctx.restore();
   }
 
   function drawBubble(x, y, text, isFriend = false, offsetX = 0, offsetY = 0) {
     if (!text) return;
     ctx.save();
-    ctx.font = "bold 13px 'Pretendard', sans-serif";
+    ctx.font = "bold 12px 'Pretendard', sans-serif";
     const lines = text.split('\n');
     let maxW = 0;
     lines.forEach(l => { maxW = Math.max(maxW, ctx.measureText(l).width); });
     
-    const boxW = Math.max(maxW + 22, 110);
-    const boxH = Math.max(lines.length * 18 + 12, 34);
+    const boxW = Math.max(maxW + 20, 100);
+    const boxH = Math.max(lines.length * 16 + 10, 30);
 
     const drawX = x + offsetX;
-    const targetY = (isFriend ? y - 120 : y - 100) + offsetY - (lines.length > 1 ? 12 : 0);
+    const targetY = (isFriend ? y - 105 : y - 90) + offsetY - (lines.length > 1 ? 10 : 0);
     
     ctx.fillStyle = isFriend ? "#e8f4fd" : "rgba(255, 255, 255, 0.98)";
     ctx.strokeStyle = isFriend ? "#2980b9" : "#222";
     ctx.lineWidth = 2;
 
-    drawRoundedRect(drawX - boxW / 2, targetY, boxW, boxH, 8);
+    drawRoundedRect(drawX - boxW / 2, targetY, boxW, boxH, 6);
     ctx.fill(); ctx.stroke();
 
     ctx.beginPath();
@@ -206,15 +207,15 @@
     ctx.fillStyle = "#111";
     ctx.textAlign = "center";
     lines.forEach((l, idx) => {
-      ctx.fillText(l, drawX, targetY + 18 + (idx * 17));
+      ctx.fillText(l, drawX, targetY + 16 + (idx * 15));
     });
     ctx.restore();
   }
 
-  const U = 36;
+  const U = 34;
   function drawBar(x, y, length, label, color = "#f1c40f", alpha = 1.0) {
     const width = length * U;
-    const height = 40;
+    const height = 36;
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.fillStyle = color;
@@ -225,7 +226,7 @@
     ctx.fill(); ctx.stroke();
     
     ctx.fillStyle = "#111";
-    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.font = "bold 13px 'Pretendard', sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(label, x + width / 2, y + height / 2);
@@ -237,16 +238,16 @@
     ctx.save();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = "bold 34px 'Pretendard', sans-serif";
+    ctx.font = "bold 30px 'Pretendard', sans-serif";
     
     ctx.fillStyle = numColor;
-    ctx.fillText(num, x, y - 25);
+    ctx.fillText(num, x, y - 22);
 
     ctx.strokeStyle = "#222"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(x - 24, y); ctx.lineTo(x + 24, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 22, y); ctx.lineTo(x + 22, y); ctx.stroke();
 
     ctx.fillStyle = denColor;
-    ctx.fillText(den, x, y + 25);
+    ctx.fillText(den, x, y + 22);
     ctx.restore();
   }
 
@@ -256,21 +257,21 @@
     
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(x - 75, y - 18); ctx.lineTo(x + 75, y - 18);
-    ctx.lineTo(x + 55, y + 42); ctx.lineTo(x - 55, y + 42);
+    ctx.moveTo(x - 65, y - 15); ctx.lineTo(x + 65, y - 15);
+    ctx.lineTo(x + 48, y + 36); ctx.lineTo(x - 48, y + 36);
     ctx.fill();
     ctx.lineWidth = 2.5; ctx.strokeStyle = "#222"; ctx.stroke();
     
     ctx.fillStyle = "rgba(0,0,0,0.12)";
-    ctx.beginPath(); ctx.ellipse(x, y - 18, 75, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(x, y - 15, 65, 11, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
-    ctx.fillStyle = "#111"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
+    ctx.fillStyle = "#111"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center";
     if (labelBottom) {
-      ctx.fillText(labelTop, x, y + 62);
-      ctx.font = "bold 12px sans-serif"; ctx.fillStyle = "#475569";
-      ctx.fillText(labelBottom, x, y + 78);
+      ctx.fillText(labelTop, x, y + 54);
+      ctx.font = "bold 11px sans-serif"; ctx.fillStyle = "#475569";
+      ctx.fillText(labelBottom, x, y + 68);
     } else {
-      ctx.fillText(labelTop, x, y + 68);
+      ctx.fillText(labelTop, x, y + 58);
     }
     ctx.restore();
   }
@@ -278,9 +279,9 @@
   function drawFallingBubble(x, y, num, scale = 1) {
     ctx.save();
     ctx.translate(x, y); ctx.scale(scale, scale);
-    ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#e67e22"; ctx.lineWidth = 3.5;
-    ctx.beginPath(); ctx.arc(0, 0, 32, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#1e293b"; ctx.font = "bold 22px sans-serif"; ctx.textAlign = "center";
+    ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#e67e22"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 28, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#1e293b"; ctx.font = "bold 20px sans-serif"; ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(num, 0, 0);
     ctx.restore();
@@ -316,7 +317,7 @@
       resultControls.style.display = "none";
       statusText.innerText = `🎮 문제 ${gameIndex + 1} / 15 : 알맞은 바구니를 클릭하세요!`;
       gameIndex = 0; gameScore = 0; gameStatus = 'falling';
-      fallingX = 420; fallingY = -25; fallingScale = 1.0;
+      fallingX = 400; fallingY = -25; fallingScale = 1.0;
       gameResultMark = ""; gameResultExp = "";
     } else if (scene === 10) {
       normalControls.style.display = "none";
@@ -370,143 +371,143 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.strokeStyle = "#f1f5f9"; ctx.lineWidth = 1.5;
-    for (let y = 45; y <= 270; y += 35) {
-      ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(800, y); ctx.stroke();
+    for (let y = 40; y <= 230; y += 32) {
+      ctx.beginPath(); ctx.moveTo(30, y); ctx.lineTo(770, y); ctx.stroke();
     }
 
-    const startX = 60;
+    const startX = 50;
 
     if (scene <= 8) {
       if (scene === 0) {
-        drawBar(startX, 70, 9, "막대기 9  (약수: 1, 3, 9)", "#f1c40f");
+        drawBar(startX, 60, 9, "막대기 9  (약수: 1, 3, 9)", "#f1c40f");
       } 
       else if (scene === 1) {
-        drawBar(startX, 50, 9, "막대기 9  (약수: 1, 3, 9)", "#f1c40f");
-        drawBar(startX, 105, 6, "막대기 6  (약수: 1, 2, 3, 6)", "#38bdf8");
+        drawBar(startX, 42, 9, "막대기 9  (약수: 1, 3, 9)", "#f1c40f");
+        drawBar(startX, 90, 6, "막대기 6  (약수: 1, 2, 3, 6)", "#38bdf8");
       }
       else if (scene === 2) {
-        let total9W = 3 * (3 * U + 6);
-        drawBar(startX, 50, 3, "3씩", "#2ecc71");
-        drawBar(startX + 3*U + 6, 50, 3, "3씩", "#2ecc71");
-        drawBar(startX + 6*U + 12, 50, 3, "3씩", "#2ecc71");
+        let total9W = 3 * (3 * U + 5);
+        drawBar(startX, 42, 3, "3씩", "#2ecc71");
+        drawBar(startX + 3*U + 5, 42, 3, "3씩", "#2ecc71");
+        drawBar(startX + 6*U + 10, 42, 3, "3씩", "#2ecc71");
         
-        ctx.fillStyle = "#1e293b"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("= 9 (3도막)", startX + total9W + 15, 74);
+        ctx.fillStyle = "#1e293b"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("= 9 (3도막)", startX + total9W + 12, 62);
 
-        let total6W = 2 * (3 * U + 6);
-        drawBar(startX, 105, 3, "3씩", "#9b59b6");
-        drawBar(startX + 3*U + 6, 105, 3, "3씩", "#9b59b6");
-        ctx.fillText("= 6 (2도막)", startX + total6W + 15, 129);
+        let total6W = 2 * (3 * U + 5);
+        drawBar(startX, 90, 3, "3씩", "#9b59b6");
+        drawBar(startX + 3*U + 5, 90, 3, "3씩", "#9b59b6");
+        ctx.fillText("= 6 (2도막)", startX + total6W + 12, 110);
       }
       else if (scene === 3) {
         let curX = startX;
         for (let i = 0; i < 4; i++) {
-          drawBar(curX, 50, 2, "2씩", "#f1c40f");
-          curX += 2 * U + 6;
+          drawBar(curX, 42, 2, "2씩", "#f1c40f");
+          curX += 2 * U + 5;
         }
-        drawBar(curX, 50, 1, "남음 1", "#e74c3c");
-        ctx.fillStyle = "#c0392b"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("≠ 9 (나머지 1)", curX + 1*U + 12, 74);
+        drawBar(curX, 42, 1, "남음 1", "#e74c3c");
+        ctx.fillStyle = "#c0392b"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("≠ 9 (나머지 1)", curX + 1*U + 10, 62);
 
         curX = startX;
         for (let i = 0; i < 3; i++) {
-          drawBar(curX, 105, 2, "2씩", "#38bdf8");
-          curX += 2 * U + 6;
+          drawBar(curX, 90, 2, "2씩", "#38bdf8");
+          curX += 2 * U + 5;
         }
-        ctx.fillStyle = "#27ae60"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("= 6 (나누어떨어짐)", curX + 12, 129);
+        ctx.fillStyle = "#27ae60"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("= 6 (나누어떨어짐)", curX + 10, 110);
       }
       else if (scene === 4) {
-        const leftX = 60; const rightX = 450;
-        ctx.fillStyle = "#d97706"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("막대기 9 (3으로 3도막)", leftX, 48);
-        drawBar(leftX, 58, 3, "3", "#2ecc71");
-        drawBar(leftX + 3*U + 6, 58, 3, "3", "#2ecc71");
-        drawBar(leftX + 6*U + 12, 58, 3, "3", "#2ecc71");
+        const leftX = 50; const rightX = 420;
+        ctx.fillStyle = "#d97706"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("막대기 9 (3으로 3도막)", leftX, 40);
+        drawBar(leftX, 48, 3, "3", "#2ecc71");
+        drawBar(leftX + 3*U + 5, 48, 3, "3", "#2ecc71");
+        drawBar(leftX + 6*U + 10, 48, 3, "3", "#2ecc71");
 
-        ctx.fillStyle = "#0284c7"; ctx.font = "bold 14px sans-serif";
-        ctx.fillText("막대기 6 (3으로 2도막)", rightX, 48);
-        drawBar(rightX, 58, 3, "3", "#2ecc71");
-        drawBar(rightX + 3*U + 6, 58, 3, "3", "#2ecc71");
+        ctx.fillStyle = "#0284c7"; ctx.font = "bold 13px sans-serif";
+        ctx.fillText("막대기 6 (3으로 2도막)", rightX, 40);
+        drawBar(rightX, 48, 3, "3", "#2ecc71");
+        drawBar(rightX + 3*U + 5, 48, 3, "3", "#2ecc71");
 
-        ctx.fillStyle = "#047857"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText("✨ 공통으로 잘라낼 수 있는 크기 = '3' (공약수) ✨", 420, 135);
+        ctx.fillStyle = "#047857"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("✨ 공통으로 잘라낼 수 있는 크기 = '3' (공약수) ✨", 400, 120);
       }
       else if (scene === 5) {
         if (cancelProgress < 1) cancelProgress += 0.015;
-        const fracX = 110; const barStartX = 230;
-        const barY_num = 48; const barY_den = 102;
+        const fracX = 95; const barStartX = 200;
+        const barY_num = 40; const barY_den = 100;
 
-        drawBigFraction(fracX, 85, "2", "4", "#0284c7", "#7c3aed");
-        ctx.fillStyle = "#333"; ctx.font = "bold 28px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText("=", 175, 87);
+        drawBigFraction(fracX, 72, "2", "4", "#0284c7", "#7c3aed");
+        ctx.fillStyle = "#333"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("=", 150, 74);
 
         const alphaVal = Math.max(1 - cancelProgress * 1.3, 0);
         drawBar(barStartX, barY_num, 2, "2", "#38bdf8", alphaVal);
         drawBar(barStartX, barY_den, 2, "2", "#c084fc", alphaVal);
-        drawBar(barStartX + 2*U + 6, barY_den, 2, "2", "#c084fc", 1.0);
+        drawBar(barStartX + 2*U + 5, barY_den, 2, "2", "#c084fc", 1.0);
 
         if (cancelProgress > 0.1) {
-          ctx.save(); ctx.strokeStyle = "#e11d48"; ctx.lineWidth = 3;
+          ctx.save(); ctx.strokeStyle = "#e11d48"; ctx.lineWidth = 2.5;
           const lineLen = Math.min(cancelProgress * 1.5, 1);
-          ctx.beginPath(); ctx.moveTo(barStartX - 4, barY_num + 38); ctx.lineTo(barStartX - 4 + (2*U + 12) * lineLen, barY_num + 38 - 42 * lineLen); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(barStartX - 4, barY_den + 38); ctx.lineTo(barStartX - 4 + (2*U + 12) * lineLen, barY_den + 38 - 42 * lineLen); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(barStartX - 3, barY_num + 32); ctx.lineTo(barStartX - 3 + (2*U + 10) * lineLen, barY_num + 32 - 36 * lineLen); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(barStartX - 3, barY_den + 32); ctx.lineTo(barStartX - 3 + (2*U + 10) * lineLen, barY_den + 32 - 36 * lineLen); ctx.stroke();
           ctx.restore();
         }
 
         if (cancelProgress > 0.4) {
-          ctx.save(); ctx.fillStyle = "#e11d48"; ctx.font = "bold 20px sans-serif"; ctx.textAlign = "center";
+          ctx.save(); ctx.fillStyle = "#e11d48"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "center";
           ctx.globalAlpha = Math.min((cancelProgress - 0.4) * 2, 1);
-          ctx.fillText("1", barStartX + U, barY_num + 20);
-          ctx.fillText("1", barStartX + U, barY_den + 20);
+          ctx.fillText("1", barStartX + U, barY_num + 18);
+          ctx.fillText("1", barStartX + U, barY_den + 18);
           ctx.restore();
         }
 
         if (cancelProgress > 0.6) {
           ctx.save(); ctx.globalAlpha = Math.min((cancelProgress - 0.6) * 2.5, 1);
-          ctx.fillStyle = "#333"; ctx.font = "bold 28px sans-serif"; ctx.textAlign = "center";
-          ctx.fillText("➔", 510, 87);
-          drawBigFraction(590, 85, "1", "2", "#e11d48", "#7c3aed");
-          ctx.fillStyle = "#047857"; ctx.font = "bold 14px sans-serif";
-          ctx.fillText("공약수 2로 약분!", 590, 145);
+          ctx.fillStyle = "#333"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center";
+          ctx.fillText("➔", 460, 74);
+          drawBigFraction(530, 72, "1", "2", "#e11d48", "#7c3aed");
+          ctx.fillStyle = "#047857"; ctx.font = "bold 13px sans-serif";
+          ctx.fillText("공약수 2로 약분!", 530, 120);
           ctx.restore();
         }
       }
       else if (scene === 6) {
-        drawBar(startX, 50, 6, "6의 약수: [1, 2, 3, 6]", "#38bdf8");
-        drawBar(startX, 105, 12, "12의 약수: [1, 2, 3, 4, 6, 12]", "#fb923c");
-        ctx.fillStyle = "#8e44ad"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("공통 약수 = 1, 2, 3, 6   ➔   제일 큰 수 '6'이 최대공약수!", startX, 162);
+        drawBar(startX, 42, 6, "6의 약수: [1, 2, 3, 6]", "#38bdf8");
+        drawBar(startX, 90, 12, "12의 약수: [1, 2, 3, 4, 6, 12]", "#fb923c");
+        ctx.fillStyle = "#8e44ad"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("공통 약수 = 1, 2, 3, 6   ➔   제일 큰 수 '6'이 최대공약수!", startX, 142);
       }
       else if (scene === 7) {
-        ctx.fillStyle = "#0f172a"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "left";
-        ctx.fillText("🔍 12와 18의 최대공약수(6)로 두 수 자르기", startX, 38);
+        ctx.fillStyle = "#0f172a"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("🔍 12와 18의 최대공약수(6)로 두 수 자르기", startX, 32);
 
-        ctx.fillStyle = "#0284c7"; ctx.font = "bold 13px sans-serif";
-        ctx.fillText("막대기 12", startX, 58);
-        drawBar(startX, 66, 6, "6", "#06b6d4");
-        drawBar(startX + 6*U + 6, 66, 6, "6", "#06b6d4");
+        ctx.fillStyle = "#0284c7"; ctx.font = "bold 12px sans-serif";
+        ctx.fillText("막대기 12", startX, 50);
+        drawBar(startX, 58, 6, "6", "#06b6d4");
+        drawBar(startX + 6*U + 5, 58, 6, "6", "#06b6d4");
 
-        ctx.fillStyle = "#7c3aed"; ctx.font = "bold 13px sans-serif";
-        ctx.fillText("막대기 18", startX, 120);
-        drawBar(startX, 128, 6, "6", "#a855f7");
-        drawBar(startX + 6*U + 6, 128, 6, "6", "#a855f7");
-        drawBar(startX + 12*U + 12, 128, 6, "6", "#a855f7");
+        ctx.fillStyle = "#7c3aed"; ctx.font = "bold 12px sans-serif";
+        ctx.fillText("막대기 18", startX, 105);
+        drawBar(startX, 113, 6, "6", "#a855f7");
+        drawBar(startX + 6*U + 5, 113, 6, "6", "#a855f7");
+        drawBar(startX + 12*U + 10, 113, 6, "6", "#a855f7");
       }
       else if (scene === 8) {
-        ctx.fillStyle = "#0f172a"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText("💡 최대공약수 6의 약수 [1, 2, 3, 6]이 곧 모든 공약수!", 420, 50);
-        drawBar(200, 75, 5, "최대공약수 6의 약수", "#ec4899");
-        drawBar(450, 75, 5, "두 수의 모든 공약수", "#f43f5e");
+        ctx.fillStyle = "#0f172a"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("💡 최대공약수 6의 약수 [1, 2, 3, 6]이 곧 모든 공약수!", 400, 42);
+        drawBar(180, 62, 5, "최대공약수 6의 약수", "#ec4899");
+        drawBar(410, 62, 5, "두 수의 모든 공약수", "#f43f5e");
       }
 
-      const charLineX = 240; const charFriendX = 600; const groundY = 370;
-      const lineBubbleOffsetX = (scene === 7 || scene === 8) ? 30 : 15;
+      const charLineX = 220; const charFriendX = 580; const groundY = 275;
+      const lineBubbleOffsetX = (scene === 7 || scene === 8) ? 25 : 15;
       
-      drawDoodleChar(charLineX, groundY, 1.0, false, 'normal');
+      drawDoodleChar(charLineX, groundY, 0.9, false, 'normal');
       drawBubble(charLineX, groundY, speechBubble1.text, false, lineBubbleOffsetX);
 
-      drawDoodleChar(charFriendX, groundY, 1.0, true, scene === 8 ? 'doubt' : 'normal');
+      drawDoodleChar(charFriendX, groundY, 0.9, true, scene === 8 ? 'doubt' : 'normal');
       drawBubble(charFriendX, groundY, speechBubble2.text, true, -10);
     }
 
@@ -514,36 +515,36 @@
     else if (scene === 9) {
       const q = gameData[gameIndex];
 
-      ctx.fillStyle = "#1e293b"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "center";
-      ctx.fillText(`두 수: [ ${q.pair} ]`, 420, 32);
+      ctx.fillStyle = "#1e293b"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(`두 수: [ ${q.pair} ]`, 400, 26);
 
-      ctx.fillStyle = "#64748b"; ctx.font = "bold 13px sans-serif";
-      ctx.fillText("떨어지는 숫자는 어느 바구니에 들어갈까요?", 420, 54);
+      ctx.fillStyle = "#64748b"; ctx.font = "bold 12px sans-serif";
+      ctx.fillText("떨어지는 숫자는 어느 바구니에 들어갈까요?", 400, 44);
 
-      ctx.fillStyle = "#0284c7"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "left";
-      ctx.fillText(`진행: ${gameIndex + 1} / 15`, 30, 32);
-      ctx.fillText(`점수: ${gameScore} 점`, 30, 54);
+      ctx.fillStyle = "#0284c7"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left";
+      ctx.fillText(`진행: ${gameIndex + 1} / 15`, 25, 26);
+      ctx.fillText(`점수: ${gameScore} 점`, 25, 44);
 
-      const basketGcdX = 250; const basketCdX = 590; const basketY = 260;
+      const basketGcdX = 240; const basketCdX = 560; const basketY = 225;
 
-      let hoverGcd = (mouseX > 175 && mouseX < 325 && mouseY > 200 && mouseY < 340);
-      let hoverCd = (mouseX > 515 && mouseX < 665 && mouseY > 200 && mouseY < 340);
+      let hoverGcd = (mouseX > 175 && mouseX < 305 && mouseY > 160 && mouseY < 290);
+      let hoverCd = (mouseX > 495 && mouseX < 625 && mouseY > 160 && mouseY < 290);
 
       drawBasket(basketGcdX, basketY, "최대공약수 바구니", "(가장 큰 공약수)", "#ef4444", hoverGcd);
       drawBasket(basketCdX, basketY, "공약수 바구니", "(최대공약수 아닌 공약수)", "#3b82f6", hoverCd);
 
-      drawDoodleChar(110, basketY + 20, 0.95, false, 'normal');
-      drawDoodleChar(730, basketY + 20, 0.95, true, 'normal');
+      drawDoodleChar(100, basketY + 15, 0.85, false, 'normal');
+      drawDoodleChar(700, basketY + 15, 0.85, true, 'normal');
 
       if (gameStatus === 'falling') {
-        fallingY += 1.6;
+        fallingY += 1.5;
         drawFallingBubble(fallingX, fallingY, q.num, 1.0);
 
-        if (fallingY > 270) {
+        if (fallingY > 210) {
           gameResultMark = "앗, 놓쳤다! ❌";
           gameResultExp = "화면의 바구니를 직접 클릭해야 해!";
           gameStatus = 'result';
-          setTimeout(nextGameQuestion, 1400);
+          setTimeout(nextGameQuestion, 1300);
         }
       } 
       else if (gameStatus === 'moving') {
@@ -560,7 +561,7 @@
           }
           gameResultExp = q.exp;
           gameStatus = 'result';
-          setTimeout(nextGameQuestion, 1500);
+          setTimeout(nextGameQuestion, 1400);
         } else {
           drawFallingBubble(fallingX, fallingY, q.num, Math.max(fallingScale, 0));
         }
@@ -568,35 +569,35 @@
 
       if (gameStatus === 'result' && gameResultMark) {
         ctx.fillStyle = gameResultMark.includes("정답") ? "#16a34a" : "#dc2626";
-        ctx.textAlign = "center"; ctx.font = "bold 26px sans-serif";
-        ctx.fillText(gameResultMark, 420, 130);
-        ctx.fillStyle = "#1e293b"; ctx.font = "bold 15px sans-serif";
-        ctx.fillText(gameResultExp, 420, 165);
+        ctx.textAlign = "center"; ctx.font = "bold 24px sans-serif";
+        ctx.fillText(gameResultMark, 400, 115);
+        ctx.fillStyle = "#1e293b"; ctx.font = "bold 14px sans-serif";
+        ctx.fillText(gameResultExp, 400, 142);
       }
     }
 
     // 최종 결과 (scene === 10)
     else if (scene === 10) {
-      ctx.fillStyle = "#8e44ad"; ctx.font = "bold 28px sans-serif"; ctx.textAlign = "center";
-      ctx.fillText(`최종 결과: 15문제 중 ${gameScore}문제 정답!`, 420, 50);
+      ctx.fillStyle = "#8e44ad"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(`최종 결과: 15문제 중 ${gameScore}문제 정답!`, 400, 45);
 
       ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
-      drawRoundedRect(190, 75, 460, 75, 12);
+      drawRoundedRect(160, 62, 480, 68, 10);
       ctx.fill(); ctx.stroke();
 
-      ctx.fillStyle = "#0f172a"; ctx.font = "bold 14px sans-serif";
-      ctx.fillText("★ 핵심 정리 복습", 420, 95);
-      ctx.font = "13px sans-serif"; ctx.fillStyle = "#475569";
-      ctx.fillText("1. 두 수를 동시에 똑같이 나눌 수 있는 수는 '공약수'", 420, 116);
-      ctx.fillText("2. 그 공약수들 중 가장 큰 대장은 '최대공약수'", 420, 134);
+      ctx.fillStyle = "#0f172a"; ctx.font = "bold 13px sans-serif";
+      ctx.fillText("★ 핵심 정리 복습", 400, 78);
+      ctx.font = "12px sans-serif"; ctx.fillStyle = "#475569";
+      ctx.fillText("1. 두 수를 동시에 똑같이 나눌 수 있는 수는 '공약수'", 400, 96);
+      ctx.fillText("2. 그 공약수들 중 가장 큰 대장은 '최대공약수'", 400, 113);
 
-      const charLineX = 230; const charFriendX = 610; const groundY = 295;
+      const charLineX = 210; const charFriendX = 590; const groundY = 250;
 
-      drawDoodleChar(charLineX, groundY, 0.95, false, gameScore >= 12 ? 'normal' : 'sigh');
-      drawBubble(charLineX, groundY, speechBubble1.text, false, 20);
+      drawDoodleChar(charLineX, groundY, 0.85, false, gameScore >= 12 ? 'normal' : 'sigh');
+      drawBubble(charLineX, groundY, speechBubble1.text, false, 15);
 
-      drawDoodleChar(charFriendX, groundY, 0.95, true, 'normal');
-      drawBubble(charFriendX, groundY, speechBubble2.text, true, -20);
+      drawDoodleChar(charFriendX, groundY, 0.85, true, 'normal');
+      drawBubble(charFriendX, groundY, speechBubble2.text, true, -15);
     }
 
     requestAnimationFrame(render);
@@ -609,8 +610,8 @@
     mouseY = ((e.clientY - rect.top) * (canvas.height / rect.height)) / (scale === 0 ? 1 : scale);
 
     if (scene === 9 && gameStatus === 'falling') {
-      if ((mouseX > 175 && mouseX < 325 && mouseY > 200 && mouseY < 340) ||
-          (mouseX > 515 && mouseX < 665 && mouseY > 200 && mouseY < 340)) {
+      if ((mouseX > 175 && mouseX < 305 && mouseY > 160 && mouseY < 290) ||
+          (mouseX > 495 && mouseX < 625 && mouseY > 160 && mouseY < 290)) {
         canvas.style.cursor = 'pointer';
       } else {
         canvas.style.cursor = 'default';
@@ -623,17 +624,17 @@
   canvas.addEventListener('click', function(e) {
     if (scene !== 9 || gameStatus !== 'falling') return;
 
-    if (mouseX > 175 && mouseX < 325 && mouseY > 200 && mouseY < 340) {
+    if (mouseX > 175 && mouseX < 305 && mouseY > 160 && mouseY < 290) {
       catchNumber('gcd');
-    } else if (mouseX > 515 && mouseX < 665 && mouseY > 200 && mouseY < 340) {
+    } else if (mouseX > 495 && mouseX < 625 && mouseY > 160 && mouseY < 290) {
       catchNumber('cd');
     }
   });
 
   function catchNumber(type) {
     gameSelectedType = type;
-    targetBasketX = (type === 'gcd') ? 250 : 590;
-    targetBasketY = 260;
+    targetBasketX = (type === 'gcd') ? 240 : 560;
+    targetBasketY = 225;
     gameStatus = 'moving';
     canvas.style.cursor = 'default';
   }
@@ -644,7 +645,7 @@
       loadScene(10);
     } else {
       statusText.innerText = `🎮 문제 ${gameIndex + 1} / 15 : 알맞은 바구니를 클릭하세요!`;
-      fallingX = 420; fallingY = -25; fallingScale = 1.0;
+      fallingX = 400; fallingY = -25; fallingScale = 1.0;
       gameStatus = 'falling';
       gameResultMark = ""; gameResultExp = "";
     }
@@ -656,9 +657,8 @@
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     
-    // 모바일 브라우저 주소창 공간을 고려해 세로 높이 기준으로만 스케일 계산
-    const scaleX = windowWidth / 860;
-    const scaleY = windowHeight / 490;
+    const scaleX = windowWidth / 820;
+    const scaleY = windowHeight / 440;
     const scale = Math.min(scaleX, scaleY);
     
     container.style.transform = `scale(${scale})`;
