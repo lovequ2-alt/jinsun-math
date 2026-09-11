@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>중1 수학 - 수의 체계 완전판 (12문제 & 0 개념 강화)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>중1 수학 - 수의 체계 완전판 (반응형 적용)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -24,6 +25,8 @@
       border-radius: 16px;
       box-shadow: 0 12px 30px rgba(0,0,0,0.12);
       overflow: hidden;
+      /* 📱 모바일 및 화면 크기 자동 축소를 위한 기준점 설정 */
+      transform-origin: center center;
     }
     canvas { 
       position: absolute;
@@ -226,7 +229,6 @@
     else if (scene === 12) { statusText.innerText = "13단계: 실수(Real Number)"; charX = 480; setDialogue('friend', "이름만 같지 실제 수(Real)라는 뜻이야 똥쟁아.", 'char', "아하...", 1500); }
     else if (scene === 13) { 
       statusText.innerText = "14단계: 정수로 점프!"; charX = 480; 
-      // ★ 14단계 대사 수정: 0 포함 설명 추가
       setDialogue('friend', "실수 안엔 '정수'가 있어. 0 포함 네가 똥 싼 데가 정수야!", null, null); 
       poopList = []; for(let i=1; i<=3; i++) poopList.push({num: i, type: 'yellow'}); for(let i=-1; i>=-3; i--) poopList.push({num: i, type: 'green'}); let jumps = [1, 2, -1, -2, 0]; let jIdx = 0; window.animTimer = setInterval(() => { charY = 230; setTimeout(() => { if (scene === 13) charY = 280; }, 150); charX = 480 + jumps[jIdx] * 60; jIdx++; if(jIdx >= jumps.length) clearInterval(window.animTimer); }, 700); }
     else if (scene === 14) { statusText.innerText = "15단계: 정수가 아닌 유리수로 점프!"; charX = 480 - 60; setDialogue('friend', "여기 0.3은 '정수가 아닌 유리수' 중 하나야.", 'char', "왜 굳이 '아닌'이란 말을 붙여?", 1500); }
@@ -458,8 +460,10 @@
 
   canvas.addEventListener('mousemove', function(e) {
     const rect = canvas.getBoundingClientRect();
-    mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
-    mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+    // 반응형 스케일(비율)에 맞춰 마우스 좌표 보정
+    const scale = parseFloat(document.getElementById('game-container').style.transform.replace(/[^0-9.]/g, '') || 1);
+    mouseX = ((e.clientX - rect.left) * (canvas.width / rect.width)) / (scale === 0 ? 1 : scale);
+    mouseY = ((e.clientY - rect.top) * (canvas.height / rect.height)) / (scale === 0 ? 1 : scale);
     
     if (scene === 17 && gameStatus === 'falling') {
       if ((mouseX > 150 && mouseX < 350 && mouseY > 350 && mouseY < 550) || 
@@ -506,8 +510,24 @@
     }
   }
 
+  // --- 모바일 및 PC 화면 크기에 맞춰 자동 축소해 주는 반응형 엔진 ---
+  function resizeGame() {
+    const container = document.getElementById('game-container');
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    const scaleX = windowWidth / 980;
+    const scaleY = windowHeight / 620;
+    const scale = Math.min(scaleX, scaleY);
+    
+    container.style.transform = `scale(${scale})`;
+  }
+
+  window.addEventListener('resize', resizeGame);
+  window.addEventListener('load', resizeGame);
+
   window.goPrev = function() { if (scene > 0) loadScene(scene - 1, -1); };
-  window.goNext = function() { if (scene === 16) nextBtn.innerText = "다음 ▶"; if (scene < maxScene) loadScene(scene + 1, 1); };
+  window.goNext = function() { if (scene < maxScene) loadScene(scene + 1, 1); };
 
   loadScene(0, 1);
   render();

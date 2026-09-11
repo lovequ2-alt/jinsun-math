@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>중1 수학 - 소수와 합성수 (휴지통 추가 & 15문제 바구니 게임)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>중1 수학 - 소수와 합성수 (반응형 완성판)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -24,6 +25,8 @@
       border-radius: 16px;
       box-shadow: 0 12px 30px rgba(0,0,0,0.12);
       overflow: hidden;
+      /* 📱 모바일 및 화면 크기 자동 축소를 위한 기준점 설정 */
+      transform-origin: center center;
     }
     canvas { 
       position: absolute;
@@ -74,9 +77,9 @@
     </div>
 
     <div id="result-controls">
-      <button class="nav-btn" onclick="loadScene(16, -1)">◀ 설명 화면으로</button>
-      <button class="nav-btn" style="background: #8e44ad;" onclick="loadScene(18, 1)">🔄 게임 다시 하기</button>
-      <button class="nav-btn" style="background: #27ae60;" onclick="loadScene(0, 1)">🏠 처음으로</button>
+      <button class="nav-btn" onclick="loadScene(16)">◀ 설명 화면으로</button>
+      <button class="nav-btn" style="background: #8e44ad;" onclick="loadScene(18)">🔄 게임 다시 하기</button>
+      <button class="nav-btn" style="background: #27ae60;" onclick="loadScene(0)">🏠 처음으로</button>
     </div>
   </div>
 </div>
@@ -853,10 +856,12 @@
     requestAnimationFrame(render);
   }
 
+  // --- 반응형 스케일 보정이 적용된 마우스 이벤트 ---
   canvas.addEventListener('mousemove', function(e) {
     const rect = canvas.getBoundingClientRect();
-    mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
-    mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+    const scale = parseFloat(document.getElementById('game-container').style.transform.replace(/[^0-9.]/g, '') || 1);
+    mouseX = ((e.clientX - rect.left) * (canvas.width / rect.width)) / (scale === 0 ? 1 : scale);
+    mouseY = ((e.clientY - rect.top) * (canvas.height / rect.height)) / (scale === 0 ? 1 : scale);
     
     if (scene === 18 && gameStatus === 'falling') {
       if ((mouseX > 120 && mouseX < 320 && mouseY > 320 && mouseY < 510) || 
@@ -909,6 +914,22 @@
       gameStatus = 'falling';
     }
   }
+
+  // --- 화면 크기에 맞춰 비율 자동 조절하는 반응형 엔진 ---
+  function resizeGame() {
+    const container = document.getElementById('game-container');
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    const scaleX = windowWidth / 980;
+    const scaleY = windowHeight / 620;
+    const scale = Math.min(scaleX, scaleY);
+    
+    container.style.transform = `scale(${scale})`;
+  }
+
+  window.addEventListener('resize', resizeGame);
+  window.addEventListener('load', resizeGame);
 
   window.goPrev = function() {
     if (scene > 0) loadScene(scene - 1);
