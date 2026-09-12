@@ -2,173 +2,259 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>중1 수학 개념 탐구 자료실</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>중·초등 수학 개념 탐구 자료실</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background-color: #f0f2f5;
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      background-color: #0f172a;
       font-family: 'Pretendard', -apple-system, sans-serif;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
+      padding: 10px;
     }
+
+    /* 화면 전체 비율 유지 반응형 컨테이너 */
     .wrapper {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
-      max-width: 960px;
+      max-width: 1050px;
+      gap: 10px;
     }
+
     .side-canvas {
-      width: 150px;
-      height: 300px;
+      width: 120px;
+      height: 280px;
+      flex-shrink: 0;
     }
+
     .menu-card {
       background: #ffffff;
       width: 100%;
-      max-width: 580px;
-      padding: 34px 28px;
+      max-width: 780px;
+      padding: 24px 22px;
       border-radius: 20px;
-      border: 3px solid #222;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+      border: 3px solid #334155;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.35);
       text-align: center;
       z-index: 2;
     }
+
     h1 {
-      font-size: 26px;
-      color: #2c3e50;
-      margin-bottom: 6px;
+      font-size: 23px;
+      color: #1e293b;
+      margin-bottom: 4px;
+      font-weight: 800;
     }
+
     p.sub {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
-      color: #34495e;
-      margin-bottom: 12px;
+      color: #64748b;
+      margin-bottom: 8px;
     }
+
     #lineCanvas {
       display: block;
-      margin: 0 auto 22px auto;
+      margin: 0 auto 16px auto;
     }
-    .btn-list {
+
+    /* 좌우 2열 분할 메뉴 그리드 */
+    .two-column-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .column-section {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 9px;
     }
+
+    .column-header {
+      background: #f1f5f9;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      text-align: center;
+    }
+
     .lesson-btn {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 22px;
-      background: #f8f9fa;
-      border: 2px solid #ddd;
-      border-radius: 14px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
       text-decoration: none;
-      color: #2c3e50;
-      font-size: 17px;
-      font-weight: bold;
+      color: #1e293b;
+      font-size: 14.5px;
+      font-weight: 700;
       transition: all 0.2s;
     }
+
     .lesson-btn:hover {
       background: #eef7ff;
-      border-color: #3498db;
+      border-color: #2563eb;
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
     }
+
+    .lesson-btn.empty {
+      background: #ffffff;
+      border: 1.5px dashed #e2e8f0;
+      color: #94a3b8;
+      cursor: default;
+    }
+    .lesson-btn.empty:hover {
+      transform: none;
+      box-shadow: none;
+      border-color: #e2e8f0;
+    }
+
     .badge {
-      font-size: 13px;
-      padding: 5px 12px;
-      border-radius: 8px;
+      font-size: 11.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
       color: #fff;
       font-weight: 800;
+      white-space: nowrap;
+    }
+
+    /* 모바일 세로 모드 대응 */
+    @media (max-width: 650px) {
+      .side-canvas { display: none; }
+      .two-column-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
 <div class="wrapper">
-  <!-- 왼쪽: 주인공 캔버스 -->
-  <canvas id="heroCanvas" class="side-canvas" width="150" height="300"></canvas>
+  <!-- 왼쪽: 주인공 캐릭터 -->
+  <canvas id="heroCanvas" class="side-canvas" width="120" height="280"></canvas>
 
-  <!-- 중앙: 메뉴 카드 -->
+  <!-- 중앙: 2열 메뉴 보드 -->
   <div class="menu-card">
-    <h1>📐 중1 수학 개념 탐구</h1>
-    <p class="sub">뭐 부터 볼까?</p>
+    <h1>📐 중·초등 수학 개념 탐구실</h1>
+    <p class="sub">어떤 이야기부터 알아볼까?</p>
 
-    <!-- 카드 내부 수직선 표시 -->
-    <canvas id="lineCanvas" width="480" height="42"></canvas>
+    <canvas id="lineCanvas" width="460" height="36"></canvas>
 
-    <div class="btn-list">
-      <a href="line.html" class="lesson-btn">
-        <span>1. 수직선에서 수 알아보기</span>
-        <span class="badge" style="background:#8e44ad;">수야수야</span>
-      </a>
+    <div class="two-column-grid">
+      <!-- 왼쪽 열: 헷갈리는 중1수학 -->
+      <div class="column-section">
+        <div class="column-header">📌 헷갈리는 중1수학</div>
+        
+        <a href="line.html" class="lesson-btn">
+          <span>1. 수직선과 수의 체계</span>
+          <span class="badge" style="background:#7c3aed;">정수/유리수</span>
+        </a>
 
-      <a href="prime.html" class="lesson-btn">
-        <span>2. 소수와 합성수 탐구</span>
-        <span class="badge" style="background:#27ae60;">이런수저런수</span>
-      </a>
+        <a href="prime.html" class="lesson-btn">
+          <span>2. 소수와 합성수 탐구</span>
+          <span class="badge" style="background:#10b981;">소수/합성수</span>
+        </a>
 
-      <a href="gcd.html" class="lesson-btn">
-        <span>3. 공약수와 최대공약수</span>
-        <span class="badge" style="background:#e67e22;">약수약수</span>
-      </a>
+        <a href="gcd.html" class="lesson-btn">
+          <span>3. 공약수와 최대공약수</span>
+          <span class="badge" style="background:#ea580c;">약수와 배수</span>
+        </a>
+
+        <!-- 추가 빈 칸 예시 (필요시 채워 넣으시면 됩니다) -->
+        <div class="lesson-btn empty">
+          <span>4. 다음 주제 준비 중...</span>
+          <span class="badge" style="background:#cbd5e1; color:#64748b;">UPDATING</span>
+        </div>
+      </div>
+
+      <!-- 오른쪽 열: 헷갈리는 초등수학 (오른쪽 맨 위에 분수.html 배치) -->
+      <div class="column-section">
+        <div class="column-header">🍎 헷갈리는 초등수학</div>
+        
+        <!-- ★ 오른쪽 맨 위: 방금 완성한 나눗셈/분수 탐험 연동 -->
+        <a href="분수.html" class="lesson-btn" style="border-color: #2563eb; background: #eff6ff;">
+          <span>1. 헷갈리는 나눗셈 식 세우기</span>
+          <span class="badge" style="background:#2563eb;">분수와 나눗셈</span>
+        </a>
+
+        <div class="lesson-btn empty">
+          <span>2. 준비 중...</span>
+          <span class="badge" style="background:#cbd5e1; color:#64748b;">UPDATING</span>
+        </div>
+
+        <div class="lesson-btn empty">
+          <span>3. 준비 중...</span>
+          <span class="badge" style="background:#cbd5e1; color:#64748b;">UPDATING</span>
+        </div>
+
+        <div class="lesson-btn empty">
+          <span>4. 준비 중...</span>
+          <span class="badge" style="background:#cbd5e1; color:#64748b;">UPDATING</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 오른쪽: 친구 캔버스 -->
-  <canvas id="friendCanvas" class="side-canvas" width="150" height="300"></canvas>
+  <!-- 오른쪽: 친구 캐릭터 -->
+  <canvas id="friendCanvas" class="side-canvas" width="120" height="280"></canvas>
 </div>
 
 <script>
-  // 메뉴 카드 내부 미니 수직선 렌더링
+  // 미니 수직선 그래픽
   function drawMiniNumberLine() {
     const canvas = document.getElementById('lineCanvas');
     const ctx = canvas.getContext('2d');
-    const baselineY = 16;
-    const startX = 25;
-    const endX = 455;
-    const unit = 70;
-    const originX = 240; // 0의 위치
+    const baselineY = 14;
+    const startX = 20;
+    const endX = 440;
+    const unit = 68;
+    const originX = 230;
 
-    // 중심선
     ctx.lineWidth = 2.5;
-    ctx.strokeStyle = "#34495e";
+    ctx.strokeStyle = "#475569";
     ctx.beginPath();
     ctx.moveTo(startX, baselineY);
     ctx.lineTo(endX, baselineY);
     ctx.stroke();
 
-    // 양쪽 화살표
-    ctx.fillStyle = "#34495e";
+    ctx.fillStyle = "#475569";
     ctx.beginPath();
     ctx.moveTo(endX, baselineY); ctx.lineTo(endX - 8, baselineY - 4); ctx.lineTo(endX - 8, baselineY + 4); ctx.fill();
     ctx.beginPath();
     ctx.moveTo(startX, baselineY); ctx.lineTo(startX + 8, baselineY - 4); ctx.lineTo(startX + 8, baselineY + 4); ctx.fill();
 
-    // 눈금 및 라벨 (-3 ~ 3)
-    ctx.font = "bold 13px sans-serif";
+    ctx.font = "bold 12px sans-serif";
     ctx.textAlign = "center";
     for (let n = -3; n <= 3; n++) {
       const x = originX + n * unit;
       const isZero = (n === 0);
-
       ctx.lineWidth = isZero ? 2.5 : 1.5;
-      ctx.strokeStyle = isZero ? "#e74c3c" : "#7f8c8d";
+      ctx.strokeStyle = isZero ? "#ef4444" : "#94a3b8";
       ctx.beginPath();
-      ctx.moveTo(x, baselineY - (isZero ? 7 : 4));
-      ctx.lineTo(x, baselineY + (isZero ? 7 : 4));
+      ctx.moveTo(x, baselineY - (isZero ? 6 : 4));
+      ctx.lineTo(x, baselineY + (isZero ? 6 : 4));
       ctx.stroke();
 
-      ctx.fillStyle = isZero ? "#e74c3c" : "#555";
-      ctx.fillText(n, x, baselineY + 18);
+      ctx.fillStyle = isZero ? "#ef4444" : "#64748b";
+      ctx.fillText(n, x, baselineY + 16);
     }
   }
 
-  // 양쪽 캐릭터 그리기
+  // 측면 캐릭터 렌더링
   function drawChar(ctx, x, y, isFriend = false) {
     ctx.save();
     ctx.translate(x, y);
@@ -176,44 +262,40 @@
     ctx.strokeStyle = "#111";
     ctx.fillStyle = "#fff";
     
-    // 머리
     ctx.beginPath();
-    ctx.arc(0, -50, 18, 0, Math.PI * 2);
+    ctx.arc(0, -45, 17, 0, Math.PI * 2);
     ctx.fill(); ctx.stroke();
 
-    // 친구 모자
     if (isFriend) {
       ctx.fillStyle = "#3498db";
       ctx.beginPath();
-      ctx.arc(0, -64, 15, Math.PI, Math.PI * 2);
+      ctx.arc(0, -58, 14, Math.PI, Math.PI * 2);
       ctx.fill(); ctx.stroke();
     }
 
-    // 눈
     ctx.fillStyle = "#111";
     ctx.beginPath();
-    ctx.arc(-5, -52, 2.5, 0, Math.PI * 2);
-    ctx.arc(5, -52, 2.5, 0, Math.PI * 2);
+    ctx.arc(-5, -47, 2.3, 0, Math.PI * 2);
+    ctx.arc(5, -47, 2.3, 0, Math.PI * 2);
     ctx.fill();
 
-    // 몸통 & 팔다리
     ctx.beginPath();
-    ctx.moveTo(0, -32); ctx.lineTo(0, -6); ctx.stroke();
+    ctx.moveTo(0, -28); ctx.lineTo(0, -6); ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(0, -22); ctx.lineTo(-14, -12);
-    ctx.moveTo(0, -22); ctx.lineTo(14, -12);
-    ctx.moveTo(0, -6); ctx.lineTo(-9, 8);
-    ctx.moveTo(0, -6); ctx.lineTo(9, 8);
+    ctx.moveTo(0, -20); ctx.lineTo(-12, -10);
+    ctx.moveTo(0, -20); ctx.lineTo(12, -10);
+    ctx.moveTo(0, -6); ctx.lineTo(-8, 8);
+    ctx.moveTo(0, -6); ctx.lineTo(8, 8);
     ctx.stroke();
     ctx.restore();
   }
 
-  // 말풍선 그리기
+  // 말풍선
   function drawBubble(ctx, x, y, text, isFriend = false) {
     ctx.save();
     ctx.font = "bold 13px 'Pretendard', sans-serif";
     const textW = ctx.measureText(text).width;
-    const boxW = textW + 20;
+    const boxW = textW + 22;
     const boxH = 34;
 
     ctx.fillStyle = isFriend ? "#e8f4fd" : "#fff";
@@ -235,18 +317,17 @@
     ctx.restore();
   }
 
-  // 실행
   drawMiniNumberLine();
 
   const heroCanvas = document.getElementById('heroCanvas');
   const hCtx = heroCanvas.getContext('2d');
-  drawChar(hCtx, 75, 235, false);
-  drawBubble(hCtx, 75, 125, "수학 놀자!", false);
+  drawChar(hCtx, 60, 215, false);
+  drawBubble(hCtx, 60, 115, "수학 놀자!", false);
 
   const friendCanvas = document.getElementById('friendCanvas');
   const fCtx = friendCanvas.getContext('2d');
-  drawChar(fCtx, 75, 235, true);
-  drawBubble(fCtx, 75, 125, "골라봐!", true);
+  drawChar(fCtx, 60, 215, true);
+  drawBubble(fCtx, 60, 115, "하나 골라봐!", true);
 </script>
 
 </body>

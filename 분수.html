@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>중1 수학 - 헷갈리는 나눗셈 탐험</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0f172a;
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    #scale-wrapper {
+      position: absolute;
+      width: 960px;
+      height: 580px;
+      transform-origin: center center;
+    }
+
+    #game-container {
+      position: relative;
+      width: 960px;
+      height: 580px; 
+      background: #ffffff;
+      border: 3px solid #334155;
+      border-radius: 20px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+      overflow: hidden;
+    }
+
+    canvas { 
+      position: absolute;
+      top: 0; left: 0;
+      display: block; 
+      width: 960px; 
+      height: 580px; 
+      z-index: 1;
+      cursor: default;
+    }
+
+    #top-status-bar {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.96);
+      padding: 7px 24px;
+      border-radius: 30px;
+      border: 2px solid #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+    }
+    #status-text {
+      font-size: 15px;
+      color: #0f172a;
+      font-weight: 800;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    #ui-panel {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 9px 24px;
+      border-radius: 18px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+      border: 2px solid #cbd5e1;
+      z-index: 9999; 
+    }
+    .btn-row { display: flex; gap: 12px; align-items: center; }
+    .nav-btn {
+      background: #2563eb; color: #fff; border: none;
+      padding: 9px 22px; font-size: 15px; font-weight: bold;
+      border-radius: 12px; cursor: pointer; transition: background 0.2s;
+    }
+    .nav-btn:hover { background: #1d4ed8; }
+    .nav-btn:active { transform: scale(0.96); }
+
+    #quiz-controls { display: none; gap: 16px; align-items: center; }
+    .quiz-choice-btn {
+      background: #4f46e5; color: #fff; border: 2px solid #3730a3;
+      padding: 10px 24px; font-size: 17px; font-weight: 800;
+      border-radius: 14px; cursor: pointer; transition: all 0.15s;
+    }
+    .quiz-choice-btn:hover { background: #4338ca; transform: translateY(-2px); }
+    .quiz-choice-btn:active { transform: scale(0.96); }
+
+    #result-controls { display: none; gap: 10px; align-items: center; }
+  </style>
+</head>
+<body>
+
+<div id="scale-wrapper">
+  <div id="game-container">
+    <div id="top-status-bar">
+      <span id="status-text">1단계: 상황 제시 (벽과 페인트)</span>
+    </div>
+
+    <canvas id="canvas" width="960" height="580"></canvas>
+
+    <div id="ui-panel">
+      <div class="btn-row" id="normal-controls">
+        <button id="prev-btn" class="nav-btn" onclick="goPrev()" style="display:none;">◀ 이전</button>
+        <button id="next-btn" class="nav-btn" onclick="goNext()">다음 ▶</button>
+      </div>
+
+      <div id="quiz-controls">
+        <button id="choice-btn-1" class="quiz-choice-btn" onclick="chooseAnswer(0)">① 선택지</button>
+        <button id="choice-btn-2" class="quiz-choice-btn" onclick="chooseAnswer(1)">② 선택지</button>
+      </div>
+
+      <div id="result-controls">
+        <button class="nav-btn" onclick="loadScene(5)">◀ 설명 화면</button>
+        <button class="nav-btn" style="background:#7c3aed;" onclick="loadScene(6)">🔄 퀴즈 다시하기</button>
+        <button class="nav-btn" style="background:#10b981;" onclick="loadScene(0)">🏠 처음으로</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function resizeGame() {
+    const wrapper = document.getElementById('scale-wrapper');
+    const availableW = window.innerWidth * 0.95;
+    const availableH = window.innerHeight * 0.93;
+    const scale = Math.min(availableW / 960, availableH / 580);
+    wrapper.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', resizeGame);
+  window.addEventListener('orientationchange', () => setTimeout(resizeGame, 150));
+  resizeGame();
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const statusText = document.getElementById('status-text');
+  const normalControls = document.getElementById('normal-controls');
+  const quizControls = document.getElementById('quiz-controls');
+  const resultControls = document.getElementById('result-controls');
+  const choiceBtn1 = document.getElementById('choice-btn-1');
+  const choiceBtn2 = document.getElementById('choice-btn-2');
+
+  let scene = 0;
+  const maxScene = 7;
+  
+  let speechBubble1 = { text: "" }; 
+  let speechBubble2 = { text: "" };
+  let replyTimer = null;
+
+  // 소수점이 다채롭게 들어간 10문항 퀴즈 데이터
+  const quizList = [
+    {
+      q: "12.9 km를 가는데 8분이 걸렸어요.\n1 km를 가는데 걸린 시간(분)을 구하는 식은?",
+      tip: "구하는 기준: 1 km당 걸린 시간 ➔ 거리(12.9)가 나누는 수!",
+      choices: ["8 ÷ 12.9", "12.9 ÷ 8"],
+      ans: 0,
+      exp: "시간(8분) ÷ 거리(12.9km) = 8 ÷ 12.9 분/km"
+    },
+    {
+      q: "12.9 km 가는데 8분 걸렸어요.\n1분 동안 얼마나 갔는지(km) 구하는 식은?",
+      tip: "구하는 기준: 1분당 간 거리 ➔ 시간(8분)이 나누는 수!",
+      choices: ["8 ÷ 12.9", "12.9 ÷ 8"],
+      ans: 1,
+      exp: "거리(12.9km) ÷ 시간(8분) = 12.9 ÷ 8 km/분"
+    },
+    {
+      q: "7.5시간 동안 3사람이 똑같이 일했어요.\n1사람이 일한 시간을 구하는 식은?",
+      tip: "구하는 기준: 1사람당 일한 시간 ➔ 사람 수(3명)가 나누는 수!",
+      choices: ["7.5 ÷ 3", "3 ÷ 7.5"],
+      ans: 0,
+      exp: "총 시간(7.5시간) ÷ 사람 수(3명) = 7.5 ÷ 3 = 2.5시간"
+    },
+    {
+      q: "19.2 L의 물을 다 담는데 4개의 통이 필요해요.\n1통에는 물이 얼마나 담길까요?",
+      tip: "구하는 기준: 1통당 물의 양 ➔ 통의 개수(4개)가 나누는 수!",
+      choices: ["19.2 ÷ 4", "4 ÷ 19.2"],
+      ans: 0,
+      exp: "물(19.2L) ÷ 통(4개) = 19.2 ÷ 4 = 4.8 L/통"
+    },
+    {
+      q: "1통에 1.5 L가 들어가요.\n6 L의 물을 담으려면 몇 통이 필요할까요?",
+      tip: "구하는 기준: 6 L 안에 1.5 L들이 통이 몇 개 들어갈까?",
+      choices: ["6 ÷ 1.5", "1.5 ÷ 6"],
+      ans: 0,
+      exp: "전체 물(6L) ÷ 한 통 들이(1.5L) = 6 ÷ 1.5 = 4통"
+    },
+    {
+      q: "소금 42.5 g을 물 250 g에 녹였어요.\n물 1 g당 녹아 있는 소금의 양은?",
+      tip: "구하는 기준: 물 1 g당 소금 ➔ 물의 양(250g)이 나누는 수!",
+      choices: ["250 ÷ 42.5", "42.5 ÷ 250"],
+      ans: 1,
+      exp: "소금(42.5g) ÷ 물(250g) = 42.5 ÷ 250 g/g"
+    },
+    {
+      q: "자동차로 168.4 km 달리는데 기름 12.5 L를 썼어요.\n기름 1 L로 달린 거리는?",
+      tip: "구하는 기준: 기름 1 L당 달린 거리 ➔ 기름양(12.5L)이 나누는 수!",
+      choices: ["168.4 ÷ 12.5", "12.5 ÷ 168.4"],
+      ans: 0,
+      exp: "거리(168.4km) ÷ 기름(12.5L) = 168.4 ÷ 12.5 km/L"
+    },
+    {
+      q: "멜론 2.5개의 무게가 총 4.8 kg이었어요.\n멜론 1개의 무게는 몇 kg일까요?",
+      tip: "구하는 기준: 멜론 1개당 무게 ➔ 개수(2.5개)가 나누는 수!",
+      choices: ["2.5 ÷ 4.8", "4.8 ÷ 2.5"],
+      ans: 1,
+      exp: "전체 무게(4.8kg) ÷ 개수(2.5개) = 4.8 ÷ 2.5 kg/개"
+    },
+    {
+      q: "리본 18.6 m로 선물 상자 6개를 포장했어요.\n상자 1개를 포장하는데 든 리본의 길이는?",
+      tip: "구하는 기준: 상자 1개당 든 길이 ➔ 상자 개수(6개)가 나누는 수!",
+      choices: ["18.6 ÷ 6", "6 ÷ 18.6"],
+      ans: 0,
+      exp: "전체 리본(18.6m) ÷ 상자 수(6개) = 18.6 ÷ 6 = 3.1 m"
+    },
+    {
+      q: "구리선 4.5 m의 무게가 85.5 g입니다.\n구리선 1 m의 무게를 구하는 식은?",
+      tip: "구하는 기준: 구리선 1 m당 무게 ➔ 길이(4.5m)가 나누는 수!",
+      choices: ["4.5 ÷ 85.5", "85.5 ÷ 4.5"],
+      ans: 1,
+      exp: "무게(85.5g) ÷ 길이(4.5m) = 85.5 ÷ 4.5 = 19 g/m"
+    }
+  ];
+
+  let quizIndex = 0;
+  let quizScore = 0;
+  let quizResultStatus = "";
+  let quizFeedbackExp = "";
+  let isAnswerLocked = false;
+
+  function setDialogue(speaker1, text1, speaker2, text2, delay = 1000) {
+    if (replyTimer) clearTimeout(replyTimer);
+    speechBubble1.text = ""; speechBubble2.text = "";
+    if (speaker1 === 'char') speechBubble1.text = text1; 
+    else if (speaker1 === 'friend') speechBubble2.text = text1;
+
+    if (text2 && speaker2) {
+      replyTimer = setTimeout(() => {
+        if (speaker2 === 'char') speechBubble1.text = text2; 
+        else if (speaker2 === 'friend') speechBubble2.text = text2;
+      }, delay);
+    }
+  }
+
+  function loadScene(newScene) {
+    scene = newScene;
+    if (replyTimer) clearTimeout(replyTimer);
+    
+    speechBubble1.text = ""; speechBubble2.text = "";
+    normalControls.style.display = 'none';
+    quizControls.style.display = 'none';
+    resultControls.style.display = 'none';
+
+    if (scene <= 5) {
+      normalControls.style.display = 'flex';
+      nextBtn.innerText = (scene === 5) ? "게임 시작하기 🎮" : "다음 ▶";
+      prevBtn.style.display = scene > 0 ? 'inline-block' : 'none';
+    }
+
+    if (scene === 0) {
+      statusText.innerText = "1단계: 상황 제시 (벽과 페인트)";
+      setDialogue('char', "이 벽 10㎡ 칠하는데\n3L가 들었어.", 
+                  'friend', "그럼 1㎡를 칠하려면\n페인트가 얼마나 필요하지?", 1000);
+    } 
+    else if (scene === 1) {
+      statusText.innerText = "2단계: 식 세우기 고민";
+      setDialogue('char', "10 ÷ 3 해야 하나?\n3 ÷ 10 해야 하나?", 
+                  'friend', "음... 1㎡당 필요한 양이니까\n페인트양을 면적으로 나눠야 해!", 1100);
+    } 
+    else if (scene === 2) {
+      statusText.innerText = "3단계: 자르는 수와 잘리는 수";
+      setDialogue('friend', "나누는 수는 '자르는 수',\n나눠지는 수는 '잘림을 당하는 수'야!", 
+                  'char', "잉? 무슨 소리야?", 1100);
+    } 
+    else if (scene === 3) {
+      statusText.innerText = "4단계: 귤 예시로 쉽게 이해하기";
+      setDialogue('friend', "귤 15개를 3명이 나눠 먹으면\n15 ÷ 3 = 5개(한 사람 몫)지!", 
+                  'char', "아! 3명으로 똑같이 나누면\n1명 몫이 딱 나오는구나!", 1100);
+    } 
+    else if (scene === 4) {
+      statusText.innerText = "5단계: 반대의 끔찍한 상황";
+      // 잘리지 않도록 2줄로 분할
+      setDialogue('friend', "만약 3 ÷ 15를 하면...\n사람 3명을 15조각 내는 셈이야!", 
+                  'char', "으악! 상상도 하기 싫어!", 1100);
+    } 
+    else if (scene === 5) {
+      statusText.innerText = "6단계: 페인트와 벽 개념 정리 완료!";
+      setDialogue('char', "그럼 1㎡당 페인트는\n3 ÷ 10 = 0.3L가 맞네!", 
+                  'friend', "완벽해! 궁금한 1당 단위가\n뒤로 가서 자르는 나눗셈 게임을 해보자!", 1100);
+    }
+    else if (scene === 6) {
+      quizIndex = 0;
+      quizScore = 0;
+      loadQuizQuestion();
+    }
+    else if (scene === 7) {
+      resultControls.style.display = 'flex';
+      statusText.innerText = "🎉 10문제 완료! 최종 결과를 확인하세요.";
+      setDialogue('char', `10문제 중에 ${quizScore}문제를 맞혔어!`, 
+                  'friend', quizScore >= 8 ? "대단해! 이제 어떤 나눗셈이든 절대 안 헷갈리겠네!" : "수고했어! '1당 기준이 나누는 수'라는 것만 기억하자!", 900);
+    }
+  }
+
+  function loadQuizQuestion() {
+    isAnswerLocked = false;
+    quizResultStatus = "";
+    quizFeedbackExp = "";
+    quizControls.style.display = 'flex';
+
+    const current = quizList[quizIndex];
+    statusText.innerText = `🎮 문제 ${quizIndex + 1} / 10 : 알맞은 식을 선택하세요!`;
+    choiceBtn1.innerText = `①  ${current.choices[0]}`;
+    choiceBtn2.innerText = `②  ${current.choices[1]}`;
+    
+    setDialogue('friend', "자... 이제 이해가 되었나 어디 볼까?", null, null);
+  }
+
+  function chooseAnswer(selectedIdx) {
+    if (isAnswerLocked) return;
+    isAnswerLocked = true;
+
+    const current = quizList[quizIndex];
+    if (selectedIdx === current.ans) {
+      quizScore++;
+      quizResultStatus = "정답! 🎉";
+      setDialogue('char', "정답이다! 기준이 뒤로 가서 나눴지!", null, null);
+    } else {
+      quizResultStatus = "오답! ❌";
+      setDialogue('char', "앗, 나누는 수를 반대로 골랐네!", null, null);
+    }
+    quizFeedbackExp = current.exp;
+
+    setTimeout(() => {
+      quizIndex++;
+      if (quizIndex < quizList.length) {
+        loadQuizQuestion();
+      } else {
+        loadScene(7);
+      }
+    }, 1800);
+  }
+
+  function drawDoodleChar(x, y, scale = 1, isFriend = false, eyeType = 'normal') {
+    ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
+    ctx.lineWidth = 3 / scale; ctx.strokeStyle = "#111"; ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.arc(0, -50, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (isFriend) { ctx.fillStyle = "#3498db"; ctx.beginPath(); ctx.arc(0, -62, 14, Math.PI, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+    ctx.fillStyle = "#111";
+    if (eyeType === 'sigh') { ctx.fillRect(-10, -52, 6, 2); ctx.fillRect(4, -52, 6, 2); } 
+    else if (eyeType === 'horror') { ctx.fillRect(-8, -55, 4, 8); ctx.fillRect(4, -55, 4, 8); }
+    else { ctx.beginPath(); ctx.arc(-5, -52, 2.5, 0, Math.PI * 2); ctx.arc(5, -52, 2.5, 0, Math.PI * 2); ctx.fill(); }
+    ctx.beginPath(); ctx.moveTo(0, -34); ctx.lineTo(0, -10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -25); ctx.lineTo(-12, -15); ctx.moveTo(0, -25); ctx.lineTo(12, -15);
+    ctx.moveTo(0, -10); ctx.lineTo(-8, 0); ctx.moveTo(0, -10); ctx.lineTo(8, 0); ctx.stroke();
+    ctx.restore();
+  }
+
+  // 화면 밖으로 삐져나가지 않도록 수평·수직을 안전 보정하는 말풍선 함수
+  function drawBubble(x, y, text, isFriend = false, customOffsetY = 0) {
+    if (!text) return; 
+    ctx.save(); 
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    const lines = text.split('\n');
+    let maxW = 0; 
+    lines.forEach(l => { maxW = Math.max(maxW, ctx.measureText(l).width); });
+    
+    const boxW = Math.max(maxW + 28, 120); 
+    const boxH = Math.max(lines.length * 20 + 16, 42);
+    
+    // 캐릭터 머리 위쪽 높이
+    const baseTargetY = isFriend ? y - 138 : y - 134;
+    const targetY = baseTargetY + customOffsetY;
+    
+    let drawX = x;
+    if (drawX - boxW / 2 < 20) drawX = 20 + boxW / 2;
+    if (drawX + boxW / 2 > 940) drawX = 940 - boxW / 2;
+
+    ctx.fillStyle = isFriend ? "#e8f4fd" : "rgba(255, 255, 255, 0.98)"; 
+    ctx.strokeStyle = isFriend ? "#2980b9" : "#222"; 
+    ctx.lineWidth = 2.2;
+    
+    ctx.beginPath(); 
+    ctx.roundRect(drawX - boxW / 2, targetY, boxW, boxH, 8); 
+    ctx.fill(); ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(x - 6, targetY + boxH);
+    ctx.lineTo(x, targetY + boxH + 8);
+    ctx.lineTo(x + 6, targetY + boxH);
+    ctx.fillStyle = isFriend ? "#e8f4fd" : "#fff";
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#111"; 
+    ctx.textAlign = "center";
+    lines.forEach((l, idx) => {
+      ctx.fillText(l, drawX, targetY + 20 + (idx * 20));
+    });
+    ctx.restore();
+  }
+
+  function renderProps() {
+    ctx.save();
+    
+    if (scene === 0 || scene === 1 || scene === 5) {
+      ctx.fillStyle = "#e0f2fe"; ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect(380, 205, 160, 195, 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#0369a1"; ctx.font = "bold 20px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("벽 면적", 460, 285);
+      ctx.font = "bold 26px sans-serif";
+      ctx.fillText("10 ㎡", 460, 320);
+
+      ctx.fillStyle = "#fef08a"; ctx.strokeStyle = "#ca8a04"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect(260, 315, 75, 85, 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#a16207"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("페인트", 297, 350);
+      ctx.font = "bold 20px sans-serif";
+      ctx.fillText("3 L", 297, 378);
+
+      if (scene === 1) {
+        ctx.fillStyle = "#fff"; ctx.strokeStyle = "#334155"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(330, 85, 300, 56, 12); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#e11d48"; ctx.font = "bold 19px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("① 10 ÷ 3   vs   ② 3 ÷ 10", 480, 120);
+      } else if (scene === 5) {
+        ctx.fillStyle = "#f0fdf4"; ctx.strokeStyle = "#22c55e"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(240, 70, 480, 85, 12); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#15803d"; ctx.font = "bold 21px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("페인트양(3L) ÷ 면적(10㎡) = 0.3 L/㎡", 480, 106);
+        ctx.fillStyle = "#166534"; ctx.font = "bold 14px sans-serif";
+        ctx.fillText("★ 1㎡당 필요한 페인트양 = 3 ÷ 10", 480, 136);
+      }
+    }
+    else if (scene === 2) {
+      ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#64748b"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(260, 72, 440, 95, 12); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#0f172a"; ctx.font = "bold 25px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("10    ÷    3", 480, 108);
+
+      ctx.font = "bold 13.5px sans-serif";
+      ctx.fillStyle = "#0284c7";
+      ctx.fillText("▲ 잘림을 당하는 수", 385, 134);
+      ctx.fillText("(칠해야 할 10㎡)", 385, 153);
+
+      ctx.fillStyle = "#e11d48";
+      ctx.fillText("▲ 자르는 수", 575, 134);
+      ctx.fillText("(나누는 기준)", 575, 153);
+    }
+    else if (scene === 3) {
+      ctx.fillStyle = "#fefce8"; ctx.strokeStyle = "#facc15"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(190, 75, 580, 58, 12); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#854d0e"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("Q. 15개의 귤이 있는데 사람은 세 사람!", 480, 99);
+      ctx.fillStyle = "#a16207"; ctx.font = "bold 14px sans-serif";
+      ctx.fillText("한 사람이 먹을 귤의 양을 구하려면 어떻게 나눠야 할까?", 480, 121);
+
+      ctx.fillStyle = "#fff"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(230, 205, 500, 135, 12); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#ea580c";
+      for (let g = 0; g < 3; g++) {
+        let gx = 290 + g * 160;
+        ctx.strokeStyle = "#fb923c"; ctx.lineWidth = 2;
+        ctx.strokeRect(gx - 45, 220, 90, 78);
+        ctx.fillStyle = "#64748b"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(`사람 ${g+1}`, gx, 238);
+
+        ctx.fillStyle = "#f97316";
+        for (let i = 0; i < 5; i++) {
+          ctx.beginPath();
+          ctx.arc(gx - 26 + (i % 3) * 26, 258 + Math.floor(i / 3) * 24, 8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.fillStyle = "#0f172a"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("귤 15개 ÷ 3명 = 5개 (1명당 귤의 개수)", 480, 325);
+    }
+    else if (scene === 4) {
+      // 5단계: 가운데 제목을 위로 조금 더 올려 말풍선과 충분히 떨어지도록 배치
+      ctx.fillStyle = "#b91c1c"; ctx.font = "bold 21px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("😱 3사람 ÷ 15 = 사람을 15조각으로?!", 480, 175);
+    }
+    else if (scene === 6) {
+      const q = quizList[quizIndex];
+
+      ctx.fillStyle = "#334155"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "left";
+      ctx.fillText(`진행: ${quizIndex + 1} / 10`, 35, 45);
+      ctx.fillText(`점수: ${quizScore} 점`, 35, 70);
+
+      ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#475569"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect(140, 80, 680, 140, 16); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#1e293b"; ctx.font = "bold 20px 'Pretendard', sans-serif"; ctx.textAlign = "center";
+      const qLines = q.q.split('\n');
+      qLines.forEach((l, idx) => {
+        ctx.fillText(l, 480, 125 + idx * 28);
+      });
+
+      ctx.fillStyle = "#0284c7"; ctx.font = "bold 14.5px sans-serif";
+      ctx.fillText(`💡 힌트: ${q.tip}`, 480, 195);
+
+      if (quizResultStatus) {
+        ctx.fillStyle = quizResultStatus.includes("정답") ? "#16a34a" : "#dc2626";
+        ctx.font = "bold 28px sans-serif";
+        ctx.fillText(quizResultStatus, 480, 255);
+
+        ctx.fillStyle = "#1e293b"; ctx.font = "bold 17px sans-serif";
+        ctx.fillText(`해설: ${quizFeedbackExp}`, 480, 290);
+      }
+    }
+    else if (scene === 7) {
+      ctx.fillStyle = "#8e44ad"; ctx.font = "bold 34px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(`🎉 최종 결과: 10문제 중 ${quizScore}문제 정답!`, 480, 85);
+
+      ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(180, 120, 600, 160, 14); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#0f172a"; ctx.font = "bold 18px sans-serif";
+      ctx.fillText("🌟 나눗셈 식 세우기 완전 정복 공식", 480, 155);
+      ctx.font = "15px sans-serif"; ctx.fillStyle = "#334155";
+      ctx.fillText("1️⃣ 알고 싶은 기준 단위 ('1당', '1명당', '1km당')를 확인한다!", 480, 190);
+      ctx.fillText("2️⃣ 그 기준이 되는 수가 바로 뒤에 오는 '나누는 수(분모)'!", 480, 220);
+      ctx.fillStyle = "#e11d48"; ctx.font = "bold 15px sans-serif";
+      ctx.fillText("👉 (나눠지는 전체 대상) ÷ (궁금한 기준 대상)", 480, 250);
+    }
+    
+    ctx.restore();
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const baselineY = 410;
+
+    ctx.save();
+    
+    ctx.lineWidth = 3; ctx.strokeStyle = "#334155";
+    ctx.beginPath(); ctx.moveTo(40, baselineY); ctx.lineTo(920, baselineY); ctx.stroke();
+
+    renderProps();
+
+    const char1X = 145; 
+    const char2X = 815; 
+
+    // 말풍선 높이를 아래로 살짝 내려 화면 위쪽 잘림 현상 방지
+    let b1OffsetY = 0;
+    let b2OffsetY = 0;
+
+    if (scene === 2) {
+      b1OffsetY = -10;
+      b2OffsetY = -10;
+    } else if (scene === 3) {
+      b1OffsetY = -15;
+      b2OffsetY = -15;
+    } else if (scene === 4) {
+      // 5단계: 사진에서 잘렸던 친구 말풍선을 아래로 내려 화면 안에 안착
+      b1OffsetY = 15;
+      b2OffsetY = 15;
+    } else if (scene === 5) {
+      b1OffsetY = -10;
+      b2OffsetY = -10;
+    } else if (scene === 6) {
+      b1OffsetY = -5;
+      b2OffsetY = -5;
+    }
+
+    drawDoodleChar(char1X, baselineY, 1.0, false, scene === 4 ? 'horror' : 'normal');
+    drawBubble(char1X, baselineY, speechBubble1.text, false, b1OffsetY);
+
+    drawDoodleChar(char2X, baselineY, 1.0, true, 'smile');
+    drawBubble(char2X, baselineY, speechBubble2.text, true, b2OffsetY);
+
+    ctx.restore();
+    requestAnimationFrame(render);
+  }
+
+  window.goPrev = function() { if (scene > 0) loadScene(scene - 1); };
+  window.goNext = function() { if (scene < maxScene) loadScene(scene + 1); };
+
+  loadScene(0);
+  render();
+</script>
+</body>
+</html>
