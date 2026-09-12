@@ -2,41 +2,75 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>중1 수학 - 소수와 합성수 (반응형 완성판)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>중1 수학 - 소수와 합성수 (모바일 완벽 호환판)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background-color: #f0f2f5;
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #1e293b;
       font-family: 'Pretendard', -apple-system, sans-serif;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      overflow: hidden;
     }
+
+    /* 화면 잘림 방지 반응형 래퍼 */
+    #scale-wrapper {
+      position: absolute;
+      width: 960px;
+      height: 580px;
+      transform-origin: center center;
+    }
+
     #game-container {
       position: relative;
       width: 960px;
       height: 580px; 
       background: #ffffff;
-      border: 3px solid #222;
-      border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+      border: 3px solid #334155;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.25);
       overflow: hidden;
-      /* 📱 모바일 및 화면 크기 자동 축소를 위한 기준점 설정 */
-      transform-origin: center center;
     }
+
     canvas { 
       position: absolute;
       top: 0; left: 0;
-      display: block; width: 100%; height: 100%; 
+      display: block; 
+      width: 960px; 
+      height: 580px; 
       z-index: 1;
+      cursor: default;
     }
+
+    /* 단계 멘트를 위로 올린 상단 배너 */
+    #top-status-bar {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.96);
+      padding: 8px 24px;
+      border-radius: 30px;
+      border: 2px solid #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+    }
+    #status-text {
+      font-size: 16px;
+      color: #0f172a;
+      font-weight: 800;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* 하단 조작 컨트롤 패널 */
     #ui-panel {
       position: absolute;
-      bottom: 12px;
+      bottom: 15px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -44,47 +78,64 @@
       gap: 8px;
       align-items: center;
       background: rgba(255, 255, 255, 0.96);
-      padding: 8px 24px;
+      padding: 9px 24px;
       border-radius: 18px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      border: 1px solid #ddd;
-      max-width: 95%;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+      border: 2px solid #cbd5e1;
       z-index: 9999; 
     }
-    .btn-row { display: flex; gap: 10px; align-items: center; }
+    .btn-row { display: flex; gap: 12px; align-items: center; }
     .nav-btn {
-      background: #2c3e50; color: #fff; border: none;
-      padding: 8px 18px; font-size: 14px; font-weight: bold;
-      border-radius: 12px; cursor: pointer; transition: all 0.2s;
+      background: #2563eb; color: #fff; border: none;
+      padding: 9px 22px; font-size: 15px; font-weight: bold;
+      border-radius: 12px; cursor: pointer; transition: background 0.2s;
     }
-    .nav-btn:hover { background: #1a252f; }
+    .nav-btn:hover { background: #1d4ed8; }
     .nav-btn:active { transform: scale(0.96); }
     
     #result-controls { display: none; gap: 10px; align-items: center; }
-    #status-text { font-size: 14px; color: #333; font-weight: 800; text-align: center; }
   </style>
 </head>
 <body>
 
-<div id="game-container">
-  <canvas id="canvas" width="960" height="580"></canvas>
-  <div id="ui-panel">
-    <span id="status-text">준비</span>
-    
-    <div class="btn-row" id="normal-controls">
-      <button id="prev-btn" class="nav-btn" onclick="goPrev()">◀ 이전</button>
-      <button id="next-btn" class="nav-btn" onclick="goNext()">다음 ▶</button>
+<div id="scale-wrapper">
+  <div id="game-container">
+    <!-- 상단 멘트 안내 배너 -->
+    <div id="top-status-bar">
+      <span id="status-text">준비</span>
     </div>
 
-    <div id="result-controls">
-      <button class="nav-btn" onclick="loadScene(16)">◀ 설명 화면으로</button>
-      <button class="nav-btn" style="background: #8e44ad;" onclick="loadScene(18)">🔄 게임 다시 하기</button>
-      <button class="nav-btn" style="background: #27ae60;" onclick="loadScene(0)">🏠 처음으로</button>
+    <canvas id="canvas" width="960" height="580"></canvas>
+    
+    <!-- 하단 조작 바 -->
+    <div id="ui-panel">
+      <div class="btn-row" id="normal-controls">
+        <button id="prev-btn" class="nav-btn" onclick="goPrev()">◀ 이전</button>
+        <button id="next-btn" class="nav-btn" onclick="goNext()">다음 ▶</button>
+      </div>
+
+      <div id="result-controls">
+        <button class="nav-btn" onclick="loadScene(16)">◀ 설명 화면으로</button>
+        <button class="nav-btn" style="background: #7c3aed;" onclick="loadScene(18)">🔄 게임 다시 하기</button>
+        <button class="nav-btn" style="background: #10b981;" onclick="loadScene(0)">🏠 처음으로</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
+  // 모바일 가로 모드 상·하단 바를 감안한 여유 배율 계산
+  function resizeGame() {
+    const wrapper = document.getElementById('scale-wrapper');
+    const availableW = window.innerWidth * 0.95;
+    const availableH = window.innerHeight * 0.93;
+    const scale = Math.min(availableW / 960, availableH / 580);
+    wrapper.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', resizeGame);
+  window.addEventListener('orientationchange', () => setTimeout(resizeGame, 150));
+  resizeGame();
+
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   
@@ -723,11 +774,8 @@
       ctx.fillStyle = "#fdfdfd"; ctx.fillRect(0, 0, 960, 580);
 
       ctx.fillStyle = "#2c3e50"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "left";
-      ctx.fillText(`진행: ${gameIndex + 1} / 15`, 30, 36);
-      ctx.fillText(`정답: ${gameScore} 개`, 30, 64);
-
-      ctx.fillStyle = "#7f8c8d"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
-      ctx.fillText("숫자를 보고 알맞은 바구니 또는 휴지통을 누르세요!", 480, 32);
+      ctx.fillText(`진행: ${gameIndex + 1} / 15`, 30, 42);
+      ctx.fillText(`정답: ${gameScore} 개`, 30, 70);
 
       let hoverPrime = (mouseX > 120 && mouseX < 320 && mouseY > 330 && mouseY < 520);
       let hoverTrash = (mouseX > 400 && mouseX < 560 && mouseY > 330 && mouseY < 520);
@@ -757,7 +805,7 @@
             gameResultMark = "시간 초과! ❌";
             gameResultFormula = "";
             gameResultDivs = "";
-            gameResultExp = "망설이지 말고 바구니나 휴지통을 클릭해봐!";
+            gameResultExp = "망설이지 말고 바구니나 휴지통을 눌러봐!";
             gameStatus = 'result';
             setTimeout(nextGameQuestion, 1600);
           }
@@ -856,12 +904,20 @@
     requestAnimationFrame(render);
   }
 
-  // --- 반응형 스케일 보정이 적용된 마우스 이벤트 ---
-  canvas.addEventListener('mousemove', function(e) {
+  // 터치 & 마우스 좌표 정규화
+  function getCanvasPos(e) {
     const rect = canvas.getBoundingClientRect();
-    const scale = parseFloat(document.getElementById('game-container').style.transform.replace(/[^0-9.]/g, '') || 1);
-    mouseX = ((e.clientX - rect.left) * (canvas.width / rect.width)) / (scale === 0 ? 1 : scale);
-    mouseY = ((e.clientY - rect.top) * (canvas.height / rect.height)) / (scale === 0 ? 1 : scale);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * (canvas.width / rect.width),
+      y: (clientY - rect.top) * (canvas.height / rect.height)
+    };
+  }
+
+  function handlePointerMove(e) {
+    const pos = getCanvasPos(e);
+    mouseX = pos.x; mouseY = pos.y;
     
     if (scene === 18 && gameStatus === 'falling') {
       if ((mouseX > 120 && mouseX < 320 && mouseY > 320 && mouseY < 510) || 
@@ -874,21 +930,25 @@
     } else {
       canvas.style.cursor = 'default';
     }
-  });
+  }
 
-  canvas.addEventListener('click', function(e) {
+  function handlePointerDown(e) {
     if (scene !== 18 || gameStatus !== 'falling') return;
-    
-    if (mouseX > 120 && mouseX < 320 && mouseY > 320 && mouseY < 510) {
+    const pos = getCanvasPos(e);
+    if (pos.x > 120 && pos.x < 320 && pos.y > 320 && pos.y < 510) {
       catchNumber('prime', 220);
     } 
-    else if (mouseX > 400 && mouseX < 560 && mouseY > 320 && mouseY < 510) {
+    else if (pos.x > 400 && pos.x < 560 && pos.y > 320 && pos.y < 510) {
       catchNumber('trash', 480);
     }
-    else if (mouseX > 640 && mouseX < 840 && mouseY > 320 && mouseY < 510) {
+    else if (pos.x > 640 && pos.x < 840 && pos.y > 320 && pos.y < 510) {
       catchNumber('comp', 740);
     }
-  });
+  }
+
+  canvas.addEventListener('mousemove', handlePointerMove);
+  canvas.addEventListener('click', handlePointerDown);
+  canvas.addEventListener('touchstart', (e) => { handlePointerMove(e); handlePointerDown(e); }, { passive: true });
 
   function catchNumber(selectedType, targetX) {
     gameSelectedType = selectedType;
@@ -914,22 +974,6 @@
       gameStatus = 'falling';
     }
   }
-
-  // --- 화면 크기에 맞춰 비율 자동 조절하는 반응형 엔진 ---
-  function resizeGame() {
-    const container = document.getElementById('game-container');
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-    
-    const scaleX = windowWidth / 980;
-    const scaleY = windowHeight / 620;
-    const scale = Math.min(scaleX, scaleY);
-    
-    container.style.transform = `scale(${scale})`;
-  }
-
-  window.addEventListener('resize', resizeGame);
-  window.addEventListener('load', resizeGame);
 
   window.goPrev = function() {
     if (scene > 0) loadScene(scene - 1);
