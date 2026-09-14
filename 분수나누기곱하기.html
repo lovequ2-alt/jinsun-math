@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>중1 수학 - 분수 곱셈 vs 나눗셈 완벽 탐험 & 실전 퀴즈</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0f172a;
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    #scale-wrapper {
+      position: absolute;
+      width: 960px;
+      height: 580px;
+      transform-origin: center center;
+    }
+
+    #game-container {
+      position: relative;
+      width: 960px;
+      height: 580px; 
+      background: #ffffff;
+      border: 3px solid #334155;
+      border-radius: 20px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+      overflow: hidden;
+    }
+
+    canvas { 
+      position: absolute;
+      top: 0; left: 0;
+      display: block; 
+      width: 960px; 
+      height: 580px; 
+      z-index: 1;
+      cursor: default;
+    }
+
+    #top-status-bar {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.98);
+      padding: 6px 22px;
+      border-radius: 30px;
+      border: 2px solid #cbd5e1;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      z-index: 9999;
+    }
+    #status-text {
+      font-size: 14px;
+      color: #0f172a;
+      font-weight: 800;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    #ui-panel {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 7px 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+      border: 2px solid #cbd5e1;
+      z-index: 9999; 
+    }
+    .btn-row { display: flex; gap: 10px; align-items: center; }
+    .nav-btn {
+      background: #334155; color: #fff; border: none;
+      padding: 8px 18px; font-size: 14px; font-weight: bold;
+      border-radius: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .nav-btn:hover:not(:disabled) { background: #1e293b; }
+    .nav-btn:active:not(:disabled) { transform: scale(0.96); }
+    .nav-btn:disabled {
+      background: #cbd5e1 !important;
+      color: #94a3b8 !important;
+      cursor: not-allowed !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    #talk-btn {
+      background: #2563eb;
+      color: #ffffff;
+      padding: 8px 24px;
+      font-size: 14.5px;
+      box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35);
+    }
+    #talk-btn:hover:not(:disabled) { background: #1d4ed8; }
+    #talk-btn:disabled {
+      background: #94a3b8 !important;
+      color: #e2e8f0 !important;
+      cursor: not-allowed !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    /* 퀴즈 모달 레이어 */
+    #quiz-overlay {
+      position: absolute;
+      top: 50px; left: 50%;
+      transform: translateX(-50%);
+      width: 820px; height: 500px;
+      background: #ffffff;
+      border-radius: 16px;
+      border: 2px solid #e2e8f0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      z-index: 9000;
+      display: none;
+      flex-direction: column;
+      padding: 20px 28px;
+    }
+    .quiz-badge {
+      display: inline-block; padding: 4px 12px; border-radius: 12px;
+      font-size: 13px; font-weight: 800; margin-bottom: 6px; width: fit-content;
+      background: #e2e8f0; color: #334155;
+    }
+    .quiz-question {
+      font-size: 16.5px; font-weight: 800; color: #0f172a; line-height: 1.45; margin-bottom: 12px;
+    }
+
+    .formula-select-row {
+      display: flex; gap: 14px; margin-bottom: 12px;
+    }
+    .formula-card {
+      position: relative;
+      flex: 1; padding: 10px 14px; border-radius: 12px; border: 2.5px solid #cbd5e1;
+      background: #f8fafc; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 17px; font-weight: 800; color: #334155; transition: all 0.2s;
+    }
+    .formula-card:hover:not(.disabled) { border-color: #94a3b8; background: #f1f5f9; }
+    .formula-card.selected {
+      border-color: #2563eb; background: #eff6ff; color: #1d4ed8;
+      box-shadow: 0 3px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    /* 🚨 빨간불 경고등 & 진동 효과 */
+    .formula-card.red-alert {
+      border-color: #ef4444 !important;
+      background: #fef2f2 !important;
+      color: #b91c1c !important;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important;
+      animation: redFlashShake 0.45s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes redFlashShake {
+      0%, 100% { transform: translateX(0); }
+      15% { transform: translateX(-8px); }
+      30% { transform: translateX(7px); }
+      45% { transform: translateX(-5px); }
+      60% { transform: translateX(4px); }
+      75% { transform: translateX(-2px); }
+    }
+
+    .lamp-indicator {
+      position: absolute;
+      top: 8px; right: 10px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .red-alert .lamp-indicator {
+      opacity: 1;
+    }
+
+    .formula-card.disabled { cursor: not-allowed; }
+
+    .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 4px; font-size: 14px; line-height: 1; }
+    .frac .top { border-bottom: 2px solid currentColor; padding-bottom: 2px; }
+    .frac .bottom { padding-top: 2px; }
+
+    .input-answer-row {
+      display: flex; gap: 12px; align-items: center; margin-bottom: 10px;
+      background: #f8fafc; padding: 10px 16px; border-radius: 12px; border: 1.5px solid #e2e8f0;
+    }
+    .input-label { font-size: 14.5px; font-weight: 800; color: #334155; }
+    .quiz-input {
+      padding: 8px 14px; font-size: 17px; font-weight: bold; border-radius: 10px;
+      border: 2px solid #cbd5e1; width: 140px; outline: none; text-align: center;
+    }
+    .quiz-input:focus { border-color: #2563eb; }
+    .quiz-submit-btn {
+      padding: 9px 20px; font-size: 14.5px; font-weight: bold; border-radius: 10px;
+      background: #0f172a; color: #fff; border: none; cursor: pointer; transition: background 0.2s;
+    }
+    .quiz-submit-btn:hover { background: #1e293b; }
+
+    .quiz-feedback {
+      flex: 1; padding: 10px 16px; border-radius: 12px; font-size: 13.5px; line-height: 1.5;
+      display: none; overflow-y: auto;
+    }
+    .feedback-correct { background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; }
+    .feedback-wrong { background: #fef2f2; border: 1.5px solid #fca5a5; color: #991b1b; }
+    .quiz-bottom { display: flex; justify-content: flex-end; margin-top: 6px; }
+
+    /* 최종 결과 요약 모달 */
+    #summary-view {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+    }
+    .summary-card {
+      background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 14px;
+      padding: 16px 20px; margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="scale-wrapper">
+  <div id="game-container">
+    <div id="top-status-bar">
+      <span id="status-text">1단계: 곱해지는 수와 나눠지는 수가 분수일때 헷갈리는 개념</span>
+    </div>
+
+    <canvas id="canvas" width="960" height="580"></canvas>
+
+    <!-- 퀴즈 오버레이 -->
+    <div id="quiz-overlay">
+      <!-- 퀴즈 문제 풀이 영역 -->
+      <div id="quiz-question-area" style="display:flex; flex-direction:column; height:100%;">
+        <div id="q-badge" class="quiz-badge">문제 1/6</div>
+        <div id="q-text" class="quiz-question">문제가 여기에 나타납니다.</div>
+        
+        <div style="font-size:13.5px; font-weight:800; color:#475569; margin-bottom:6px;">① 상황에 어울리는 식을 고르세요:</div>
+        <div class="formula-select-row">
+          <div id="card-mul" class="formula-card" onclick="selectFormula('mul')">
+            <span id="card-mul-text">식 1</span>
+            <span class="lamp-indicator">🚨</span>
+          </div>
+          <div id="card-div" class="formula-card" onclick="selectFormula('div')">
+            <span id="card-div-text">식 2</span>
+            <span class="lamp-indicator">🚨</span>
+          </div>
+        </div>
+
+        <div class="input-answer-row">
+          <span class="input-label">② 고른 식을 계산한 최종 답:</span>
+          <input type="number" id="q-input" class="quiz-input" placeholder="숫자 입력" onkeydown="if(event.key==='Enter') submitQuizAnswer()">
+          <button id="q-submit-btn" class="quiz-submit-btn" onclick="submitQuizAnswer()">정답 확인</button>
+        </div>
+
+        <div id="q-feedback" class="quiz-feedback"></div>
+
+        <div class="quiz-bottom">
+          <button id="q-next-btn" class="nav-btn" style="background:#059669; display:none;" onclick="nextQuizQuestion()">다음 문제 ▶</button>
+        </div>
+      </div>
+
+      <!-- 최종 결과 요약 정리 화면 (LaTeX 깨짐 없는 깔끔한 표기) -->
+      <div id="summary-view">
+        <div>
+          <div style="font-size:24px; font-weight:800; color:#0f172a; margin-bottom:6px;">🎉 퀴즈 탐험 완료!</div>
+          <div id="final-score-text" style="font-size:17px; font-weight:800; color:#2563eb; margin-bottom:12px;">최종 점수: 6 / 6 점</div>
+          
+          <div class="summary-card">
+            <div style="font-size:16px; font-weight:800; color:#0f172a; margin-bottom:12px;">💡 분수 곱셈 & 나눗셈 완전 정복 포인트</div>
+            <div style="font-size:14.5px; color:#334155; line-height:1.8;">
+              • <b>분수 곱셈 (수 × 분수) :</b> 전체에서 <b>일부만 떼어내는 상황</b>이므로 원래 크기보다 <b>줄어듭니다(축소).</b><br>
+              • <b>분수 나눗셈 (수 ÷ 분수) :</b> 주어진 수가 일부에 불과하므로, <b>원래 전체(100%)를 복원</b>하기 위해 원래 크기보다 <b>커집니다(복원).</b><br>
+              • <b>문장제 판단 팁 :</b> "전체에서 일부분을 구할 땐 곱하기!", "일부분을 보고 원래 전체를 복원할 땐 나누기!"
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end;">
+          <button class="nav-btn" style="background:#2563eb; padding:10px 24px; font-size:15px;" onclick="restartAll()">처음으로 돌아가기 🔄</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ui-panel">
+      <div class="btn-row">
+        <button id="prev-btn" class="nav-btn" onclick="goPrevScene()">◀ 이전 단계</button>
+        <button id="talk-btn" class="nav-btn" onclick="advanceSubStep()">뭔 얘기? ▶</button>
+        <button id="next-btn" class="nav-btn" onclick="goNextScene()">다음 단계 ▶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function resizeGame() {
+    const wrapper = document.getElementById('scale-wrapper');
+    const availableW = window.innerWidth * 0.95;
+    const availableH = window.innerHeight * 0.93;
+    const scale = Math.min(availableW / 960, availableH / 580);
+    wrapper.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', resizeGame);
+  window.addEventListener('orientationchange', () => setTimeout(resizeGame, 150));
+  resizeGame();
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const talkBtn = document.getElementById('talk-btn');
+  const statusText = document.getElementById('status-text');
+  const uiPanel = document.getElementById('ui-panel');
+  const quizOverlay = document.getElementById('quiz-overlay');
+
+  let scene = 0;
+  let subStep = 0; 
+  const maxScene = 3;
+
+  const SCENE_CONFIG = [
+    {
+      title: "1단계: 곱해지는 수와 나눠지는 수가 분수일때 헷갈리는 개념",
+      maxSubStep: 3,
+      steps: [
+        { c1: "곱하기 나누기만 서로 다른데?", c2: "", showGraphic: 1 },
+        { c1: "곱하기 나누기만 서로 다른데?", c2: "오 노우! 결과가 하나는 8이고\n하나는 18이야. 완전히 다르지!", showGraphic: 1 },
+        { c1: "결과가 그렇게 달라?", c2: "오 노우! 결과가 하나는 8이고\n하나는 18이야. 완전히 다르지!", showGraphic: 2 },
+        { c1: "결과가 그렇게 달라?", c2: "좋아! 막대기로 두 식의\n차이를 설명해보지!", showGraphic: 2 }
+      ]
+    },
+    {
+      title: "2단계: 12 × ⅔",
+      maxSubStep: 5,
+      steps: [
+        { c1: "12 곱하기 ⅔는 막대를\n과연 어떻게 변신시킬까?", c2: "", showGraphic: 1 },
+        { c1: "분모는 자르는 숫자 아닌가?", c2: "곱하기일 때는 분모 3으로\n싹둑 잘라!", showGraphic: 2 },
+        { c1: "그럼 한 조각 크기 4가 나오지!", c2: "맞아! 12 ÷ 3 = 4!\n그게 ⅓ 한 조각이야.", showGraphic: 2 },
+        { c1: "분자의 2는 아직 계산을 안 한 거지?", c2: "고럼… 이제 2를 곱해!", showGraphic: 3 },
+        { c1: "12 막대기를 ⅔로\n축소하면 8이 된다는 거네!", c2: "정답! 원래 12에서\n일부(⅔)만 남겨서 8로 축소!", showGraphic: 4 },
+        { c1: "와! 3등분해서 2개를 모은다.\n막대기가 줄었다!", c2: "이게 바로 곱셈의 진짜 원리야!", showGraphic: 4 }
+      ]
+    },
+    {
+      title: "3단계: 12 ÷ ⅔",
+      maxSubStep: 5,
+      steps: [
+        { c1: "이번엔 12를 ⅔으로\n나누는 걸 알아볼까?", c2: "", showGraphic: 1 },
+        { c1: "이번엔 12를 ⅔으로\n나누는 걸 알아볼까?", c2: "좋아! 12 막대기 먼저 준비 완료!", showGraphic: 2 },
+        { c1: "12 나누기인데\n이것도 분모 3으로 나누나?", c2: "큰일 날 소리!\n이번엔 12 나누기 2를 해!", showGraphic: 3 },
+        { c1: "12를 둘로 쪼갠다고?\n그게 무슨 뜻이야?", c2: "12는 3개 중 2개야!\n그래서 12 ÷ 2 = 6(1칸)을 구해!", showGraphic: 3 },
+        { c1: "원래 쪼개기 전의 수는\n무엇일까요? 를 묻는 거구나!", c2: "빙고! 1칸이 6이니까\n3배를 하면 원래 크기가 나와!", showGraphic: 4 },
+        { c1: "아하! 일부(2칸)를 3배로 복원하니\n원래 막대기의 크기가 나오네!", c2: "완벽해! 원래 전체 18을\n복원한 거라 더 커진 거야!", showGraphic: 4 }
+      ]
+    },
+    {
+      title: "4단계: 핵심 정리 - 축소 vs 복원",
+      maxSubStep: 1,
+      steps: [
+        { c1: "기호 하나 차이인데\n원리가 완전히 반대였어!", c2: "", showGraphic: 1 },
+        { c1: "기호 하나 차이인데\n원리가 완전히 반대였어!", c2: "곱하기는 일부를 떼어 축소(8),\n나누기는 전체를 찾아 복원(18)!", showGraphic: 1 }
+      ]
+    }
+  ];
+
+  const QUIZ_LIST = [
+    {
+      type: "mul",
+      q: "전체 길이가 20m인 밧줄이 있습니다. 이 밧줄의 ⅘만큼을 잘라 사용하려고 합니다. 사용한 밧줄의 길이는 몇 m일까요?",
+      mulFormulaHTML: "20 × <span class='frac'><span class='top'>4</span><span class='bottom'>5</span></span>",
+      divFormulaHTML: "20 ÷ <span class='frac'><span class='top'>4</span><span class='bottom'>5</span></span>",
+      ans: 16,
+      solFormula: "20 × ⅘ = (20 ÷ 5) × 4 = 16",
+      solText: "전체 20m 중 일부(⅘)만 떼어내는 상황이므로 [20 × ⅘] 식이 정답입니다! 20을 5등분한 한 칸(4m)에 4를 곱해 16m가 됩니다."
+    },
+    {
+      type: "div",
+      q: "어떤 물통에 물 15L를 채웠더니 전체 물통 용량의 ¾만큼 찼습니다. 이 물통 전체를 가득 채우려면 총 몇 L의 물이 들어갈까요?",
+      mulFormulaHTML: "15 × <span class='frac'><span class='top'>3</span><span class='bottom'>4</span></span>",
+      divFormulaHTML: "15 ÷ <span class='frac'><span class='top'>3</span><span class='bottom'>4</span></span>",
+      ans: 20,
+      solFormula: "15 ÷ ¾ = (15 ÷ 3) × 4 = 20",
+      solText: "15L가 전체가 아니라 겨우 3칸(¾)에 해당하므로 전체를 복원하는 [15 ÷ ¾] 식이 정답입니다! 15를 3으로 나눠 1칸(5L)을 구한 뒤 4칸 전체를 복원해 20L가 됩니다."
+    },
+    {
+      type: "mul",
+      q: "피자 한 판의 무게가 500g입니다. 동생이 이 피자의 ⅗을 먹었다면, 동생이 먹은 피자의 무게는 몇 g일까요?",
+      mulFormulaHTML: "500 × <span class='frac'><span class='top'>3</span><span class='bottom'>5</span></span>",
+      divFormulaHTML: "500 ÷ <span class='frac'><span class='top'>3</span><span class='bottom'>5</span></span>",
+      ans: 300,
+      solFormula: "500 × ⅗ = (500 ÷ 5) × 3 = 300",
+      solText: "전체 500g에서 일부분(⅗)을 떼어내는 것이므로 [500 × ⅗] 식이 정답입니다! 500을 5로 나눈 1조각(100g)에 3을 곱해 300g이 됩니다."
+    },
+    {
+      type: "div",
+      q: "벽의 ⅔를 페인트로 칠하는 데 10L가 들었습니다. 벽 전체(1)를 모두 칠하려면 페인트가 총 몇 L 필요할까요?",
+      mulFormulaHTML: "10 × <span class='frac'><span class='top'>2</span><span class='bottom'>3</span></span>",
+      divFormulaHTML: "10 ÷ <span class='frac'><span class='top'>2</span><span class='bottom'>3</span></span>",
+      ans: 15,
+      solFormula: "10 ÷ ⅔ = (10 ÷ 2) × 3 = 15",
+      solText: "10L는 벽 전체가 아니라 고작 2칸(⅔)에 든 양입니다! 전체 벽을 알아내야 하므로 [10 ÷ ⅔] 식이 정답입니다. 10을 2로 나눠 1칸(5L)을 구하고 3칸 전체를 복원하여 15L가 됩니다."
+    },
+    {
+      type: "mul",
+      q: "시속 60km로 달리는 자동차가 있습니다. 이 자동차가 ⅔시간 동안 달린 거리는 몇 km일까요?",
+      mulFormulaHTML: "60 × <span class='frac'><span class='top'>2</span><span class='bottom'>3</span></span>",
+      divFormulaHTML: "60 ÷ <span class='frac'><span class='top'>2</span><span class='bottom'>3</span></span>",
+      ans: 40,
+      solFormula: "60 × ⅔ = (60 ÷ 3) × 2 = 40",
+      solText: "1시간(60km)보다 적은 ⅔시간 동안 이동한 일부 거리를 구하므로 [60 × ⅔] 식이 정답입니다! 60을 3으로 나눈 뒤 2배를 해 40km가 됩니다."
+    },
+    {
+      type: "div",
+      q: "철사 ⅖m의 무게를 재어보니 14g이었습니다. 이 철사 1m 전체의 무게는 몇 g일까요?",
+      mulFormulaHTML: "14 × <span class='frac'><span class='top'>2</span><span class='bottom'>5</span></span>",
+      divFormulaHTML: "14 ÷ <span class='frac'><span class='top'>2</span><span class='bottom'>5</span></span>",
+      ans: 35,
+      solFormula: "14 ÷ ⅖ = (14 ÷ 2) × 5 = 35",
+      solText: "14g은 1m 전체가 아니라 2칸(⅖)의 무게입니다! 1m 전체를 구하기 위해 [14 ÷ ⅖] 식이 정답입니다. 14를 2로 나눠 한 칸(7g)을 찾고 5칸(1m 전체)을 복원해 35g이 됩니다."
+    }
+  ];
+
+  let currentQuizIdx = 0;
+  let quizScore = 0;
+  let inQuizMode = false;
+  let selectedFormulaType = null;
+
+  function updateUI() {
+    if (inQuizMode) {
+      uiPanel.style.display = "none";
+      quizOverlay.style.display = "flex";
+      loadQuizQuestion();
+      return;
+    }
+
+    uiPanel.style.display = "flex";
+    quizOverlay.style.display = "none";
+
+    const curCfg = SCENE_CONFIG[scene];
+    statusText.innerText = curCfg.title;
+    
+    prevBtn.style.display = scene > 0 ? 'inline-block' : 'none';
+    prevBtn.disabled = false;
+    nextBtn.style.display = 'inline-block';
+
+    if (scene === maxScene) {
+      nextBtn.innerText = "실전 퀴즈 풀기 📝";
+    } else {
+      nextBtn.innerText = "다음 단계 ▶";
+    }
+
+    if (subStep < curCfg.maxSubStep) {
+      talkBtn.disabled = false;
+      talkBtn.innerText = `뭔 얘기? ▶ (${subStep + 1}/${curCfg.maxSubStep + 1})`;
+      talkBtn.style.background = "#2563eb";
+      nextBtn.disabled = true;
+    } else {
+      talkBtn.disabled = true;
+      talkBtn.innerText = `뭔 얘기? ■`;
+      talkBtn.style.background = "#94a3b8";
+      nextBtn.disabled = false;
+    }
+  }
+
+  function advanceSubStep() {
+    const curCfg = SCENE_CONFIG[scene];
+    if (subStep < curCfg.maxSubStep) {
+      subStep++;
+      updateUI();
+    }
+  }
+
+  function goPrevScene() {
+    if (scene > 0) {
+      scene--;
+      subStep = SCENE_CONFIG[scene].maxSubStep;
+      updateUI();
+    }
+  }
+
+  function goNextScene() {
+    if (scene < maxScene) {
+      scene++;
+      subStep = 0;
+      updateUI();
+    } else if (scene === maxScene) {
+      inQuizMode = true;
+      currentQuizIdx = 0;
+      quizScore = 0;
+      updateUI();
+    }
+  }
+
+  function selectFormula(type) {
+    selectedFormulaType = type;
+    const cardMul = document.getElementById('card-mul');
+    const cardDiv = document.getElementById('card-div');
+
+    cardMul.classList.remove('red-alert');
+    cardDiv.classList.remove('red-alert');
+
+    if (type === 'mul') {
+      cardMul.classList.add('selected');
+      cardDiv.classList.remove('selected');
+    } else {
+      cardDiv.classList.add('selected');
+      cardMul.classList.remove('selected');
+    }
+  }
+
+  function loadQuizQuestion() {
+    selectedFormulaType = null;
+    const qData = QUIZ_LIST[currentQuizIdx];
+    statusText.innerText = `실전 퀴즈 탐험 (${currentQuizIdx + 1} / 6)`;
+
+    document.getElementById('quiz-question-area').style.display = 'flex';
+    document.getElementById('summary-view').style.display = 'none';
+
+    document.getElementById('q-badge').innerText = `문제 ${currentQuizIdx + 1} / 6`;
+    document.getElementById('q-text').innerText = qData.q;
+
+    const cardMul = document.getElementById('card-mul');
+    const cardDiv = document.getElementById('card-div');
+
+    document.getElementById('card-mul-text').innerHTML = qData.mulFormulaHTML;
+    document.getElementById('card-div-text').innerHTML = qData.divFormulaHTML;
+
+    cardMul.className = 'formula-card';
+    cardDiv.className = 'formula-card';
+
+    const qInput = document.getElementById('q-input');
+    qInput.value = "";
+    qInput.disabled = false;
+    document.getElementById('q-submit-btn').style.display = "inline-block";
+
+    const feedback = document.getElementById('q-feedback');
+    feedback.style.display = "none";
+    feedback.innerHTML = "";
+
+    document.getElementById('q-next-btn').style.display = "none";
+  }
+
+  function submitQuizAnswer() {
+    if (!selectedFormulaType) {
+      alert("먼저 두 개의 식 중 알맞은 식을 하나 골라주세요!");
+      return;
+    }
+
+    const qData = QUIZ_LIST[currentQuizIdx];
+    const formulaCorrect = (selectedFormulaType === qData.type);
+
+    // 식 선택 오류 시 반응
+    if (!formulaCorrect) {
+      const wrongCard = document.getElementById(selectedFormulaType === 'mul' ? 'card-mul' : 'card-div');
+      wrongCard.classList.remove('red-alert');
+      void wrongCard.offsetWidth;
+      wrongCard.classList.add('red-alert');
+
+      const feedback = document.getElementById('q-feedback');
+      feedback.style.display = "block";
+      feedback.className = "quiz-feedback feedback-wrong";
+      feedback.innerHTML = `
+        <div style="font-weight:800; font-size:15px; margin-bottom:3px;">
+          🚨 [경고] 식 선택이 맞지 않아요! 다시 알맞은 식을 골라보세요!
+        </div>
+        <div>이 상황은 <b>전체에서 일부분을 떼어내는 것(곱셈)</b>일까요, 아니면 <b>일부분을 보고 원래 전체를 복원하는 것(나눗셈)</b>일까요?</div>
+      `;
+      return;
+    }
+
+    const userAns = parseFloat(document.getElementById('q-input').value.trim());
+    if (isNaN(userAns)) {
+      alert("고른 식을 계산한 정답 숫자를 입력해 주세요!");
+      return;
+    }
+
+    const ansCorrect = (userAns === qData.ans);
+
+    if (ansCorrect) {
+      quizScore++;
+      document.getElementById('card-mul').classList.add('disabled');
+      document.getElementById('card-div').classList.add('disabled');
+      document.getElementById('q-input').disabled = true;
+      document.getElementById('q-submit-btn').style.display = "none";
+
+      const feedback = document.getElementById('q-feedback');
+      feedback.style.display = "block";
+      feedback.className = "quiz-feedback feedback-correct";
+      feedback.innerHTML = `
+        <div style="font-weight:800; font-size:15px; margin-bottom:4px;">
+          🎉 완벽합니다! 올바른 식과 계산 결과를 모두 맞혔어요!
+        </div>
+        <div style="margin-bottom:3px;"><b>📐 정답 식 및 풀이:</b> <span style="font-size:14.5px; font-weight:800; color:#0f172a;">${qData.solFormula}</span></div>
+        <div><b>💡 해설:</b> ${qData.solText}</div>
+      `;
+
+      document.getElementById('q-next-btn').style.display = "inline-block";
+      if (currentQuizIdx === QUIZ_LIST.length - 1) {
+        document.getElementById('q-next-btn').innerText = "최종 결과 보기 🏆";
+      } else {
+        document.getElementById('q-next-btn').innerText = "다음 문제 ▶";
+      }
+    } else {
+      const feedback = document.getElementById('q-feedback');
+      feedback.style.display = "block";
+      feedback.className = "quiz-feedback feedback-wrong";
+      feedback.innerHTML = `
+        <div style="font-weight:800; font-size:15px; margin-bottom:3px;">
+          ⚠️ 식은 맞게 골랐지만, 계산 결과가 다릅니다! 다시 계산해 보세요.
+        </div>
+        <div>선택한 식을 천천히 다시 계산해 볼까요?</div>
+      `;
+    }
+  }
+
+  function nextQuizQuestion() {
+    if (currentQuizIdx < QUIZ_LIST.length - 1) {
+      currentQuizIdx++;
+      loadQuizQuestion();
+    } else {
+      showSummaryScreen();
+    }
+  }
+
+  function showSummaryScreen() {
+    document.getElementById('quiz-question-area').style.display = 'none';
+    const summaryView = document.getElementById('summary-view');
+    summaryView.style.display = 'flex';
+
+    statusText.innerText = "퀴즈 탐험 완료 & 개념 총정리";
+    document.getElementById('final-score-text').innerText = `최종 점수: ${quizScore} / 6 점 (${quizScore === 6 ? '완벽한 만점! 💯' : '훌륭하게 완주했어요! 👏'})`;
+  }
+
+  function restartAll() {
+    inQuizMode = false;
+    scene = 0;
+    subStep = 0;
+    currentQuizIdx = 0;
+    quizScore = 0;
+    updateUI();
+  }
+
+  function drawFraction(x, y, num, den, fontSize = 20, color = "#1e40af") {
+    ctx.save();
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.fillStyle = color;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const numStr = String(num);
+    const denStr = String(den);
+    const numW = ctx.measureText(numStr).width;
+    const denW = ctx.measureText(denStr).width;
+    const lineW = Math.max(numW, denW) + 6;
+
+    ctx.fillText(numStr, x, y - fontSize * 0.58);
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(2, fontSize * 0.1);
+    ctx.beginPath();
+    ctx.moveTo(x - lineW / 2, y);
+    ctx.lineTo(x + lineW / 2, y);
+    ctx.stroke();
+
+    ctx.fillText(denStr, x, y + fontSize * 0.62);
+
+    ctx.restore();
+    return lineW;
+  }
+
+  function drawDoodleChar(x, y, scale = 1, isFriend = false, eyeType = 'normal') {
+    ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
+    ctx.lineWidth = 3 / scale; ctx.strokeStyle = "#111"; ctx.fillStyle = "#fff";
+    
+    ctx.beginPath(); ctx.arc(0, -48, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    
+    if (isFriend) { 
+      ctx.fillStyle = "#3b82f6"; 
+      ctx.beginPath(); ctx.arc(0, -60, 14, Math.PI, Math.PI * 2); ctx.fill(); ctx.stroke(); 
+    }
+    
+    ctx.fillStyle = "#111";
+    if (eyeType === 'surprise') { 
+      ctx.beginPath(); ctx.arc(-6, -50, 3.5, 0, Math.PI * 2); ctx.arc(6, -50, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -40, 3, 0, Math.PI * 2); ctx.stroke();
+    } else { 
+      ctx.beginPath(); ctx.arc(-5, -50, 2.5, 0, Math.PI * 2); ctx.arc(5, -50, 2.5, 0, Math.PI * 2); ctx.fill(); 
+    }
+    
+    ctx.beginPath(); ctx.moveTo(0, -32); ctx.lineTo(0, -8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(-12, -12); ctx.moveTo(0, -22); ctx.lineTo(12, -12);
+    ctx.moveTo(0, -8); ctx.lineTo(-8, 0); ctx.moveTo(0, -8); ctx.lineTo(8, 0); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawSafeBubble(charX, charY, text, isFriend = false) {
+    if (!text) return; 
+    ctx.save(); 
+    ctx.font = "bold 13px 'Pretendard', sans-serif";
+    const lines = text.split('\n');
+    let maxW = 0; 
+    lines.forEach(l => { maxW = Math.max(maxW, ctx.measureText(l).width); });
+    
+    const boxW = Math.max(maxW + 24, 120); 
+    const boxH = Math.max(lines.length * 18 + 14, 40);
+    
+    const bubbleBottomY = charY - 80;
+    const targetY = bubbleBottomY - boxH;
+    
+    let drawX = charX;
+    if (isFriend) {
+      drawX = Math.min(charX + 20, 930 - boxW / 2);
+    } else {
+      drawX = Math.max(charX - 20, 30 + boxW / 2);
+    }
+
+    ctx.fillStyle = isFriend ? "#eff6ff" : "#ffffff"; 
+    ctx.strokeStyle = isFriend ? "#2563eb" : "#334155"; 
+    ctx.lineWidth = 2.2;
+    
+    ctx.beginPath(); 
+    ctx.roundRect(drawX - boxW / 2, targetY, boxW, boxH, 10); 
+    ctx.fill(); ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(charX - 6, bubbleBottomY);
+    ctx.lineTo(charX, charY - 66);
+    ctx.lineTo(charX + 6, bubbleBottomY);
+    ctx.fillStyle = isFriend ? "#eff6ff" : "#ffffff";
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#0f172a"; 
+    ctx.textAlign = "center";
+    lines.forEach((l, idx) => {
+      ctx.fillText(l, drawX, targetY + 17 + (idx * 18));
+    });
+    ctx.restore();
+  }
+
+  function drawGuideBubble(centerX, topY, line1, line2, borderColor = "#ca8a04", textColor = "#a16207") {
+    ctx.save();
+    const bW = 360;
+    const bH = line2 ? 44 : 30;
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(centerX - bW / 2, topY, bW, bH, 10);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(centerX - 7, topY);
+    ctx.lineTo(centerX, topY - 7);
+    ctx.lineTo(centerX + 7, topY);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = textColor;
+    ctx.font = "bold 13px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    if (line2) {
+      ctx.fillText(line1, centerX, topY + 13);
+      ctx.fillText(line2, centerX, topY + 30);
+    } else {
+      ctx.fillText(line1, centerX, topY + 15);
+    }
+    ctx.restore();
+  }
+
+  function renderGraphics() {
+    if (inQuizMode) return;
+
+    const curCfg = SCENE_CONFIG[scene];
+    const graphicStage = curCfg.steps[subStep].showGraphic;
+    ctx.save();
+
+    if (scene === 0) {
+      if (graphicStage >= 1) {
+        ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.roundRect(230, 56, 500, 104, 14); ctx.fill(); ctx.stroke();
+        
+        ctx.fillStyle = "#1e40af"; ctx.font = "bold 25px sans-serif"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+        ctx.fillText("12  × ", 375, 92);
+        drawFraction(398, 92, 2, 3, 20, "#1e40af");
+
+        ctx.fillStyle = "#64748b"; ctx.font = "bold 20px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("vs", 480, 92);
+
+        ctx.fillStyle = "#dc2626"; ctx.font = "bold 25px sans-serif"; ctx.textAlign = "right";
+        ctx.fillText("12  ÷ ", 585, 92);
+        drawFraction(608, 92, 2, 3, 20, "#dc2626");
+
+        ctx.fillStyle = "#0f172a"; ctx.font = "bold 15.5px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("★ 둘의 차이를 완벽히 이해하자! ★", 480, 134);
+      }
+
+      if (graphicStage >= 2) {
+        ctx.fillStyle = "#fef08a"; ctx.strokeStyle = "#eab308"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.roundRect(330, 178, 300, 44, 10); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#854d0e"; ctx.font = "bold 17px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText("길이 12", 480, 200);
+
+        drawGuideBubble(480, 240, "나눠지는 숫자 12가 여기 있어. 이제 이 막대기가", "어떻게 바뀌는지 보자고!", "#ca8a04", "#a16207");
+      }
+    }
+    else if (scene === 1) {
+      ctx.fillStyle = "#eff6ff"; ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect(340, 54, 280, 46, 12); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#1d4ed8"; ctx.font = "bold 21px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("12  × ", 455, 77);
+      drawFraction(485, 77, 2, 3, 20, "#1d4ed8");
+
+      if (graphicStage === 1) {
+        ctx.fillStyle = "#fef08a"; ctx.strokeStyle = "#eab308"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.roundRect(330, 125, 300, 44, 8); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#854d0e"; ctx.font = "bold 17px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText("길이 12", 480, 147);
+
+        drawGuideBubble(480, 195, "길이 12짜리 원본 막대기를 준비!", null, "#2563eb", "#1d4ed8");
+      }
+      else if (graphicStage === 2 || graphicStage === 3) {
+        const startX = 330, w = 100, h = 44;
+        for (let i = 0; i < 3; i++) {
+          const bx = startX + i * w;
+          ctx.fillStyle = (i === 0) ? "#fde047" : "#e0f2fe";
+          ctx.strokeStyle = (i === 0) ? "#ca8a04" : "#38bdf8";
+          ctx.lineWidth = (i === 0) ? 3 : 2;
+          ctx.beginPath(); ctx.roundRect(bx, 125, w - 4, h, 6); ctx.fill(); ctx.stroke();
+
+          ctx.fillStyle = (i === 0) ? "#854d0e" : "#0369a1";
+          ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText("4", bx + (w - 4) / 2, 147);
+        }
+
+        if (graphicStage === 2) {
+          drawGuideBubble(480, 195, "분모 3으로 싹둑! 12 ÷ 3 = 4 (한 조각 크기)", null, "#ca8a04", "#854d0e");
+        } else {
+          drawGuideBubble(480, 195, "한 조각이 4인 것을 확인! 이제 분자 2를 곱할 차례!", null, "#2563eb", "#1d4ed8");
+        }
+      }
+      else if (graphicStage === 4) {
+        const startX = 330, w = 100, h = 34;
+        
+        ctx.fillStyle = "#64748b"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("3등분한 원본 막대 (각 4) :", startX, 112);
+
+        for (let i = 0; i < 3; i++) {
+          const bx = startX + i * w;
+          ctx.fillStyle = "#f1f5f9"; ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.roundRect(bx, 118, w - 4, h, 6); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "#475569"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText("4", bx + (w - 4) / 2, 135);
+        }
+
+        const bar2Y = 174;
+        ctx.fillStyle = "#1e40af"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("4짜리 조각 2개 선택 (4 × 2 = 8) :", startX, bar2Y - 6);
+
+        for (let i = 0; i < 2; i++) {
+          const bx = startX + i * w;
+          ctx.fillStyle = "#fde047"; ctx.strokeStyle = "#ca8a04"; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.roundRect(bx, bar2Y, w - 4, h, 6); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "#854d0e"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText("4", bx + (w - 4) / 2, bar2Y + h / 2);
+        }
+
+        drawGuideBubble(480, 235, "4 × 2 = 8이 되었어요!", "최종 답은 8이 되었죠! (원래 12보다 축소)", "#16a34a", "#15803d");
+      }
+    }
+    else if (scene === 2) {
+      ctx.fillStyle = "#fef2f2"; ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect(340, 54, 280, 46, 12); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#dc2626"; ctx.font = "bold 21px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("12  ÷ ", 455, 77);
+      drawFraction(485, 77, 2, 3, 20, "#dc2626");
+
+      if (graphicStage === 1 || graphicStage === 2) {
+        ctx.fillStyle = "#fef08a"; ctx.strokeStyle = "#eab308"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.roundRect(330, 125, 300, 44, 8); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#854d0e"; ctx.font = "bold 17px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText("길이 12", 480, 147);
+
+        if (graphicStage === 1) {
+          drawGuideBubble(480, 195, "이번엔 12를 ⅔으로 나누는 걸 알아볼까?", null, "#dc2626", "#b91c1c");
+        } else {
+          drawGuideBubble(480, 195, "길이 12 막대기 준비 완료!", null, "#2563eb", "#1d4ed8");
+        }
+      }
+      else if (graphicStage === 3) {
+        const startX = 330, w = 150, h = 44;
+        ctx.fillStyle = "#991b1b"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("12를 둘로 쪼갬 (12 ÷ 2 = 6) :", startX, 116);
+
+        for (let i = 0; i < 2; i++) {
+          const bx = startX + i * w;
+          ctx.fillStyle = "#fee2e2"; ctx.strokeStyle = "#dc2626"; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.roundRect(bx, 124, w - 6, h, 6); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "#991b1b"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText("6", bx + (w - 6) / 2, 146);
+        }
+
+        drawGuideBubble(480, 195, "12는 3개 중 2개! ➔ 12 ÷ 2 = 6 (1칸 크기)", null, "#dc2626", "#b91c1c");
+      }
+      else if (graphicStage >= 4) {
+        const startX = 330, w = 100, h = 34;
+        ctx.fillStyle = "#991b1b"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("12는 3칸 중 2개 (1칸 크기는 6) :", startX, 112);
+
+        for (let i = 0; i < 2; i++) {
+          const bx = startX + i * w;
+          ctx.fillStyle = "#fee2e2"; ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.roundRect(bx, 118, w - 4, h, 6); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "#991b1b"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText("6", bx + (w - 4) / 2, 135);
+        }
+
+        const bar2Y = 174;
+        ctx.fillStyle = "#15803d"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("원래 쪼개기 전의 전체 3칸 복원 (6 × 3 = 18) :", startX, bar2Y - 6);
+
+        for (let i = 0; i < 3; i++) {
+          const bx = startX + i * w;
+          ctx.fillStyle = (i < 2) ? "#dcfce7" : "#bbf7d0";
+          ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.roundRect(bx, bar2Y, w - 4, h, 6); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "#166534"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText("6", bx + (w - 4) / 2, bar2Y + h / 2);
+        }
+
+        drawGuideBubble(480, 235, "원래 쪼개기 전 수는 무엇일까요? ➔ 바로 18!", "한 칸(6) × 3 = 18이 되었죠! (원래 12보다 커짐)", "#16a34a", "#15803d");
+      }
+    }
+    else if (scene === 3) {
+      ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#334155"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(210, 56, 540, 155, 12); ctx.fill(); ctx.stroke();
+
+      ctx.font = "bold 17px sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("■ 12 × ", 240, 90);
+      drawFraction(305, 90, 2, 3, 16, "#2563eb");
+      ctx.fillText(" = 8  (12를 3으로 나눈 뒤 2배)", 335, 90);
+      
+      ctx.font = "14px sans-serif"; ctx.fillStyle = "#475569";
+      ctx.fillText("➔ 전체 12에서 일부만 가져가므로 결과가 작아짐! (축소)", 260, 116);
+
+      ctx.font = "bold 17px sans-serif"; ctx.fillStyle = "#dc2626";
+      ctx.fillText("■ 12 ÷ ", 240, 154);
+      drawFraction(305, 154, 2, 3, 16, "#dc2626");
+      ctx.fillText(" = 12 × ", 335, 154);
+      drawFraction(405, 154, 3, 2, 16, "#dc2626");
+      ctx.fillText(" = 18  (12를 2로 나눈 뒤 3배)", 435, 154);
+
+      ctx.font = "14px sans-serif"; ctx.fillStyle = "#475569";
+      ctx.fillText("➔ 12가 일부이므로 원래 전체(3칸)를 찾아 커짐! (복원)", 260, 180);
+    }
+    
+    ctx.restore();
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (!inQuizMode) {
+      const baselineY = 450;
+      ctx.save();
+      ctx.lineWidth = 3; ctx.strokeStyle = "#334155";
+      ctx.beginPath(); ctx.moveTo(40, baselineY); ctx.lineTo(920, baselineY); ctx.stroke();
+
+      renderGraphics();
+
+      const char1X = 135; 
+      const char2X = 825; 
+
+      const curCfg = SCENE_CONFIG[scene];
+      const curStepData = curCfg.steps[subStep];
+      const isSurprise = (scene === 2 && subStep >= 2 && subStep <= 3);
+
+      drawDoodleChar(char1X, baselineY, 1.0, false, isSurprise ? 'surprise' : 'normal');
+      drawDoodleChar(char2X, baselineY, 1.0, true, 'normal');
+
+      drawSafeBubble(char1X, baselineY, curStepData.c1, false);
+      drawSafeBubble(char2X, baselineY, curStepData.c2, true);
+
+      ctx.restore();
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  updateUI();
+  render();
+</script>
+</body>
+</html>
