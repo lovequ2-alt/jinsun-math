@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>헷갈리는 수학 - 일차식, 일차방정식, 일차함수식의 차이</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #1e293b;
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #scale-wrapper {
+      position: absolute;
+      width: 960px;
+      height: 580px;
+      transform-origin: center center;
+    }
+
+    #game-container {
+      position: relative;
+      width: 960px;
+      height: 580px; 
+      background: #ffffff;
+      border: 4px solid #334155;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    canvas { 
+      position: absolute;
+      top: 0; left: 0;
+      display: block; 
+      width: 960px; 
+      height: 580px; 
+      z-index: 1;
+      cursor: default;
+    }
+
+    #top-status-bar {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.96);
+      padding: 6px 22px;
+      border-radius: 30px;
+      border: 2px solid #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      z-index: 9999;
+    }
+    #status-text {
+      font-size: 15px;
+      color: #0f172a;
+      font-weight: 800;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* 7단계 분리된 퀴즈 보기 선택 패널 */
+    #quiz-choice-panel {
+      position: absolute;
+      bottom: 74px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 10px 24px;
+      border-radius: 18px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.14);
+      border: 2px solid #e2e8f0;
+      z-index: 9998;
+      transition: all 0.3s ease;
+    }
+    #quiz-choice-panel.completed {
+      opacity: 0.55;
+      pointer-events: none;
+      filter: grayscale(20%);
+    }
+    .quiz-options { display: flex; gap: 10px; }
+    .quiz-btn {
+      background: #7c3aed; color: #fff; border: none;
+      font-size: 15px; font-weight: bold; padding: 9px 20px;
+      border-radius: 10px; cursor: pointer; transition: transform 0.1s, background 0.2s;
+    }
+    .quiz-btn:hover { background: #6d28d9; transform: translateY(-2px); }
+    .quiz-btn:active { transform: scale(0.96); }
+
+    /* 하단 내비게이션 바 */
+    #ui-panel {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 7px 18px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      border: 2px solid #cbd5e1;
+      z-index: 9999; 
+    }
+    .btn-row { display: flex; gap: 8px; align-items: center; }
+    .nav-btn {
+      background: #2563eb; color: #fff; border: none;
+      padding: 8px 18px; font-size: 15px; font-weight: bold;
+      border-radius: 10px; cursor: pointer; transition: background 0.2s, transform 0.1s;
+    }
+    .nav-btn:hover { background: #1d4ed8; }
+    .nav-btn:active { transform: scale(0.96); }
+
+    .action-btn { 
+      background: #facc15; 
+      color: #000000; 
+      border: 2px solid #eab308;
+      padding: 8px 16px; 
+      font-size: 15px; 
+      font-weight: 800;
+      border-radius: 9px; 
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      transition: transform 0.1s, background 0.2s;
+    }
+    .action-btn:hover { background: #eab308; }
+    .action-btn:active { transform: scale(0.96); }
+
+    #result-controls { display: none; gap: 8px; align-items: center; }
+  </style>
+</head>
+<body>
+
+<div id="scale-wrapper">
+  <div id="game-container">
+    <div id="top-status-bar">
+      <span id="status-text">1단계: 다른 점 찾기</span>
+    </div>
+
+    <canvas id="canvas" width="960" height="580"></canvas>
+
+    <!-- 7단계 전용 분리된 퀴즈 보기 선택 박스 -->
+    <div id="quiz-choice-panel">
+      <div style="font-size: 14px; font-weight: 800; color: #475569;">👇 알맞은 답을 골라보세요!</div>
+      <div class="quiz-options">
+        <button id="qbtn-1" class="quiz-btn" onclick="checkAnswer(1)">① 일차식</button>
+        <button id="qbtn-2" class="quiz-btn" onclick="checkAnswer(2)">② 일차방정식</button>
+        <button id="qbtn-3" class="quiz-btn" onclick="checkAnswer(3)">③ 일차함수식</button>
+      </div>
+    </div>
+
+    <!-- 하단 조작 바 -->
+    <div id="ui-panel">
+      <div class="btn-row" id="normal-controls">
+        <button id="prev-btn" class="nav-btn" onclick="goPrev()" style="display:none;">◀ 이전</button>
+        
+        <div id="action-controls-3" style="display: none; gap: 6px;">
+          <button class="action-btn" onclick="triggerExploreScene3(1)">x = 1 대입</button>
+          <button class="action-btn" onclick="triggerExploreScene3(2)">x = 2 대입</button>
+          <button class="action-btn" onclick="triggerExploreScene3(3)">x = 3 대입</button>
+        </div>
+
+        <div id="action-controls-4" style="display: none; gap: 6px;">
+          <button class="action-btn" onclick="triggerExploreScene4(0)">x = 0 대입</button>
+          <button class="action-btn" onclick="triggerExploreScene4(0.5)">x = 1/2 대입</button>
+          <button class="action-btn" onclick="triggerExploreScene4(2)">x = 2 대입</button>
+        </div>
+
+        <div id="action-controls-5" style="display: none; gap: 6px;">
+          <button class="action-btn" onclick="triggerExploreScene5(0)">x = 0 대입</button>
+          <button class="action-btn" onclick="triggerExploreScene5(1)">x = 1 대입</button>
+          <button class="action-btn" onclick="triggerExploreScene5(2)">x = 2 대입</button>
+        </div>
+
+        <button id="next-btn" class="nav-btn" onclick="goNext()">다음 ▶</button>
+      </div>
+
+      <div id="result-controls">
+        <button class="nav-btn" onclick="loadScene(5)">◀ 요약 화면으로</button>
+        <button class="nav-btn" style="background: #7c3aed;" onclick="loadScene(8)">🔄 다시하기</button>
+        <button class="nav-btn" style="background: #10b981;" onclick="loadScene(0)">🏠 처음으로</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function resizeGame() {
+    const wrapper = document.getElementById('scale-wrapper');
+    const availableW = window.innerWidth * 0.95;
+    const availableH = window.innerHeight * 0.93;
+    const scale = Math.min(availableW / 960, availableH / 580);
+    wrapper.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', resizeGame);
+  window.addEventListener('orientationchange', () => setTimeout(resizeGame, 150));
+  resizeGame();
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const statusText = document.getElementById('status-text');
+  const actionControls3 = document.getElementById('action-controls-3');
+  const actionControls4 = document.getElementById('action-controls-4');
+  const actionControls5 = document.getElementById('action-controls-5');
+  const quizChoicePanel = document.getElementById('quiz-choice-panel');
+  const normalControls = document.getElementById('normal-controls');
+  const resultControls = document.getElementById('result-controls');
+
+  let scene = 0;
+  const maxScene = 9; 
+  
+  let speechBubble1 = { text: "" }; 
+  let speechBubble2 = { text: "" };
+  let replyTimer = null; 
+
+  let showNames = false;
+  let customSubTitle = "";
+
+  let isSubstituted3 = false;
+  let valScene3 = 1;
+
+  let isSubstituted4 = false;
+  let valScene4 = null;
+
+  let isSubstituted5 = false;
+  let valScene5 = null;
+
+  const gameData = [
+    { expr: "2x - 1", type: "expr", exp: "등호(=)가 없으니 그냥 일차식이야!" },
+    { expr: "2x - 1 = 0", type: "eqn", exp: "등호와 0이 있고 x의 해를 구하는 일차방정식!" },
+    { expr: "y = 2x - 1", type: "func", exp: "x와 y 두 변수 사이의 관계를 나타내는 일차함수식!" },
+    { expr: "3x + 5", type: "expr", exp: "다항식의 일종인 일차식!" },
+    { expr: "4x = 8", type: "eqn", exp: "x의 값(해=2)을 구하는 일차방정식!" },
+    { expr: "y = -3x + 2", type: "func", exp: "x값 하나에 y값이 정해지는 일차함수식!" },
+    { expr: "-5x + 7", type: "expr", exp: "등호가 없는 1차 다항식이야!" },
+    { expr: "3x - 6 = 0", type: "eqn", exp: "방정식의 기본 꼴(ax + b = 0) 일차방정식!" },
+    { expr: "y = x", type: "func", exp: "가장 대표적인 정비례 일차함수식!" },
+    { expr: "7x + 1 = 15", type: "eqn", exp: "양변에 식이 있는 일차방정식!" }
+  ];
+
+  let gameIndex = 0; 
+  let gameScore = 0;
+  let gameStatus = 'falling'; 
+  let fallingX = 480; 
+  let fallingY = -40; 
+  let fallingScale = 1.0; 
+  let fallingSpeed = 1.5; 
+  let targetBasketX = 480; 
+  let targetBasketY = 410;
+  let gameSelectedType = ""; 
+  let gameResultMark = ""; 
+  let gameResultExp = "";
+  let mouseX = 0; 
+  let mouseY = 0;
+
+  function setDialogue(speaker1, text1, speaker2, text2, delay = 1200) {
+    if (replyTimer) clearTimeout(replyTimer);
+    speechBubble1.text = ""; speechBubble2.text = "";
+    
+    if (speaker1 === 'char') speechBubble1.text = text1; 
+    else if (speaker1 === 'friend') speechBubble2.text = text1;
+
+    if (text2 && speaker2) {
+      replyTimer = setTimeout(() => {
+        if (speaker2 === 'char') speechBubble1.text = text2; 
+        else if (speaker2 === 'friend') speechBubble2.text = text2;
+      }, delay);
+    }
+  }
+
+  function loadScene(newScene) {
+    scene = newScene;
+    if (replyTimer) clearTimeout(replyTimer);
+    
+    nextBtn.innerText = "다음 ▶";
+    speechBubble1.text = ""; speechBubble2.text = "";
+    actionControls3.style.display = 'none';
+    actionControls4.style.display = 'none';
+    actionControls5.style.display = 'none';
+    quizChoicePanel.style.display = 'none';
+    quizChoicePanel.classList.remove('completed');
+    normalControls.style.display = 'flex'; 
+    resultControls.style.display = 'none';
+    
+    document.getElementById('qbtn-1').innerText = "① 일차식";
+    document.getElementById('qbtn-2').innerText = "② 일차방정식";
+    document.getElementById('qbtn-2').style.background = "#7c3aed";
+    document.getElementById('qbtn-3').innerText = "③ 일차함수식";
+    
+    nextBtn.style.display = scene < maxScene ? 'inline-block' : 'none';
+    prevBtn.style.display = scene > 0 ? 'inline-block' : 'none';
+    customSubTitle = "";
+
+    if (scene === 0) {
+      statusText.innerText = "1단계: 다른 점 찾기";
+      showNames = false;
+      setDialogue('char', "다 똑같은 식\n아닌가?", 'friend', "아닌데...\n뭔가 다른 것 같은데...", 800);
+    }
+    else if (scene === 1) {
+      statusText.innerText = "2단계: 각 식의 이름표 확인!";
+      showNames = true;
+      speechBubble1.text = "";
+      speechBubble2.text = "";
+      setTimeout(() => {
+        setDialogue('friend', "이름표를 보니까\n확실히 다르지?", 'char', "어! 이름이 다 달라!\n무슨 차이지?", 800);
+      }, 300);
+    }
+    else if (scene === 2) {
+      statusText.innerText = "3단계: 일차식 알아보기";
+      customSubTitle = "일차식 알아보기";
+      showNames = true;
+      actionControls3.style.display = 'flex';
+      isSubstituted3 = false;
+      valScene3 = 1;
+      replyTimer = setTimeout(() => {
+        speechBubble1.text = "아래 버튼을 눌러서\nx에 숫자를 대입해볼까?";
+      }, 600);
+    }
+    else if (scene === 3) {
+      statusText.innerText = "4단계: 일차방정식 알아보기";
+      customSubTitle = "일차방정식 알아보기";
+      showNames = true;
+      actionControls4.style.display = 'flex';
+      isSubstituted4 = false;
+      valScene4 = null;
+      replyTimer = setTimeout(() => {
+        speechBubble1.text = "등호(=)와 0이 있네!\nx에 숫자를 대입해볼까?";
+      }, 600);
+    }
+    else if (scene === 4) {
+      statusText.innerText = "5단계: 일차함수식 알아보기";
+      customSubTitle = "일차함수식 알아보기";
+      showNames = true;
+      actionControls5.style.display = 'flex';
+      isSubstituted5 = false;
+      valScene5 = null;
+      replyTimer = setTimeout(() => {
+        speechBubble1.text = "y랑 x가 다 있네!\nx에 숫자를 대입해볼까?";
+      }, 600);
+    }
+    else if (scene === 5) {
+      statusText.innerText = "6단계: 세 식의 핵심 차이 한눈에 보기";
+      showNames = true;
+      setDialogue('char', "등호 유무와 목적이\n완전히 다르구나!", 'friend', "표로 정리해두면\n절대 안 헷갈려!", 1000);
+    }
+    // ★ 7단계: 두 줄 문제로 세팅
+    else if (scene === 6) {
+      statusText.innerText = "🚨 7단계: 개념 확인 퀴즈";
+      showNames = true;
+      quizChoicePanel.style.display = 'flex';
+      speechBubble1.text = "등호(=)가 있고 좌우 균형을 이루는\nx의 '참인 해'를 구하는 식은 뭘까?";
+    }
+    else if (scene === 7) {
+      statusText.innerText = "8단계: 분류 게임 준비";
+      setDialogue('friend', "떨어지는 수식을 알맞은\n바구니에 쏙 담아봐!", 'char', "준비 완료!\n다 맞혀볼게!", 1000);
+      nextBtn.innerText = "게임 시작하기 ▶";
+    }
+    else if (scene === 8) {
+      normalControls.style.display = 'none';
+      statusText.innerText = "🎮 아래 3개의 바구니 중 알맞은 것을 클릭/터치하세요!";
+      gameIndex = 0; gameScore = 0; gameStatus = 'falling';
+      fallingX = 480; fallingY = -40; fallingScale = 1.0; fallingSpeed = 1.5;
+      gameResultMark = ""; gameResultExp = "";
+    }
+    else if (scene === 9) {
+      statusText.innerText = "🎉 축하합니다! 학습을 완료했습니다.";
+      normalControls.style.display = 'none';
+      resultControls.style.display = 'flex';
+      setDialogue('char', `난 10문제 중에\n${gameScore}문제를 맞혔어!`, 
+                  'friend', gameScore >= 8 ? "완벽해! 이제 식의 차이를\n완전히 마스터했어!" : "잘했어! 헷갈렸던 식만\n다시 복습해보자!", 1200);
+    }
+  }
+
+  function drawDoodleChar(x, y, scale = 1, isFriend = false, eyeType = 'normal') {
+    ctx.save(); 
+    ctx.translate(x, y); 
+    ctx.scale(scale, scale);
+    ctx.lineWidth = 3 / scale; 
+    ctx.strokeStyle = "#111"; 
+    ctx.fillStyle = "#fff";
+    
+    ctx.beginPath(); 
+    ctx.arc(0, -50, 16, 0, Math.PI * 2); 
+    ctx.fill(); 
+    ctx.stroke();
+    
+    if (isFriend) { 
+      ctx.fillStyle = "#3498db"; 
+      ctx.beginPath(); 
+      ctx.arc(0, -62, 14, Math.PI, Math.PI * 2); 
+      ctx.fill(); 
+      ctx.stroke(); 
+    }
+    
+    ctx.fillStyle = "#111";
+    if (eyeType === 'sigh') { 
+      ctx.fillRect(-10, -52, 6, 2); 
+      ctx.fillRect(4, -52, 6, 2); 
+    } else { 
+      ctx.beginPath(); 
+      ctx.arc(-5, -52, 2.5, 0, Math.PI * 2); 
+      ctx.arc(5, -52, 2.5, 0, Math.PI * 2); 
+      ctx.fill(); 
+    }
+    
+    ctx.beginPath(); 
+    ctx.moveTo(0, -34); ctx.lineTo(0, -10); ctx.stroke();
+    ctx.beginPath(); 
+    ctx.moveTo(0, -25); ctx.lineTo(-12, -15); 
+    ctx.moveTo(0, -25); ctx.lineTo(12, -15);
+    ctx.moveTo(0, -10); ctx.lineTo(-8, 0); 
+    ctx.moveTo(0, -10); ctx.lineTo(8, 0); 
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // ★ 말풍선 그리기: isQuiz 플래그를 두어 7단계 퀴즈일 때 눈에 확 띄게 노란색+보라색 테두리로 강조
+  function drawBubble(charX, charY, text, isFriend = false, forceBottomY = null, forceX = null, isQuiz = false) {
+    if (!text) return; 
+    ctx.save(); 
+    
+    const lines = text.split('\n');
+    let maxW = 0; 
+
+    if (isQuiz) {
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+    } else {
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+    }
+
+    lines.forEach(l => { maxW = Math.max(maxW, ctx.measureText(l).width); });
+    
+    // 퀴즈용 말풍선 크기 및 높이 넉넉하게
+    const boxW = isQuiz ? Math.max(maxW + 36, 330) : Math.max(maxW + 28, 120); 
+    const headerHeight = isQuiz ? 24 : 0;
+    const boxH = isQuiz ? (lines.length * 24 + headerHeight + 16) : Math.max(lines.length * 20 + 16, 38);
+    
+    const bottomY = (forceBottomY !== null) ? forceBottomY : (charY - 82);
+    const boxY = bottomY - boxH;
+
+    let boxX = (forceX !== null) ? forceX : charX;
+    if (boxX - boxW / 2 < 20) boxX = 20 + boxW / 2;
+    if (boxX + boxW / 2 > 940) boxX = 940 - boxW / 2;
+
+    // ★ 퀴즈일 때: 노란색 배경(#fef08a) + 보라색 테두리(#7c3aed)로 시선 집중!
+    if (isQuiz) {
+      ctx.fillStyle = "#fef08a"; 
+      ctx.strokeStyle = "#7c3aed"; 
+      ctx.lineWidth = 3;
+    } else {
+      ctx.fillStyle = isFriend ? "#e8f4fd" : "rgba(255, 255, 255, 0.98)"; 
+      ctx.strokeStyle = isFriend ? "#2563eb" : "#222"; 
+      ctx.lineWidth = 2;
+    }
+    
+    ctx.beginPath(); 
+    ctx.roundRect(boxX - boxW / 2, boxY, boxW, boxH, isQuiz ? 14 : 10); 
+    ctx.fill(); 
+    ctx.stroke();
+    
+    // 꼬리표
+    ctx.beginPath();
+    const tailTopX = Math.min(Math.max(charX, boxX - boxW / 2 + 20), boxX + boxW / 2 - 20);
+    ctx.moveTo(tailTopX - 7, bottomY);
+    ctx.lineTo(tailTopX, bottomY + 9);
+    ctx.lineTo(tailTopX + 7, bottomY);
+    ctx.fillStyle = isQuiz ? "#fef08a" : (isFriend ? "#e8f4fd" : "rgba(255, 255, 255, 0.98)");
+    ctx.fill(); 
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+
+    // 퀴즈일 때 [ 여기서 문제 ! ] 헤더 출력
+    if (isQuiz) {
+      ctx.fillStyle = "#6d28d9";
+      ctx.font = "900 15px 'Pretendard', sans-serif";
+      ctx.fillText("📢 [ 여 기 서  문 제 ! ]", boxX, boxY + 23);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      lines.forEach((l, idx) => {
+        ctx.fillText(l, boxX, boxY + 50 + (idx * 23));
+      });
+    } else {
+      ctx.fillStyle = "#111"; 
+      lines.forEach((l, idx) => {
+        ctx.fillText(l, boxX, boxY + 19 + (idx * 19));
+      });
+    }
+
+    ctx.restore();
+  }
+
+  function drawSketchBoard(showLabels = false, highlightIdx = -1) {
+    ctx.save();
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(90, 70, 780, 160);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 20px sans-serif";
+    ctx.textAlign = "center";
+    let titleStr = "다른 점 찾기";
+    if (customSubTitle) {
+      titleStr += `  [ ${customSubTitle} ]`;
+    }
+    ctx.fillText(titleStr, 480, 96);
+
+    ctx.beginPath();
+    ctx.moveTo(90, 108);
+    ctx.lineTo(870, 108);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.stroke();
+
+    const items = [
+      { math: "2x - 1", name: "일차식", border: "#2563eb", bg: "#eff6ff", textCol: "#1e40af" },
+      { math: "2x - 1 = 0", name: "일차방정식", border: "#059669", bg: "#ecfdf5", textCol: "#065f46" },
+      { math: "y = 2x - 1", name: "일차함수식", border: "#d97706", bg: "#fffbeb", textCol: "#92400e" }
+    ];
+
+    const boxXs = [230, 480, 730];
+    const boxY = 150;
+
+    for (let i = 0; i < 3; i++) {
+      const isHigh = (highlightIdx === i);
+      
+      ctx.fillStyle = items[i].bg;
+      ctx.strokeStyle = items[i].border;
+      ctx.lineWidth = isHigh ? 3.5 : 2;
+
+      ctx.beginPath();
+      ctx.roundRect(boxXs[i] - 100, boxY - 24, 200, 46, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = items[i].textCol;
+      ctx.font = "bold 22px 'Courier New', monospace, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(items[i].math, boxXs[i], boxY + 7);
+
+      if (showLabels) {
+        ctx.fillStyle = items[i].border;
+        ctx.beginPath();
+        ctx.roundRect(boxXs[i] - 65, boxY + 28, 130, 26, 6);
+        ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 13px sans-serif";
+        ctx.fillText(items[i].name, boxXs[i], boxY + 46);
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawBasket(x, y, label1, color, isHover = false) {
+    ctx.save();
+    if(isHover) { 
+      ctx.translate(x, y); 
+      ctx.scale(1.05, 1.05); 
+      ctx.translate(-x, -y); 
+    }
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x - 60, y - 22); 
+    ctx.lineTo(x + 60, y - 22);
+    ctx.lineTo(x + 44, y + 40); 
+    ctx.lineTo(x - 44, y + 40);
+    ctx.closePath();
+    ctx.fill();
+    ctx.lineWidth = 2.5; 
+    ctx.strokeStyle = "#333"; 
+    ctx.stroke();
+    
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
+    ctx.beginPath(); 
+    ctx.ellipse(x, y - 22, 60, 12, 0, 0, Math.PI * 2); 
+    ctx.fill(); 
+    ctx.stroke();
+
+    ctx.fillStyle = "#ffffff"; 
+    ctx.font = "bold 15px sans-serif"; 
+    ctx.textAlign = "center";
+    ctx.fillText(label1, x, y + 18);
+    ctx.restore();
+  }
+
+  function drawFallingBubble(x, y, expr, scale = 1) {
+    ctx.save();
+    ctx.translate(x, y); 
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "#ffffff"; 
+    ctx.strokeStyle = "#7c3aed"; 
+    ctx.lineWidth = 3;
+    ctx.beginPath(); 
+    ctx.roundRect(-90, -25, 180, 50, 25);
+    ctx.fill(); 
+    ctx.stroke();
+    
+    ctx.fillStyle = "#1e1b4b"; 
+    ctx.font = "bold 20px 'Courier New', monospace"; 
+    ctx.textAlign = "center";
+    ctx.fillText(expr, 0, 7);
+    ctx.restore();
+  }
+
+  window.triggerExploreScene3 = function(val) {
+    isSubstituted3 = true;
+    valScene3 = val;
+    statusText.innerText = `x = ${val} 대입 완료!`;
+    speechBubble2.text = "일차식은 등호가 없어!\nx에 따라 계산값이 나와.";
+  };
+
+  window.triggerExploreScene4 = function(val) {
+    isSubstituted4 = true;
+    valScene4 = val;
+    statusText.innerText = `x = ${val} 대입 완료!`;
+    if (val === 0.5) {
+      speechBubble2.text = "⚖️ 좌우 저울이 딱 맞아!\n참이 되는 유일한 해는 1/2 !";
+    } else {
+      speechBubble2.text = "⚖️ 좌우 저울이 다르니 거짓!\n방정식은 맞는 해를 찾아야 해.";
+    }
+  };
+
+  window.triggerExploreScene5 = function(val) {
+    isSubstituted5 = true;
+    valScene5 = val;
+    statusText.innerText = `x = ${val} 대입 완료!`;
+    const yVal = 2 * val - 1;
+    speechBubble2.text = `좌표 (${val}, ${yVal}) 가 쏙 생성됐어!\n이 점들을 모으면 직선이 돼!`;
+  };
+
+  window.checkAnswer = function(choice) {
+    if (choice === 2) {
+      statusText.innerText = "🎉 정답입니다! (일차방정식)";
+      speechBubble1.text = "딩동댕! 등호(=)와 0이 있고\n해를 구하는 식은 바로 '일차방정식'이야!";
+      document.getElementById('qbtn-2').innerText = "✅ ② 일차방정식 (정답!)";
+      document.getElementById('qbtn-2').style.background = "#059669";
+      quizChoicePanel.classList.add('completed');
+    } else {
+      statusText.innerText = "❌ 다시 생각해보세요!";
+      speechBubble1.text = "아니야! 등호(=)가 있고\nx의 해를 찾는 식을 다시 골라봐!";
+    }
+  };
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Scene 0: 1단계
+    if (scene === 0) {
+      drawSketchBoard(false);
+      drawDoodleChar(300, 495, 1.1, false, 'normal');
+      drawBubble(300, 495, speechBubble1.text, false, 410, 300);
+
+      drawDoodleChar(660, 495, 1.1, true, 'smile');
+      drawBubble(660, 495, speechBubble2.text, true, 410, 660);
+    }
+    // Scene 1: 2단계
+    else if (scene === 1) {
+      drawSketchBoard(true);
+      drawDoodleChar(300, 495, 1.1, false, 'normal');
+      drawBubble(300, 495, speechBubble1.text, false, 410, 300);
+
+      drawDoodleChar(660, 495, 1.1, true, 'smile');
+      drawBubble(660, 495, speechBubble2.text, true, 410, 660);
+    }
+    // Scene 2: 3단계
+    else if (scene === 2) {
+      drawSketchBoard(true, 0);
+      
+      ctx.save();
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(110, 252, 740, 72, 12);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#1e3a8a";
+      ctx.font = "bold 15px sans-serif";
+      ctx.textAlign = "center";
+
+      if (!isSubstituted3) {
+        ctx.fillText("👇 아래 노란색 버튼을 눌러 x에 숫자를 대입해 보세요!", 480, 280);
+        ctx.font = "bold 17px 'Courier New', monospace";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText("식: 2x - 1 (대입 대기 중...)", 480, 306);
+      } else {
+        const calcVal = 2 * valScene3 - 1;
+        ctx.fillText(`현재 대입한 값: x = ${valScene3}`, 480, 276);
+        ctx.font = "bold 19px 'Courier New', monospace";
+        ctx.fillStyle = "#dc2626";
+        ctx.fillText(`계산된 식의 값:  2 × (${valScene3}) - 1 = ${calcVal}`, 480, 307);
+      }
+      ctx.restore();
+
+      drawDoodleChar(90, 495, 0.85, false, 'normal');
+      drawBubble(90, 495, speechBubble1.text, false, 415, 130);
+
+      drawDoodleChar(870, 495, 0.85, true, 'smile');
+      drawBubble(870, 495, speechBubble2.text, true, 415, 830);
+    }
+    // Scene 3: 4단계
+    else if (scene === 3) {
+      drawSketchBoard(true, 1);
+
+      ctx.save();
+      ctx.fillStyle = "#ecfdf5";
+      ctx.strokeStyle = "#059669";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(110, 252, 740, 72, 12);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#065f46";
+      ctx.font = "bold 15px sans-serif";
+      ctx.textAlign = "center";
+
+      if (!isSubstituted4) {
+        ctx.fillText("👇 아래 노란색 버튼을 눌러 x에 숫자를 대입해 보세요!", 480, 280);
+        ctx.font = "bold 17px 'Courier New', monospace";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText("방정식: 2x - 1 = 0 (좌변과 우변의 균형 찾기)", 480, 306);
+      } else {
+        const leftVal = 2 * valScene4 - 1;
+        const isRight = (leftVal === 0);
+        ctx.fillText(`x = ${valScene4} 대입 시 좌우 저울 비교`, 480, 276);
+        ctx.font = "bold 18px 'Courier New', monospace";
+        ctx.fillStyle = isRight ? "#059669" : "#dc2626";
+        ctx.fillText(`좌변: 2×(${valScene4})-1 = ${leftVal}   ${isRight ? '==' : '≠'}   우변: 0  ➔  ${isRight ? '[참! 유일한 해]' : '[거짓! 해가 아님]'}`, 480, 307);
+      }
+      ctx.restore();
+
+      drawDoodleChar(90, 495, 0.85, false, 'normal');
+      drawBubble(90, 495, speechBubble1.text, false, 415, 130);
+
+      drawDoodleChar(870, 495, 0.85, true, 'smile');
+      drawBubble(870, 495, speechBubble2.text, true, 415, 810);
+    }
+    // Scene 4: 5단계
+    else if (scene === 4) {
+      drawSketchBoard(true, 2);
+
+      ctx.save();
+      ctx.fillStyle = "#fffbeb";
+      ctx.strokeStyle = "#d97706";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(110, 252, 740, 72, 12);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#92400e";
+      ctx.font = "bold 15px sans-serif";
+      ctx.textAlign = "center";
+
+      if (!isSubstituted5) {
+        ctx.fillText("👇 아래 노란색 버튼을 눌러 x에 숫자를 대입해 보세요!", 480, 280);
+        ctx.font = "bold 17px 'Courier New', monospace";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText("함수식: y = 2x - 1 (x에 따라 y가 결정되는 관계)", 480, 306);
+      } else {
+        const yVal = 2 * valScene5 - 1;
+        ctx.fillText("두 변수 x와 y의 대응 결과", 480, 274);
+        ctx.font = "bold 17px 'Courier New', monospace";
+        ctx.fillStyle = "#b45309";
+        ctx.fillText(`x=${valScene5} 대입  ➔  y = 2×(${valScene5})-1 = ${yVal}    [ 생성된 좌표: (${valScene5}, ${yVal}) ]`, 480, 307);
+      }
+      ctx.restore();
+
+      drawDoodleChar(90, 495, 0.85, false, 'normal');
+      drawBubble(90, 495, speechBubble1.text, false, 415, 130);
+
+      drawDoodleChar(870, 495, 0.85, true, 'smile');
+      drawBubble(870, 495, speechBubble2.text, true, 415, 810);
+    }
+    // Scene 5: 6단계
+    else if (scene === 5) {
+      ctx.save();
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "900 24px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("📊 세 식의 핵심 차이점 완벽 비교", 480, 94);
+
+      const tableX = 60, tableY = 118, w = 840, rowH = 47;
+      const headers = ["구분", "일차식", "일차방정식", "일차함수식"];
+      const colW = [150, 220, 220, 250];
+      
+      ctx.fillStyle = "#f1f5f9";
+      ctx.fillRect(tableX, tableY, w, rowH);
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(tableX, tableY, w, rowH);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 17px sans-serif";
+      let curX = tableX;
+      for(let i=0; i<4; i++) {
+        ctx.fillText(headers[i], curX + colW[i]/2, tableY + 30);
+        curX += colW[i];
+      }
+
+      const rows = [
+        ["식의 형태", "2x - 1", "2x - 1 = 0", "y = 2x - 1"],
+        ["등호 (=)", "없음 (❌)", "있음 (⭕)", "있음 (⭕)"],
+        ["변수 개수", "1개 (x)", "1개 (x)", "2개 (x, y)"],
+        ["주요 목적", "식의 값 계산", "참인 해(근) 구하기", "두 양 사이의 대응 / 직선"]
+      ];
+
+      for(let r=0; r<rows.length; r++) {
+        let rY = tableY + (r+1)*rowH;
+        ctx.fillStyle = (r % 2 === 0) ? "#ffffff" : "#f8fafc";
+        ctx.fillRect(tableX, rY, w, rowH);
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(tableX, rY, w, rowH);
+
+        let cX = tableX;
+        for(let c=0; c<4; c++) {
+          if (c === 0) {
+            ctx.fillStyle = "#1e293b";
+            ctx.font = "bold 16px sans-serif";
+          } else if (r === 0) {
+            ctx.fillStyle = "#2563eb";
+            ctx.font = "bold 18px 'Courier New', monospace";
+          } else {
+            ctx.fillStyle = "#334155";
+            ctx.font = "16px sans-serif";
+          }
+          ctx.fillText(rows[r][c], cX + colW[c]/2, rY + 29);
+          cX += colW[c];
+        }
+      }
+      ctx.restore();
+
+      drawDoodleChar(180, 508, 0.9, false, 'normal');
+      drawBubble(180, 508, speechBubble1.text, false, 425, 180);
+
+      drawDoodleChar(780, 508, 0.9, true, 'smile');
+      drawBubble(780, 508, speechBubble2.text, true, 425, 780);
+    }
+    // ★ Scene 6: 7단계 (노란색 강조 퀴즈 말풍선 렌더링!)
+    else if (scene === 6) {
+      drawSketchBoard(true);
+      drawDoodleChar(480, 395, 1.0, false, 'normal');
+      // isQuiz = true 플래그 전달
+      drawBubble(480, 395, speechBubble1.text, false, 305, 480, true);
+    }
+    // Scene 7: 8단계
+    else if (scene === 7) {
+      ctx.save();
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 24px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🧺 수식 분리수거 바구니 게임", 480, 92);
+
+      ctx.font = "15px sans-serif";
+      ctx.fillStyle = "#475569";
+      ctx.fillText("하늘에서 식이 떨어지면 알맞은 바구니를 터치/클릭하세요!", 480, 124);
+
+      drawBasket(230, 215, "일차식", "#2563eb", false);
+      drawBasket(480, 215, "일차방정식", "#059669", false);
+      drawBasket(730, 215, "일차함수식", "#d97706", false);
+      ctx.restore();
+
+      drawDoodleChar(260, 495, 1.0, false, 'normal');
+      drawBubble(260, 495, speechBubble1.text, false, 410, 260);
+
+      drawDoodleChar(700, 495, 1.0, true, 'smile');
+      drawBubble(700, 495, speechBubble2.text, true, 410, 700);
+    }
+    // Scene 8: 9단계
+    else if (scene === 8) {
+      ctx.fillStyle = "#f8fafc"; 
+      ctx.fillRect(0, 0, 960, 580);
+      
+      ctx.fillStyle = "#334155"; 
+      ctx.font = "bold 16px sans-serif"; 
+      ctx.textAlign = "left";
+      ctx.fillText(`진행: ${gameIndex + 1} / ${gameData.length}`, 35, 65);
+      ctx.fillText(`정답: ${gameScore} 개`, 35, 92);
+
+      const basketY = 445;
+      const b1X = 200, b2X = 480, b3X = 760;
+
+      let hover1 = (mouseX > b1X - 65 && mouseX < b1X + 65 && mouseY > basketY - 35 && mouseY < basketY + 45);
+      let hover2 = (mouseX > b2X - 65 && mouseX < b2X + 65 && mouseY > basketY - 35 && mouseY < basketY + 45);
+      let hover3 = (mouseX > b3X - 65 && mouseX < b3X + 65 && mouseY > basketY - 35 && mouseY < basketY + 45);
+
+      drawBasket(b1X, basketY, "일차식", "#2563eb", hover1);
+      drawBasket(b2X, basketY, "일차방정식", "#059669", hover2);
+      drawBasket(b3X, basketY, "일차함수식", "#d97706", hover3);
+
+      if (gameIndex < gameData.length) {
+        if (gameStatus === 'falling') {
+          fallingY += fallingSpeed;
+          drawFallingBubble(fallingX, fallingY, gameData[gameIndex].expr, 1.0);
+          
+          if (fallingY > 395) { 
+            gameResultMark = "앗, 놓쳤다! ⏰";
+            gameResultExp = "바닥에 닿기 전에 바구니를 선택해 주세요!";
+            gameStatus = 'result';
+            setTimeout(nextGameQuestion, 1500);
+          }
+        } 
+        else if (gameStatus === 'moving') {
+          fallingX += (targetBasketX - fallingX) * 0.18;
+          fallingY += (targetBasketY - fallingY) * 0.18;
+          fallingScale -= 0.035; 
+
+          if (fallingScale <= 0.25) { 
+            const correctType = gameData[gameIndex].type;
+            if (gameSelectedType === correctType) {
+              gameScore++; 
+              gameResultMark = "정답! 🎉";
+            } else {
+              gameResultMark = "오답! ❌";
+            }
+            gameResultExp = gameData[gameIndex].exp;
+            gameStatus = 'result';
+            setTimeout(nextGameQuestion, 1600);
+          } else {
+            drawFallingBubble(fallingX, fallingY, gameData[gameIndex].expr, Math.max(fallingScale, 0));
+          }
+        }
+      }
+
+      if (gameStatus === 'result' && gameResultMark) {
+        ctx.fillStyle = gameResultMark.includes("정답") ? "#059669" : "#dc2626";
+        ctx.textAlign = "center"; 
+        ctx.font = "bold 30px sans-serif";
+        ctx.fillText(gameResultMark, 480, 160);
+        ctx.fillStyle = "#1e293b"; 
+        ctx.font = "bold 18px sans-serif";
+        ctx.fillText(gameResultExp, 480, 200);
+      }
+    }
+    // Scene 9: 결과 화면
+    else if (scene === 9) {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, 960, 580);
+      
+      drawSketchBoard(true);
+
+      ctx.fillStyle = "#7c3aed"; 
+      ctx.font = "bold 28px sans-serif"; 
+      ctx.textAlign = "center";
+      ctx.fillText(`🎉 최종 결과: ${gameData.length}문제 중 ${gameScore}문제 정답!`, 480, 280);
+
+      drawDoodleChar(300, 495, 1.0, false, gameScore >= 8 ? 'smile' : 'sigh');
+      drawBubble(300, 495, speechBubble1.text, false, 410, 300);
+
+      drawDoodleChar(660, 495, 1.0, true, 'smile');
+      drawBubble(660, 495, speechBubble2.text, true, 410, 660);
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  function getCanvasPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * (canvas.width / rect.width),
+      y: (clientY - rect.top) * (canvas.height / rect.height)
+    };
+  }
+
+  function handlePointerMove(e) {
+    const pos = getCanvasPos(e);
+    mouseX = pos.x; mouseY = pos.y;
+    
+    if (scene === 8 && gameStatus === 'falling') {
+      const bY = 445;
+      if ((mouseX > 135 && mouseX < 265 && mouseY > bY - 35 && mouseY < bY + 45) || 
+          (mouseX > 415 && mouseX < 545 && mouseY > bY - 35 && mouseY < bY + 45) ||
+          (mouseX > 695 && mouseX < 825 && mouseY > bY - 35 && mouseY < bY + 45)) {
+        canvas.style.cursor = 'pointer';
+      } else {
+        canvas.style.cursor = 'default';
+      }
+    } else {
+      canvas.style.cursor = 'default';
+    }
+  }
+
+  function handlePointerDown(e) {
+    if (scene !== 8 || gameStatus !== 'falling') return;
+    const pos = getCanvasPos(e);
+    const bY = 445;
+    if (pos.x > 135 && pos.x < 265 && pos.y > bY - 35 && pos.y < bY + 45) {
+      catchExpr('expr', 200);
+    } else if (pos.x > 415 && pos.x < 545 && pos.y > bY - 35 && pos.y < bY + 45) {
+      catchExpr('eqn', 480);
+    } else if (pos.x > 695 && pos.x < 825 && pos.y > bY - 35 && pos.y < bY + 45) {
+      catchExpr('func', 760);
+    }
+  }
+
+  canvas.addEventListener('mousemove', handlePointerMove);
+  canvas.addEventListener('click', handlePointerDown);
+  canvas.addEventListener('touchstart', (e) => { handlePointerMove(e); handlePointerDown(e); }, { passive: true });
+
+  function catchExpr(type, targetX) {
+    gameSelectedType = type;
+    targetBasketX = targetX;
+    targetBasketY = 445;
+    gameStatus = 'moving';
+    canvas.style.cursor = 'default';
+  }
+
+  function nextGameQuestion() {
+    gameResultMark = ""; 
+    gameResultExp = "";
+    gameIndex++;
+    if (gameIndex >= gameData.length) {
+      loadScene(9);
+    } else {
+      fallingX = 480; 
+      fallingY = -40; 
+      fallingScale = 1.0; 
+      fallingSpeed += 0.15; 
+      gameStatus = 'falling';
+    }
+  }
+
+  window.goPrev = function() { 
+    if (scene > 0) loadScene(scene - 1); 
+  };
+  window.goNext = function() { 
+    if (scene < maxScene) loadScene(scene + 1); 
+  };
+
+  loadScene(0);
+  render();
+</script>
+</body>
+</html>
