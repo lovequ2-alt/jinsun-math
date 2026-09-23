@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>방정식 x를 구하라! (등식의 성질과 이항)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0f172a;
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #scale-wrapper {
+      position: absolute;
+      width: 960px;
+      height: 580px;
+      transform-origin: center center;
+    }
+
+    #game-container {
+      position: relative;
+      width: 960px;
+      height: 580px; 
+      background: #ffffff;
+      border: 4px solid #334155;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+
+    canvas { 
+      position: absolute;
+      top: 0; left: 0;
+      display: block; 
+      width: 960px; 
+      height: 580px; 
+      z-index: 1;
+    }
+
+    /* 최상단 상태 바 */
+    #top-status-bar {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.98);
+      padding: 5px 24px;
+      border-radius: 25px;
+      border: 2px solid #94a3b8;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      z-index: 9999;
+    }
+    #status-text {
+      font-size: 15px;
+      color: #0f172a;
+      font-weight: 800;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* 공통 세로 버튼 패널 스타일 */
+    .vertical-step-panel {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      flex-direction: column;
+      gap: 7px;
+      z-index: 9995;
+    }
+
+    #scale-step-panel {
+      top: 236px;
+      width: 340px;
+    }
+
+    #step2-vertical-panel {
+      top: 165px;
+      width: 480px;
+    }
+
+    .step-btn {
+      background: #facc15;
+      color: #0f172a;
+      border: 2px solid #eab308;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 800;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-btn:hover:not(:disabled) {
+      background: #eab308;
+      transform: translateY(-2px);
+    }
+    .step-btn:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+      border-color: #cbd5e1;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    .step-btn.done {
+      background: #10b981;
+      color: #ffffff;
+      border-color: #059669;
+    }
+
+    /* 하단 내비게이션 바 */
+    #ui-panel {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 7px 20px;
+      border-radius: 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      border: 2px solid #cbd5e1;
+      z-index: 9999; 
+    }
+    .nav-btn {
+      background: #2563eb; color: #fff; border: none;
+      padding: 8px 20px; font-size: 15px; font-weight: bold;
+      border-radius: 10px; cursor: pointer; transition: background 0.2s, transform 0.1s;
+    }
+    .nav-btn:hover:not(:disabled) { background: #1d4ed8; }
+    .nav-btn:active:not(:disabled) { transform: scale(0.96); }
+    .nav-btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* 퀴즈 4대 규칙 선택 패널 */
+    #quiz-choice-panel {
+      position: absolute;
+      top: 226px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 10px 18px;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      border: 2px solid #cbd5e1;
+      z-index: 9998;
+    }
+    .quiz-options { display: flex; gap: 12px; }
+    .quiz-btn {
+      background: #7c3aed; color: #fff; border: none;
+      font-size: 16px; font-weight: 800; padding: 10px 22px;
+      border-radius: 10px; cursor: pointer; transition: transform 0.1s, background 0.2s;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .quiz-btn span { font-size: 13px; font-weight: normal; opacity: 0.9; }
+    .quiz-btn:hover:not(:disabled) { background: #6d28d9; transform: translateY(-2px); }
+    .quiz-btn:disabled { cursor: not-allowed; }
+
+    /* 최종 확인 문제 인터랙티브 패널 */
+    #final-interactive-panel {
+      position: absolute;
+      top: 220px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 14px 24px;
+      border-radius: 18px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.14);
+      border: 2px solid #cbd5e1;
+      z-index: 9998;
+    }
+    .final-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+    .box-input {
+      width: 65px;
+      height: 44px;
+      font-size: 24px;
+      font-weight: 900;
+      text-align: center;
+      border: 3px solid #2563eb;
+      border-radius: 10px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      outline: none;
+    }
+    .box-input:focus {
+      border-color: #f59e0b;
+      background: #fffbeb;
+    }
+    .final-op-btn {
+      background: #475569;
+      color: #ffffff;
+      border: none;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 9px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .final-op-btn:hover:not(:disabled) {
+      background: #1e293b;
+      transform: translateY(-2px);
+    }
+
+    #result-controls { display: none; gap: 10px; align-items: center; }
+  </style>
+</head>
+<body>
+
+<div id="scale-wrapper">
+  <div id="game-container">
+    <div id="top-status-bar">
+      <span id="status-text">특명: 방정식 x를 구하라!</span>
+    </div>
+
+    <canvas id="canvas" width="960" height="580"></canvas>
+
+    <!-- 1단계: 저울 아래 세로 3단 버튼 -->
+    <div id="scale-step-panel" class="vertical-step-panel">
+      <button class="step-btn" id="btn-scale-1" onclick="executeScaleStep(1)">
+        1) 양변에 +1 더하기
+      </button>
+      <button class="step-btn" id="btn-scale-2" onclick="executeScaleStep(2)" disabled>
+        2) 양변을 2로 나누기 (약분)
+      </button>
+      <button class="step-btn" id="btn-scale-3" onclick="executeScaleStep(3)" disabled>
+        3) x = 3 대입하여 검산하기
+      </button>
+    </div>
+
+    <!-- 2단계: 소수 두 자리 + 정수 혼합 수식 아래 세로 4단 버튼 -->
+    <div id="step2-vertical-panel" class="vertical-step-panel">
+      <button class="step-btn" id="btn-s2-1" onclick="executeStep2(1)">
+        1) 소수 없애기: 정수 2를 포함한 모든 항에 ×100
+      </button>
+      <button class="step-btn" id="btn-s2-2" onclick="executeStep2(2)" disabled>
+        2) x항 왼쪽 몰기: 양변에 -20x
+      </button>
+      <button class="step-btn" id="btn-s2-3" onclick="executeStep2(3)" disabled>
+        3) 상수항 오른쪽 몰기: 양변에 -200
+      </button>
+      <button class="step-btn" id="btn-s2-4" onclick="executeStep2(4)" disabled>
+        4) x 홀로 남기기: 양변 ÷(-15)
+      </button>
+    </div>
+
+    <!-- 퀴즈 4대 규칙 선택창 -->
+    <div id="quiz-choice-panel">
+      <div class="quiz-options" id="quiz-options-container"></div>
+    </div>
+
+    <!-- 최종 확인 문제 인터랙티브 패널 -->
+    <div id="final-interactive-panel">
+      <div class="final-input-row">
+        <span>양변에서 / 양변에</span>
+        <input type="number" id="final-box-num" class="box-input" placeholder="숫자">
+        <span>을(를) 어떻게 할까요?</span>
+      </div>
+      <div class="quiz-options" style="gap: 8px;">
+        <button class="final-op-btn" onclick="submitFinalStep('add')">더한다 (+)</button>
+        <button class="final-op-btn" onclick="submitFinalStep('sub')">뺀다 (-)</button>
+        <button class="final-op-btn" onclick="submitFinalStep('mul')">곱한다 (×)</button>
+        <button class="final-op-btn" onclick="submitFinalStep('div')">나눈다 (÷)</button>
+      </div>
+    </div>
+
+    <!-- 하단 내비게이션 바 -->
+    <div id="ui-panel">
+      <div id="normal-controls" style="display: flex; gap: 8px;">
+        <button id="prev-btn" class="nav-btn" onclick="goPrev()" style="display:none;">◀ 이전</button>
+        <button id="next-btn" class="nav-btn" onclick="goNext()">다음 ▶</button>
+      </div>
+
+      <div id="result-controls">
+        <button class="nav-btn" style="background: #7c3aed;" onclick="loadScene(7)">🔄 퀴즈 다시하기</button>
+        <button class="nav-btn" style="background: #10b981;" onclick="loadScene(0)">🏠 처음으로</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function resizeGame() {
+    const wrapper = document.getElementById('scale-wrapper');
+    const availableW = window.innerWidth * 0.95;
+    const availableH = window.innerHeight * 0.93;
+    const scale = Math.min(availableW / 960, availableH / 580);
+    wrapper.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', resizeGame);
+  window.addEventListener('orientationchange', () => setTimeout(resizeGame, 150));
+  resizeGame();
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const statusText = document.getElementById('status-text');
+  const normalControls = document.getElementById('normal-controls');
+  const resultControls = document.getElementById('result-controls');
+  const scaleStepPanel = document.getElementById('scale-step-panel');
+  const step2VerticalPanel = document.getElementById('step2-vertical-panel');
+  const quizChoicePanel = document.getElementById('quiz-choice-panel');
+  const quizOptionsContainer = document.getElementById('quiz-options-container');
+  const finalInteractivePanel = document.getElementById('final-interactive-panel');
+  const finalBoxNum = document.getElementById('final-box-num');
+
+  let scene = 0;
+  const maxScene = 9; 
+
+  let showHeaderCard = false;
+  let showBubble1 = false;
+  let showBubble2 = false;
+  let bubble1Text = "";
+  let bubble2Text = "";
+  let timer1 = null, timer2 = null;
+
+  let scaleStep = 0;
+  let step2Step = 0;
+
+  const quizQuestions = [
+    {
+      level: "1단계 게임: 정수 덧셈 문제",
+      equation: "3x + 2 = 14",
+      questionText: "좌변의 +2를 없애고 x항만 남기기 위해 [가장 먼저] 밟아야 할 단계는?",
+      options: [
+        { label: "더한다", sym: "(+)", rule: "add" },
+        { label: "뺀다", sym: "(-)", rule: "sub" },
+        { label: "곱한다", sym: "(×)", rule: "mul" },
+        { label: "나눈다", sym: "(÷)", rule: "div" }
+      ],
+      correctRule: "sub",
+      exp: "양변에서 2를 가장 먼저 '빼야(-)' 3x = 12 가 되어 x를 구할 수 있어!"
+    },
+    {
+      level: "2단계 게임: 정수 뺄셈 문제",
+      equation: "4x - 5 = 11",
+      questionText: "좌변의 -5를 0으로 만들어 없애기 위해 [가장 먼저] 밟아야 할 단계는?",
+      options: [
+        { label: "더한다", sym: "(+)", rule: "add" },
+        { label: "뺀다", sym: "(-)", rule: "sub" },
+        { label: "곱한다", sym: "(×)", rule: "mul" },
+        { label: "나눈다", sym: "(÷)", rule: "div" }
+      ],
+      correctRule: "add",
+      exp: "양변에 5를 가장 먼저 '더해야(+)' 4x = 16 이 되어 해 x=4를 구할 수 있어!"
+    },
+    {
+      level: "3단계 게임: 분수 곱셈 문제",
+      equation: "1/3 x - 2 = 1",
+      questionText: "분모를 없애기 위해 [가장 먼저] 해야 할 단계는?",
+      options: [
+        { label: "더한다", sym: "(+)", rule: "add" },
+        { label: "뺀다", sym: "(-)", rule: "sub" },
+        { label: "곱한다", sym: "(×)", rule: "mul" },
+        { label: "나눈다", sym: "(÷)", rule: "div" }
+      ],
+      correctRule: "mul",
+      exp: "분모 3을 없애려면 양변에 3을 가장 먼저 '곱해야(×)' x - 6 = 3 으로 정수가 돼!"
+    },
+    {
+      level: "4단계 게임: 소수 곱셈 문제",
+      equation: "0.2x + 1 = 3",
+      questionText: "소수를 없애고 간단한 정수로 만들기 위해 양변에 [가장 먼저] 해야 할 단계는?",
+      options: [
+        { label: "더한다", sym: "(+)", rule: "add" },
+        { label: "뺀다", sym: "(-)", rule: "sub" },
+        { label: "곱한다", sym: "(×)", rule: "mul" },
+        { label: "나눈다", sym: "(÷)", rule: "div" }
+      ],
+      correctRule: "mul",
+      exp: "소수 한 자리이므로 양변에 10을 가장 먼저 '곱해야(×)' 2x + 10 = 30 으로 깔끔해져!"
+    },
+    {
+      level: "5단계 게임: 괄호 문제",
+      equation: "2(x - 3) = 8",
+      questionText: "괄호를 풀기 전 양변을 간단하게 할 수 있는 [가장 먼저] 취할 방법은?",
+      options: [
+        { label: "더한다", sym: "(+)", rule: "add" },
+        { label: "뺀다", sym: "(-)", rule: "sub" },
+        { label: "곱한다", sym: "(×)", rule: "mul" },
+        { label: "나눈다", sym: "(÷)", rule: "div" }
+      ],
+      correctRule: "div",
+      exp: "양변을 2로 가장 먼저 '나누면(÷)' 괄호가 즉시 풀려 x - 3 = 4 가 돼!"
+    }
+  ];
+  let currentQuizIndex = 0;
+  let quizScore = 0;
+  let isQuizAnswered = false;
+
+  let finalStep = 1;
+
+  function clearAllTimers() {
+    if (timer1) clearTimeout(timer1);
+    if (timer2) clearTimeout(timer2);
+  }
+
+  function setSceneDialogue(text1, text2, delay1 = 600, delay2 = 1600) {
+    clearAllTimers();
+    showHeaderCard = true;
+    showBubble1 = false;
+    showBubble2 = false;
+    bubble1Text = text1;
+    bubble2Text = text2;
+
+    timer1 = setTimeout(() => { showBubble1 = true; }, delay1);
+    timer2 = setTimeout(() => { showBubble2 = true; }, delay2);
+  }
+
+  function loadScene(newScene) {
+    scene = newScene;
+    clearAllTimers();
+
+    nextBtn.innerText = "다음 ▶";
+    nextBtn.disabled = false;
+    nextBtn.style.display = scene < maxScene ? 'inline-block' : 'none';
+    prevBtn.style.display = scene > 0 ? 'inline-block' : 'none';
+
+    normalControls.style.display = 'flex';
+    resultControls.style.display = 'none';
+    scaleStepPanel.style.display = 'none';
+    step2VerticalPanel.style.display = 'none';
+    quizChoicePanel.style.display = 'none';
+    finalInteractivePanel.style.display = 'none';
+
+    if (scene === 0) {
+      statusText.innerText = "오늘의 임무: 어떠한 상황에서든 x를 구하라!";
+      setSceneDialogue("방정식은 대체 뭘 하는 거야?\nx가 왜 이렇게 복잡하게 얽혀있지?",
+                       "방정식은 등식을 만족하는 x값을 찾아\n다양한 식 속에서 구조해 내는 탐험이야!", 600, 1600);
+    }
+    else if (scene === 1) {
+      statusText.innerText = "황금 규칙: 등식의 양변에 공평하게 적용하기!";
+      setSceneDialogue("x만 왼쪽에 남기려면\n어떤 규칙을 써야 해?",
+                       "양변에 같은 수를 더하거나 빼고,\n0이 아닌 수로 곱하거나 나눠도 등식은 변하지 않아!", 600, 1600);
+    }
+    else if (scene === 2) {
+      statusText.innerText = "1단계: 정수와 곱해진 x를 구하라 (2x - 1 = 5)";
+      scaleStepPanel.style.display = 'flex';
+      scaleStep = 0;
+      resetScaleButtons();
+      setSceneDialogue("왼쪽에 -1이 붙어있어!\nx를 구하려면 어떡하지?",
+                       "저울 바로 아래 1번 버튼을 눌러서\n양변에 +1을 해보자!", 500, 1400);
+    }
+    else if (scene === 3) {
+      statusText.innerText = "정리: 저울을 지키는 4가지 규칙 (+, -, ×, ÷)";
+      setSceneDialogue("더하기, 빼기, 곱하기, 나누기\n전부 저울 원리와 똑같네!",
+                       "맞아! 양변에 같은 수만 취해주면\n저울은 늘 수평(참)을 유지해!", 600, 1500);
+    }
+    else if (scene === 4) {
+      statusText.innerText = "2단계: 소수 방정식 (0.05x + 2 = 1.25 + 0.2x)";
+      step2VerticalPanel.style.display = 'flex';
+      step2Step = 0;
+      resetStep2VerticalButtons();
+      setSceneDialogue("정수 2랑 소수 두 자리가 섞여있네?\n어떻게 해야 하지?",
+                       "소수 두 자리 기준! 소수가 아닌 정수 2도\n빠짐없이 똑같이 100을 곱해야 해!", 500, 1400);
+    }
+    else if (scene === 5) {
+      statusText.innerText = "💡 여기서 잠깐! 빠르고 편리한 '이항(移項)'";
+      setSceneDialogue("매번 양변에 더하고 빼려니\n조금 번거로운 것 같아...",
+                       "등호를 건너뛰면 부호가 반대로 짠! 바뀌어!\n이걸 '이항'이라고 불러.", 600, 1600);
+    }
+    else if (scene === 6) {
+      statusText.innerText = "🎮 미니 게임: x를 구하기 위해 어떤 단계를 밟을까? (총 5문제)";
+      setSceneDialogue("방정식을 풀 때 어떤 단계를\n가장 먼저 밟아야 할까?",
+                       "더한다, 뺀다, 곱한다, 나눈다 중\n가장 알맞은 첫 단추를 골라봐!", 500, 1400);
+      nextBtn.innerText = "게임 시작하기 ▶";
+    }
+    else if (scene === 7) {
+      currentQuizIndex = 0;
+      quizScore = 0;
+      renderQuizQuestion();
+    }
+    else if (scene === 8) {
+      statusText.innerText = "⭐ 최종 확인 문제: 직접 숫자를 넣고 x를 구출하라!";
+      finalStep = 1;
+      finalBoxNum.value = "";
+      finalInteractivePanel.style.display = 'flex';
+      nextBtn.disabled = true;
+      nextBtn.innerText = "완료 확인 ▶";
+      setSceneDialogue("최종 미션이다! 2x + 6 = 16 에서\nx만 남기려면 네모에 어떤 수를 넣고 조작해야 할까?",
+                       "1단계로 상수 +6을 먼저 없애고,\n2단계로 x 앞의 2를 나누어 x를 구해봐!", 500, 1400);
+    }
+    // [9] 최종 결과 화면 (요청하신 문구 배너 카드 반영)
+    else if (scene === 9) {
+      statusText.innerText = "🎉 임무 완수! 당신은 이제 x 구조 전문가!";
+      normalControls.style.display = 'none';
+      resultControls.style.display = 'flex';
+      setSceneDialogue(`5문제 중 ${quizScore}문제 정답 & 최종 보스까지 정복!\nx 구출 대성공!`,
+                       "완벽해! 이제 어떤 복잡한 방정식이 나와도\n스스로 척척 풀어낼 수 있어!", 500, 1400);
+    }
+  }
+
+  function resetScaleButtons() {
+    const b1 = document.getElementById('btn-scale-1');
+    const b2 = document.getElementById('btn-scale-2');
+    const b3 = document.getElementById('btn-scale-3');
+    b1.disabled = false; b1.className = "step-btn"; b1.innerText = "1) 양변에 +1 더하기";
+    b2.disabled = true;  b2.className = "step-btn"; b2.innerText = "2) 양변을 2로 나누기 (약분)";
+    b3.disabled = true;  b3.className = "step-btn"; b3.innerText = "3) x = 3 대입하여 검산하기";
+  }
+
+  window.executeScaleStep = function(stepNum) {
+    const b1 = document.getElementById('btn-scale-1');
+    const b2 = document.getElementById('btn-scale-2');
+    const b3 = document.getElementById('btn-scale-3');
+
+    if (stepNum === 1) {
+      scaleStep = 1;
+      b1.disabled = true; b1.classList.add('done');
+      b1.innerText = "✅ 1) 양변에 +1 완료 ➔ 2x = 6";
+      b2.disabled = false;
+      bubble2Text = "양변에 +1을 더해서 -1을 0으로 소거!\n저울은 그대로 균형을 유지해 (2x = 6)";
+      bubble1Text = "이제 2x에 곱해진 2를 떨궈내야 해!";
+    } else if (stepNum === 2) {
+      scaleStep = 2;
+      b2.disabled = true; b2.classList.add('done');
+      b2.innerText = "✅ 2) 양변 ÷2 약분 완료 ➔ x = 3";
+      b3.disabled = false;
+      bubble2Text = "2로 양변을 나누어 약분 성공!\n드디어 x = 3 을 구출했어!";
+      bubble1Text = "야호! x = 3 을 구했다!\n정말 참이 되는지 확인해볼까?";
+    } else if (stepNum === 3) {
+      scaleStep = 3;
+      b3.disabled = true; b3.classList.add('done');
+      b3.innerText = "🎉 3) 2×(3)-1 = 5 (참!) 확인 완료";
+      bubble2Text = "2×(3) - 1 = 6 - 1 = 5 !\n양변이 똑같으니 완벽한 참(True)이야!";
+      bubble1Text = "대입해보니 식이 성립해!\n방정식 정복 완료!";
+    }
+    showBubble1 = true; showBubble2 = true;
+  };
+
+  function resetStep2VerticalButtons() {
+    const labels = [
+      "1) 소수 없애기: 정수 2를 포함한 모든 항에 ×100",
+      "2) x항 왼쪽 몰기: 양변에 -20x",
+      "3) 상수항 오른쪽 몰기: 양변에 -200",
+      "4) x 홀로 남기기: 양변 ÷(-15)"
+    ];
+    for (let i = 1; i <= 4; i++) {
+      const b = document.getElementById(`btn-s2-${i}`);
+      b.disabled = (i !== 1);
+      b.className = "step-btn";
+      b.innerText = labels[i - 1];
+    }
+  }
+
+  window.executeStep2 = function(step) {
+    step2Step = step;
+    const currentBtn = document.getElementById(`btn-s2-${step}`);
+    currentBtn.disabled = true;
+    currentBtn.classList.add('done');
+
+    const nextBtnEl = document.getElementById(`btn-s2-${step + 1}`);
+    if (nextBtnEl) nextBtnEl.disabled = false;
+
+    if (step === 1) {
+      currentBtn.innerText = "✅ 1) ×100 완료 ➔ 5x + 200 = 125 + 20x";
+      bubble2Text = "소수가 아닌 정수 2도 100을 곱해 200이 돼!\n모든 항에 똑같이 곱해야 등식이 유지돼!";
+      bubble1Text = "와! 정수도 빠짐없이 곱해야 하는구나!\n이제 20x를 왼쪽으로 넘겨보자!";
+    } else if (step === 2) {
+      currentBtn.innerText = "✅ 2) -20x 완료 ➔ -15x + 200 = 125";
+      bubble2Text = "우변의 20x를 없애기 위해 양변에 -20x!\n5x - 20x = -15x 가 되었어.";
+      bubble1Text = "x항이 왼쪽에 모였어!\n이제 상수 +200을 오른쪽으로 넘기자!";
+    } else if (step === 3) {
+      currentBtn.innerText = "✅ 3) -200 완료 ➔ -15x = -75";
+      bubble2Text = "양변에 -200을 빼서\n-15x = -75 로 아주 깔끔해졌어!";
+      bubble1Text = "마지막 단계다!\nx와 곱해진 -15를 떨궈내자!";
+    } else if (step === 4) {
+      currentBtn.innerText = "🎉 4) ÷(-15) 완료 ➔ x = 5 구출 성공!";
+      bubble2Text = "양변을 -15로 나누어\nx = -75 ÷ (-15) = 5 구출 성공!";
+      bubble1Text = "정수가 섞여 있어도 모든 항에\n소수 두 자리 기준 100을 곱하니 딱 풀리네!";
+    }
+    showBubble1 = true; showBubble2 = true;
+  };
+
+  function renderQuizQuestion() {
+    clearAllTimers();
+    quizChoicePanel.style.display = 'flex';
+    isQuizAnswered = false;
+    nextBtn.disabled = true;
+
+    const q = quizQuestions[currentQuizIndex];
+    statusText.innerText = `🎮 ${q.level} (문제 ${currentQuizIndex + 1} / ${quizQuestions.length})`;
+    
+    showHeaderCard = true;
+    bubble1Text = `${q.equation}\n이 문제에서 가장 먼저 밟을 단계는?`;
+    bubble2Text = "더한다, 뺀다, 곱한다, 나눈다 중\nx를 구하기 위한 첫 번째 단계를 골라봐!";
+    showBubble1 = true;
+    showBubble2 = true;
+
+    quizOptionsContainer.innerHTML = '';
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-btn';
+      btn.innerHTML = `${opt.label} <span>${opt.sym}</span>`;
+      btn.onclick = () => handleQuizAnswer(opt.rule);
+      quizOptionsContainer.appendChild(btn);
+    });
+
+    if (currentQuizIndex === quizQuestions.length - 1) {
+      nextBtn.innerText = "다음 단계(최종 점검) ▶";
+    } else {
+      nextBtn.innerText = "다음 문제 ▶";
+    }
+  }
+
+  function handleQuizAnswer(selectedRule) {
+    if (isQuizAnswered) return;
+    isQuizAnswered = true;
+
+    const q = quizQuestions[currentQuizIndex];
+    const btns = quizOptionsContainer.querySelectorAll('button');
+    btns.forEach(b => b.disabled = true);
+
+    if (selectedRule === q.correctRule) {
+      quizScore++;
+      statusText.innerText = "🎉 딩동댕! 정확한 단계입니다!";
+      bubble1Text = `정답이야! 👏\n${q.exp}`;
+    } else {
+      statusText.innerText = "❌ 아쉬워요! 다른 단계를 먼저 밟는 게 좋아요.";
+      bubble1Text = `아쉽지만 오답이야!\n해설: ${q.exp}`;
+    }
+
+    q.options.forEach((opt, idx) => {
+      if (opt.rule === q.correctRule) btns[idx].style.background = "#059669";
+      else if (opt.rule === selectedRule) btns[idx].style.background = "#dc2626";
+      else btns[idx].style.background = "#94a3b8";
+    });
+
+    nextBtn.disabled = false;
+  }
+
+  window.submitFinalStep = function(op) {
+    const val = parseInt(finalBoxNum.value.trim(), 10);
+    if (isNaN(val)) {
+      alert("네모 안에 알맞은 숫자를 먼저 입력해 주세요!");
+      finalBoxNum.focus();
+      return;
+    }
+
+    if (finalStep === 1) {
+      if (val === 6 && op === 'sub') {
+        finalStep = 2;
+        finalBoxNum.value = "";
+        statusText.innerText = "🎉 1단계 성공! 2x = 10 완성!";
+        bubble2Text = "딩동댕! 양변에서 6을 빼서\n2x = 10 으로 깔끔하게 변환했어!";
+        bubble1Text = "좋아! 이제 2x = 10 에서\nx만 구하려면 어떻게 할까?";
+      } else {
+        statusText.innerText = "❌ 1단계 다시 시도! 좌변의 +6을 없애야 해.";
+        bubble2Text = "상수 +6을 없애려면\n'6'을 '뺀다(-)'를 해야 해!";
+      }
+    } else if (finalStep === 2) {
+      if (val === 2 && op === 'div') {
+        finalStep = 3;
+        finalInteractivePanel.style.display = 'none';
+        nextBtn.disabled = false;
+        nextBtn.innerText = "최종 결과 확인 ▶";
+        statusText.innerText = "🎊 완벽 성공! x = 5 최종 구출 완료!";
+        bubble2Text = "완벽해! 양변을 2로 나누어\nx = 5 를 완벽하게 구출해냈어!";
+        bubble1Text = "야호! 내가 직접 숫자를 넣고\n방정식을 완전히 풀어냈어!";
+      } else {
+        statusText.innerText = "❌ 2단계 다시 시도! x 앞의 곱해진 2를 없애야 해.";
+        bubble2Text = "2x에서 x만 남기려면\n'2'로 '나눈다(÷)'를 선택해봐!";
+      }
+    }
+    showBubble1 = true; showBubble2 = true;
+  };
+
+  function drawDoodleChar(x, y, scale = 1, isFriend = false, eyeType = 'normal') {
+    ctx.save(); 
+    ctx.translate(x, y); 
+    ctx.scale(scale, scale);
+    ctx.lineWidth = 3 / scale; 
+    ctx.strokeStyle = "#111"; 
+    ctx.fillStyle = "#fff";
+    
+    ctx.beginPath(); 
+    ctx.arc(0, -50, 16, 0, Math.PI * 2); 
+    ctx.fill(); 
+    ctx.stroke();
+    
+    if (isFriend) { 
+      ctx.fillStyle = "#2563eb"; 
+      ctx.beginPath(); 
+      ctx.arc(0, -62, 14, Math.PI, Math.PI * 2); 
+      ctx.fill(); 
+      ctx.stroke(); 
+    }
+    
+    ctx.fillStyle = "#111";
+    if (eyeType === 'sigh') { 
+      ctx.fillRect(-10, -52, 6, 2); 
+      ctx.fillRect(4, -52, 6, 2); 
+    } else { 
+      ctx.beginPath(); 
+      ctx.arc(-5, -52, 2.5, 0, Math.PI * 2); 
+      ctx.arc(5, -52, 2.5, 0, Math.PI * 2); 
+      ctx.fill(); 
+    }
+    
+    ctx.beginPath(); 
+    ctx.moveTo(0, -34); ctx.lineTo(0, -10); ctx.stroke();
+    ctx.beginPath(); 
+    ctx.moveTo(0, -25); ctx.lineTo(-12, -15); 
+    ctx.moveTo(0, -25); ctx.lineTo(12, -15);
+    ctx.moveTo(0, -10); ctx.lineTo(-8, 0); 
+    ctx.moveTo(0, -10); ctx.lineTo(8, 0); 
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawBubble(charX, charY, text, isFriend = false, forceBottomY = null, forceX = null) {
+    if (!text) return; 
+    ctx.save(); 
+    
+    const lines = text.split('\n');
+    let maxW = 0; 
+    ctx.font = "bold 15px 'Pretendard', sans-serif";
+    lines.forEach(l => { maxW = Math.max(maxW, ctx.measureText(l).width); });
+    
+    const boxW = Math.max(maxW + 32, 160); 
+    const boxH = Math.max(lines.length * 22 + 20, 48);
+    const bottomY = (forceBottomY !== null) ? forceBottomY : (charY - 80);
+    const boxY = bottomY - boxH;
+
+    let boxX = (forceX !== null) ? forceX : charX;
+    if (boxX - boxW / 2 < 20) boxX = 20 + boxW / 2;
+    if (boxX + boxW / 2 > 940) boxX = 940 - boxW / 2;
+
+    ctx.fillStyle = isFriend ? "#eff6ff" : "rgba(255, 255, 255, 0.98)"; 
+    ctx.strokeStyle = isFriend ? "#2563eb" : "#334155"; 
+    ctx.lineWidth = 2.5;
+    
+    ctx.beginPath(); 
+    ctx.roundRect(boxX - boxW / 2, boxY, boxW, boxH, 12); 
+    ctx.fill(); 
+    ctx.stroke();
+    
+    ctx.beginPath();
+    const tailTopX = Math.min(Math.max(charX, boxX - boxW / 2 + 20), boxX + boxW / 2 - 20);
+    ctx.moveTo(tailTopX - 7, bottomY);
+    ctx.lineTo(tailTopX, bottomY + 9);
+    ctx.lineTo(tailTopX + 7, bottomY);
+    ctx.fillStyle = isFriend ? "#eff6ff" : "rgba(255, 255, 255, 0.98)";
+    ctx.fill(); 
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#0f172a"; 
+    lines.forEach((l, idx) => {
+      ctx.fillText(l, boxX, boxY + 22 + (idx * 22));
+    });
+
+    ctx.restore();
+  }
+
+  function drawScale(cx, cy, leftText, rightText, tilt = 0, scaleW = 380) {
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    ctx.fillStyle = "#475569";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-28, 48);
+    ctx.lineTo(28, 48);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    ctx.fillStyle = "#facc15";
+    ctx.font = "bold 20px 'Courier New', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("=", 0, 36);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(0, 0, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.rotate(tilt);
+
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(-scaleW / 2, 0);
+    ctx.lineTo(scaleW / 2, 0);
+    ctx.stroke();
+
+    const leftX = -scaleW / 2;
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#64748b";
+    ctx.beginPath();
+    ctx.moveTo(leftX, 0); ctx.lineTo(leftX - 35, 36);
+    ctx.moveTo(leftX, 0); ctx.lineTo(leftX + 35, 36);
+    ctx.stroke();
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.beginPath();
+    ctx.ellipse(leftX, 38, 50, 9, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#eff6ff";
+    ctx.strokeStyle = "#2563eb";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect(leftX - 60, 38 - 42, 120, 38, 8);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#1e40af";
+    ctx.font = "bold 20px 'Courier New', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(leftText, leftX, 38 - 16);
+
+    const rightX = scaleW / 2;
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#64748b";
+    ctx.beginPath();
+    ctx.moveTo(rightX, 0); ctx.lineTo(rightX - 35, 36);
+    ctx.moveTo(rightX, 0); ctx.lineTo(rightX + 35, 36);
+    ctx.stroke();
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.beginPath();
+    ctx.ellipse(rightX, 38, 50, 9, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#fffbeb";
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect(rightX - 60, 38 - 42, 120, 38, 8);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#92400e";
+    ctx.font = "bold 20px 'Courier New', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(rightText, rightX, 38 - 16);
+
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function drawMiddleEquationCard(y = 230) {
+    ctx.save();
+    ctx.fillStyle = "#eff6ff";
+    ctx.strokeStyle = "#3b82f6";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect(330, y, 300, 60, 12);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#1d4ed8";
+    ctx.font = "bold 13px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("구출해야 할 오늘의 대표 방정식", 480, y + 20);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 24px 'Courier New', monospace";
+    ctx.fillText("2x - 1 = 5", 480, y + 47);
+    ctx.restore();
+  }
+
+  // 메인 렌더링 루프
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // [0] 오늘의 임무
+    if (scene === 0) {
+      if (showHeaderCard) {
+        ctx.save();
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = 2.5;
+        ctx.fillStyle = "#f8fafc";
+        ctx.roundRect(70, 52, 820, 160, 14);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "900 25px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("🎯 오늘의 임무: 어떠한 상황에서든 x를 구하라!", 480, 88);
+
+        ctx.font = "bold 16px sans-serif";
+        ctx.fillStyle = "#1e293b";
+        ctx.fillText("방정식은 등식을 참으로 만드는 미지수 x값을 구조해 내는 목적이야!", 480, 126);
+        ctx.fillText("분수와 소수, 덧셈과 뺄셈으로 얽힌 수식 속에서 x를 구해내는 게 우리의 목표!", 480, 154);
+        ctx.fillStyle = "#0369a1";
+        ctx.fillText("x를 사랑스럽게 바라보며, 등식의 규칙을 활용해 안전하게 구출하자!", 480, 184);
+        ctx.restore();
+
+        drawMiddleEquationCard(224);
+      }
+
+      drawDoodleChar(300, 490, 1.15, false);
+      if (showBubble1) drawBubble(300, 490, bubble1Text, false, 400, 300);
+
+      drawDoodleChar(660, 490, 1.15, true);
+      if (showBubble2) drawBubble(660, 490, bubble2Text, true, 400, 660);
+    }
+    // [1] 황금 규칙
+    else if (scene === 1) {
+      if (showHeaderCard) {
+        ctx.save();
+        ctx.fillStyle = "#f8fafc";
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = 2.5;
+        ctx.roundRect(70, 52, 820, 160, 14);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 22px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⚖️ 등식의 황금 법칙: 등호(=)의 양변은 항상 공평해야 해!", 480, 84);
+
+        const rules = [
+          "1. 양변에 같은 수를 더하거나 빼기  (그래도 등식은 변하지 않아)",
+          "2. 0이 아닌 같은 수로 양변을 나누거나 곱하기  (그래도 등식은 성립해)"
+        ];
+        ctx.font = "bold 16px 'Pretendard', sans-serif";
+        ctx.textAlign = "left";
+        rules.forEach((r, idx) => {
+          ctx.fillStyle = "#1e293b";
+          ctx.fillText(r, 110, 124 + idx * 30);
+        });
+
+        ctx.fillStyle = "#b91c1c";
+        ctx.fillText("⭐ 우리의 목표: 왼쪽에 x만 남기기 위해 위의 규칙을 역이용한다!", 110, 188);
+        ctx.restore();
+
+        drawMiddleEquationCard(224);
+      }
+
+      drawDoodleChar(260, 500, 1.05, false);
+      if (showBubble1) drawBubble(260, 500, bubble1Text, false, 415, 260);
+
+      drawDoodleChar(700, 500, 1.05, true);
+      if (showBubble2) drawBubble(700, 500, bubble2Text, true, 415, 700);
+    }
+    // [2] 1단계: 정수 계수 저울
+    else if (scene === 2) {
+      let leftLabel = "2x - 1";
+      let rightLabel = "5";
+      let statusSub = "현재 상태:  2x - 1 = 5";
+
+      if (scaleStep === 1) {
+        leftLabel = "2x"; rightLabel = "6";
+        statusSub = "1단계 완료: 양변에 +1 적용 ➔ 2x = 6";
+      } else if (scaleStep >= 2) {
+        leftLabel = "x"; rightLabel = "3";
+        statusSub = (scaleStep === 3) ? "3단계 검산: 2×(3) - 1 = 5 (참!) 구출 대성공!" : "2단계 완료: 양변 ÷2 약분 ➔ x = 3 !";
+      }
+
+      ctx.save();
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 21px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(statusSub, 480, 78);
+      ctx.restore();
+
+      drawScale(480, 130, leftLabel, rightLabel, 0, 360);
+
+      drawDoodleChar(160, 500, 0.95, false);
+      if (showBubble1) drawBubble(160, 500, bubble1Text, false, 420, 160);
+
+      drawDoodleChar(800, 500, 0.95, true);
+      if (showBubble2) drawBubble(800, 500, bubble2Text, true, 420, 800);
+    }
+    // [3] 등식의 4대 규칙 정리
+    else if (scene === 3) {
+      if (showHeaderCard) {
+        ctx.save();
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 23px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⚖️ 등식의 양변을 지켜주는 4대 저울 연산", 480, 74);
+
+        const miniScales = [
+          { op: "① 양변에 더한다 (+)", left: "A + c", right: "B + c", cx: 250, cy: 130 },
+          { op: "② 양변에서 뺀다 (-)", left: "A - c", right: "B - c", cx: 710, cy: 130 },
+          { op: "③ 양변에 곱한다 (×)", left: "A × c", right: "B × c", cx: 250, cy: 260 },
+          { op: "④ 양변을 나눈다 (÷)", left: "A ÷ c", right: "B ÷ c", cx: 710, cy: 260 }
+        ];
+
+        miniScales.forEach(ms => {
+          ctx.fillStyle = "#1e40af";
+          ctx.font = "bold 15px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(ms.op, ms.cx, ms.cy - 36);
+          drawScale(ms.cx, ms.cy, ms.left, ms.right, 0, 180);
+        });
+        ctx.restore();
+      }
+
+      drawDoodleChar(240, 505, 0.9, false);
+      if (showBubble1) drawBubble(240, 505, bubble1Text, false, 430, 240);
+
+      drawDoodleChar(720, 505, 0.9, true);
+      if (showBubble2) drawBubble(720, 505, bubble2Text, true, 430, 720);
+    }
+    // [4] 2단계: 소수 두 자리 + 정수 혼합 방정식
+    else if (scene === 4) {
+      const step2Expressions = [
+        "0.05x  +  2  =  1.25  +  0.2x",
+        "5x  +  200  =  125  +  20x",
+        "-15x  +  200  =  125",
+        "-15x  =  -75",
+        "x  =  -75 / (-15)  (= 5)"
+      ];
+
+      ctx.save();
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(120, 60, 720, 88, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 14px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`[ 단계 ${step2Step} / 4 ] 변환된 현재 식`, 480, 85);
+
+      ctx.fillStyle = step2Step === 4 ? "#059669" : "#1e40af";
+      ctx.font = "bold 25px 'Courier New', monospace";
+      ctx.fillText(step2Expressions[step2Step], 480, 125);
+      ctx.restore();
+
+      drawDoodleChar(130, 500, 0.95, false);
+      if (showBubble1) drawBubble(130, 500, bubble1Text, false, 420, 130);
+
+      drawDoodleChar(830, 500, 0.95, true);
+      if (showBubble2) drawBubble(830, 500, bubble2Text, true, 420, 830);
+    }
+    // [5] 여기서 잠깐! 이항
+    else if (scene === 5) {
+      if (showHeaderCard) {
+        ctx.save();
+        ctx.fillStyle = "#fffbeb";
+        ctx.strokeStyle = "#f59e0b";
+        ctx.lineWidth = 3;
+        ctx.roundRect(60, 52, 840, 240, 16);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#92400e";
+        ctx.font = "bold 23px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("💡 여기서 잠깐! 빠르고 편리한 '이항(移項)' 완벽 비교", 480, 84);
+
+        ctx.font = "bold 15px sans-serif";
+        ctx.fillStyle = "#78350f";
+        ctx.fillText("매번 양변에 더하고 빼기 힘드니, 등호를 건너뛰며 부호를 즉시 바꿔줍니다!", 480, 110);
+
+        // 좌측 카드: [이항 전]
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 2.5;
+        ctx.roundRect(90, 128, 320, 142, 12);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#475569";
+        ctx.font = "bold 15px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("📌 [이항 전] 좌변에 머물러 있을 때", 250, 154);
+
+        ctx.font = "bold 28px 'Courier New', monospace";
+        ctx.fillStyle = "#0f172a";
+        ctx.fillText("2x", 185, 202);
+        ctx.fillStyle = "#dc2626";
+        ctx.fillText("- 1", 245, 202);
+        ctx.fillStyle = "#0f172a";
+        ctx.fillText("= 5", 305, 202);
+
+        ctx.fillStyle = "#dc2626";
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillText("좌변에 있던 '- 1' 이 등호를 넘어가면?", 250, 244);
+
+        // 중앙: 굵은 화살표 & 대형 '이항' 글씨
+        ctx.save();
+        ctx.fillStyle = "#ea580c";
+        ctx.strokeStyle = "#c2410c";
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(430, 172);
+        ctx.lineTo(485, 172);
+        ctx.lineTo(485, 160);
+        ctx.lineTo(518, 185);
+        ctx.lineTo(485, 210);
+        ctx.lineTo(485, 198);
+        ctx.lineTo(430, 198);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "#9a3412";
+        ctx.font = "900 24px 'Pretendard', sans-serif";
+        ctx.fillText("이 항", 474, 242);
+        ctx.restore();
+
+        // 우측 카드: [이항 후]
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#10b981";
+        ctx.lineWidth = 2.5;
+        ctx.roundRect(550, 128, 320, 142, 12);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#059669";
+        ctx.font = "bold 15px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("✨ [이항 후] 우변으로 건너갔을 때", 710, 154);
+
+        ctx.font = "bold 28px 'Courier New', monospace";
+        ctx.fillStyle = "#0f172a";
+        ctx.fillText("2x = 5", 665, 202);
+        ctx.fillStyle = "#16a34a";
+        ctx.fillText("+ 1", 750, 202);
+
+        ctx.fillStyle = "#15803d";
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillText("부호가 반대로 반전되어 '+ 1' 로 변신!", 710, 244);
+
+        ctx.restore();
+      }
+
+      drawDoodleChar(260, 495, 1.05, false);
+      if (showBubble1) drawBubble(260, 495, bubble1Text, false, 415, 260);
+
+      drawDoodleChar(700, 495, 1.05, true);
+      if (showBubble2) drawBubble(700, 495, bubble2Text, true, 415, 700);
+    }
+    // [6] 게임 준비 인트로
+    else if (scene === 6) {
+      if (showHeaderCard) {
+        ctx.save();
+        ctx.strokeStyle = "#334155";
+        ctx.fillStyle = "#f8fafc";
+        ctx.lineWidth = 2.5;
+        ctx.roundRect(70, 45, 820, 235, 14);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 24px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("🎮 실전 게임: x를 구하기 위해 어떤 단계를 밟을까? (총 5문제)", 480, 80);
+
+        const gameLevels = [
+          "1번: 3x + 2 = 14  ➔  좌변의 상수를 없애기 위해 가장 먼저 할 일은?",
+          "2번: 4x - 5 = 11  ➔  -5를 0으로 만들기 위해 가장 먼저 할 일은?",
+          "3번: 1/3 x - 2 = 1  ➔  분모 3을 없애기 위해 가장 먼저 할 일은?",
+          "4번: 0.2x + 1 = 3  ➔  소수를 없애기 위해 가장 먼저 할 일은?",
+          "5번: 2(x - 3) = 8  ➔  괄호를 풀기 전 양변을 간단히 할 방법은?"
+        ];
+        ctx.font = "bold 15px sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#2563eb";
+        gameLevels.forEach((gl, i) => {
+          ctx.fillText(gl, 120, 116 + i * 29);
+        });
+        ctx.restore();
+      }
+
+      drawDoodleChar(300, 490, 1.15, false);
+      if (showBubble1) drawBubble(300, 490, bubble1Text, false, 405, 300);
+
+      drawDoodleChar(660, 490, 1.15, true);
+      if (showBubble2) drawBubble(660, 490, bubble2Text, true, 405, 660);
+    }
+    // [7] 퀴즈 화면
+    else if (scene === 7) {
+      const q = quizQuestions[currentQuizIndex];
+      ctx.save();
+      
+      ctx.fillStyle = "#fff1f2";
+      ctx.strokeStyle = "#e11d48";
+      ctx.lineWidth = 3;
+      ctx.roundRect(80, 45, 800, 168, 16);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#be123c";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`🚨 ${q.level}  [ 문제 ${currentQuizIndex + 1} / ${quizQuestions.length} ]`, 480, 75);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 40px 'Courier New', monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(q.equation, 480, 128);
+
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#334155";
+      ctx.textAlign = "center";
+      ctx.fillText(q.questionText, 480, 178);
+      ctx.restore();
+
+      drawDoodleChar(160, 505, 0.9, false);
+      if (showBubble1) drawBubble(160, 505, bubble1Text, false, 420, 160);
+
+      drawDoodleChar(800, 505, 0.9, true);
+      if (showBubble2) drawBubble(800, 505, bubble2Text, true, 420, 800);
+    }
+    // [8] 최종 확인 문제
+    else if (scene === 8) {
+      ctx.save();
+      ctx.fillStyle = "#f0fdf4";
+      ctx.strokeStyle = "#16a34a";
+      ctx.lineWidth = 3;
+      ctx.roundRect(80, 45, 800, 160, 16);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#15803d";
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("⭐ 최종 확인 문제 (FINAL BOSS): 네모 안에 숫자를 넣고 x를 구하라!", 480, 75);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 40px 'Courier New', monospace";
+      if (finalStep === 1) {
+        ctx.fillText("2x + 6 = 16", 480, 126);
+        ctx.font = "bold 16px sans-serif";
+        ctx.fillStyle = "#b45309";
+        ctx.fillText("1단계: 좌변의 상수 +6을 없애기 위해 양변을 어떻게 해야 할까?", 480, 172);
+      } else if (finalStep === 2) {
+        ctx.fillText("2x = 10", 480, 126);
+        ctx.font = "bold 16px sans-serif";
+        ctx.fillStyle = "#b45309";
+        ctx.fillText("2단계: x 앞의 곱해진 2를 떨궈내기 위해 양변을 어떻게 해야 할까?", 480, 172);
+      } else if (finalStep === 3) {
+        ctx.fillStyle = "#059669";
+        ctx.fillText("x = 5  🎉 (구출 완료!)", 480, 126);
+        ctx.font = "bold 17px sans-serif";
+        ctx.fillText("대입 검산: 2 × (5) + 6 = 10 + 6 = 16 (완벽한 참!)", 480, 172);
+      }
+      ctx.restore();
+
+      drawDoodleChar(160, 505, 0.9, false);
+      if (showBubble1) drawBubble(160, 505, bubble1Text, false, 420, 160);
+
+      drawDoodleChar(800, 505, 0.9, true);
+      if (showBubble2) drawBubble(800, 505, bubble2Text, true, 420, 800);
+    }
+    // [9] 결과 엔딩 (요청하신 황금빛 특명 복습 배너 카드 탑재!)
+    else if (scene === 9) {
+      if (showHeaderCard) {
+        ctx.save();
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "900 28px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("🏆 특명 완료! x 구조 대성공!", 480, 85);
+
+        ctx.font = "bold 21px sans-serif";
+        ctx.fillStyle = "#2563eb";
+        ctx.fillText(`퀴즈 5문제 중 ${quizScore}문제 정답 + 최종 보스 클리어!`, 480, 122);
+
+        ctx.font = "bold 15px sans-serif";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText("이제 어떤 복잡한 수식이 나와도 등식의 양변을 지키며 x를 구할 수 있습니다!", 480, 150);
+
+        // ★ [가운데 빈 공간에 배치된 특명 강조 배너 카드]
+        ctx.fillStyle = "#fffbeb";
+        ctx.strokeStyle = "#f59e0b";
+        ctx.lineWidth = 3;
+        ctx.roundRect(140, 180, 680, 78, 16);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#b45309";
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillText("📢 절대 잊지 말아야 할 오늘의 황금 명언", 480, 206);
+
+        ctx.fillStyle = "#9a3412";
+        ctx.font = "900 20px 'Pretendard', sans-serif";
+        ctx.fillText("\"방정식을 풀어라는 x를 구해라 라는 특명임을 잊지 마!\"", 480, 238);
+
+        ctx.restore();
+      }
+
+      drawDoodleChar(300, 485, 1.15, false, quizScore >= 4 ? 'normal' : 'sigh');
+      if (showBubble1) drawBubble(300, 485, bubble1Text, false, 395, 300);
+
+      drawDoodleChar(660, 485, 1.15, true);
+      if (showBubble2) drawBubble(660, 485, bubble2Text, true, 395, 660);
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  window.goPrev = function() { 
+    if (scene > 0) {
+      if (scene === 7 && currentQuizIndex > 0) {
+        currentQuizIndex--;
+        renderQuizQuestion();
+      } else {
+        loadScene(scene - 1);
+      }
+    }
+  };
+
+  window.goNext = function() { 
+    if (scene === 7) {
+      if (!isQuizAnswered) return;
+      if (currentQuizIndex < quizQuestions.length - 1) {
+        currentQuizIndex++;
+        renderQuizQuestion();
+      } else {
+        loadScene(8);
+      }
+    } else if (scene < maxScene) {
+      loadScene(scene + 1); 
+    }
+  };
+
+  loadScene(0);
+  render();
+</script>
+</body>
+</html>
