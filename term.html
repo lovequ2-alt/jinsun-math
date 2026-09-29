@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>중1 수학 - 다항식과 일차식의 용어 정리</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #1e293b;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    /* 화면 스케일 래퍼: 비율 960x580 유지 및 화면 크기에 맞춘 자동 스케일링 */
+    #scale-wrapper {
+      position: absolute;
+      width: 960px;
+      height: 580px;
+      transform-origin: center center;
+    }
+
+    #game-container {
+      position: relative;
+      width: 960px;
+      height: 580px;
+      background: #ffffff;
+      border: 4px solid #334155;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0; left: 0;
+      display: block;
+      width: 960px;
+      height: 580px;
+      z-index: 1;
+    }
+
+    /* 상단 단계 안내 바 */
+    #top-status-bar {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.96);
+      padding: 8px 30px;
+      border-radius: 30px;
+      border: 2px solid #cbd5e1;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      z-index: 9999;
+    }
+    #status-text {
+      font-size: 17px;
+      color: #0f172a;
+      font-weight: 800;
+      text-align: center;
+      white-space: nowrap;
+      letter-spacing: 0.5px;
+    }
+
+    /* 퀴즈 선택 버튼 패널 */
+    #quiz-choice-panel {
+      position: absolute;
+      bottom: 74px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      gap: 14px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 10px 24px;
+      border-radius: 18px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.18);
+      border: 2px solid #cbd5e1;
+      z-index: 9998;
+    }
+    .quiz-btn {
+      background: #7c3aed;
+      color: #ffffff;
+      border: none;
+      padding: 10px 22px;
+      font-size: 16px;
+      font-weight: 800;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 3px 6px rgba(124, 58, 237, 0.25);
+    }
+    .quiz-btn:hover:not(:disabled) {
+      background: #6d28d9;
+      transform: translateY(-2px);
+    }
+    .quiz-btn:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+    .quiz-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .quiz-btn.correct {
+      background: #10b981 !important;
+      color: #fff !important;
+    }
+    .quiz-btn.wrong {
+      background: #ef4444 !important;
+      color: #fff !important;
+    }
+
+    /* 하단 네비게이션 버튼 패널 */
+    #ui-panel {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 8px 24px;
+      border-radius: 18px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+      border: 2px solid #cbd5e1;
+      z-index: 9999;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+    .nav-btn {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      font-size: 15px;
+      font-weight: 800;
+      border-radius: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .nav-btn:hover { background: #1d4ed8; }
+    .nav-btn:active { transform: scale(0.96); }
+    .nav-btn.purple { background: #7c3aed; }
+    .nav-btn.purple:hover { background: #6d28d9; }
+    .nav-btn.green { background: #10b981; }
+    .nav-btn.green:hover { background: #059669; }
+    .nav-btn.home { background: #0f172a; }
+    .nav-btn.home:hover { background: #334155; }
+  </style>
+</head>
+<body>
+
+<div id="scale-wrapper">
+  <div id="game-container">
+    <!-- 상단 상태 표시 바 -->
+    <div id="top-status-bar">
+      <span id="status-text">1단계: 항에서 용어정리 (2x - 1)</span>
+    </div>
+
+    <canvas id="canvas" width="960" height="580"></canvas>
+
+    <!-- 퀴즈 선택 버튼 패널 -->
+    <div id="quiz-choice-panel">
+      <button id="qbtn-0" class="quiz-btn" onclick="submitQuizAnswer(0)">①</button>
+      <button id="qbtn-1" class="quiz-btn" onclick="submitQuizAnswer(1)">②</button>
+      <button id="qbtn-2" class="quiz-btn" onclick="submitQuizAnswer(2)">③</button>
+    </div>
+
+    <!-- 하단 조작 패널 -->
+    <div id="ui-panel">
+      <div id="normal-controls" class="btn-row">
+        <button id="prev-btn" class="nav-btn" onclick="goPrev()" style="display:none;">◀ 이전</button>
+        <button id="next-btn" class="nav-btn" onclick="goNext()">다음 ▶</button>
+      </div>
+
+      <div id="result-controls" class="btn-row" style="display:none;">
+        <button class="nav-btn" onclick="loadScene(9)">◀ 개념 복습 (10단계)</button>
+        <button class="nav-btn purple" onclick="startQuiz()">🔄 퀴즈 다시 풀기</button>
+        <button class="nav-btn green" onclick="loadScene(0)">🏠 처음으로</button>
+        <button class="nav-btn home" onclick="location.href='index.html'">📚 목차로</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Canvas roundRect 폴리필
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+      if (w < 2 * r) r = w / 2;
+      if (h < 2 * r) r = h / 2;
+      this.beginPath();
+      this.moveTo(x + r, y);
+      this.arcTo(x + w, y, x + w, y + h, r);
+      this.arcTo(x + w, y + h, x, y + h, r);
+      this.arcTo(x, y + h, x, y, r);
+      this.arcTo(x, y, x + w, y, r);
+      this.closePath();
+      return this;
+    };
+  }
+
+  // 화면 자동 스케일링
+  function resizeGame() {
+    const wrapper = document.getElementById('scale-wrapper');
+    const availableW = window.innerWidth * 0.95;
+    const availableH = window.innerHeight * 0.93;
+    const scale = Math.min(availableW / 960, availableH / 580);
+    wrapper.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', resizeGame);
+  window.addEventListener('orientationchange', () => setTimeout(resizeGame, 150));
+  resizeGame();
+
+  // 사운드 효과음 (Web Audio API)
+  let audioCtx = null;
+  function getAudioContext() {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) audioCtx = new AudioContext();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  }
+
+  function playSound(type) {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === 'click') {
+        osc.frequency.setValueAtTime(600, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'next') {
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } else if (type === 'pop') {
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(780, now + 0.1);
+        gain.gain.setValueAtTime(0.09, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } else if (type === 'correct') {
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(783.99, now + 0.12);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.setValueAtTime(200, now + 0.15);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'fanfare') {
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, idx) => {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.connect(g);
+          g.connect(ctx.destination);
+          o.frequency.value = freq;
+          g.gain.setValueAtTime(0.1, now + idx * 0.1);
+          g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.25);
+          o.start(now + idx * 0.1);
+          o.stop(now + idx * 0.1 + 0.25);
+        });
+      }
+    } catch(e) {}
+  }
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const statusText = document.getElementById('status-text');
+  const normalControls = document.getElementById('normal-controls');
+  const resultControls = document.getElementById('result-controls');
+  const quizChoicePanel = document.getElementById('quiz-choice-panel');
+  const qbtns = [
+    document.getElementById('qbtn-0'),
+    document.getElementById('qbtn-1'),
+    document.getElementById('qbtn-2')
+  ];
+
+  let scene = 0;
+  const maxConceptScene = 9; // 0 ~ 9: 개념 학습 10단계
+  const quizScene = 10;      // 10: 퀴즈 화면 (총 10문제)
+  const resultScene = 11;    // 11: 퀴즈 최종 결과 화면
+
+  let replyTimer = null;
+  let replyTimer2 = null;
+  let stage3Timer = null;
+  let showStage3Extra = false;
+
+  // 캐릭터 말풍선 상태
+  let speechBubble1 = { text: "" }; // 왼쪽 친구 (주인공)
+  let speechBubble2 = { text: "" }; // 오른쪽 친구 (멘토)
+  let highlightTarget = null;
+
+  // 10문제 퀴즈 데이터 (계수/상수항/차수 5문제 + 동류항/계산 5문제)
+  const quizList = [
+    // [Part 1: 계수, 상수항, 차수 5문제]
+    {
+      formula: "4x - 7",
+      question: "식 4x - 7 에서\n'상수항'은 무엇일까요?",
+      options: ["① 4", "② -7", "③ 7"],
+      answer: 1,
+      exp: "부호(-)까지 꼭 챙겨야 해!\n상수항은 -7이야!"
+    },
+    {
+      formula: "-3x + 5",
+      question: "식 -3x + 5 에서\nx의 '계수'는 무엇일까요?",
+      options: ["① -3", "② 3", "③ 5"],
+      answer: 0,
+      exp: "문자 x 앞에 곱해진 수는\n부호 포함 -3이야!"
+    },
+    {
+      formula: "-x + 8",
+      question: "식 -x + 8 에서\nx의 '계수'는 무엇일까요?",
+      options: ["① 0", "② 1", "③ -1"],
+      answer: 2,
+      exp: "-x 는 (-1) × x 에서\n1이 생략된 거라 계수는 -1이야!"
+    },
+    {
+      formula: "5x² - 2x + 1",
+      question: "식 5x² - 2x + 1 의\n'차수'는 몇 차식일까요?",
+      options: ["① 1차식", "② 2차식", "③ 3차식"],
+      answer: 1,
+      exp: "문자가 가장 많이 곱해진\n최고차항(x²)이 대장! 2차식이야!"
+    },
+    {
+      formula: "- 2/3 x + 4",
+      isFraction: true,
+      num: "2", den: "3",
+      question: "식에서 x의 '계수'는\n무엇일까요?",
+      options: ["① -2/3", "② 2/3", "③ 4"],
+      answer: 0,
+      exp: "분수라도 부호까지 그대로!\nx의 계수는 -2/3야!"
+    },
+
+    // [Part 2: 동류항 찾기 및 계산 5문제]
+    {
+      formula: "3x",
+      question: "다음 중 3x 와 '동류항'인 것은\n어느 것일까요?",
+      options: ["① 3x²", "② -5x", "③ 3y"],
+      answer: 1,
+      exp: "문자(x)와 차수(1차)가\n모두 같아야 동류항이야!"
+    },
+    {
+      formula: "2x + 5x",
+      question: "2x + 5x 를 계산해서\n'한 몸으로 합체'하면?",
+      options: ["① 7x", "② 7x²", "③ 10x"],
+      answer: 0,
+      exp: "계수끼리 더해서\n(2 + 5)x = 7x 가 돼!"
+    },
+    {
+      formula: "6x - 4x",
+      question: "6x - 4x 를 계산한\n결과는 무엇일까요?",
+      options: ["① 2", "② 2x", "③ -2x"],
+      answer: 1,
+      exp: "(6 - 4)x = 2x!\n문자 x를 꼭 붙여줘야 해!"
+    },
+    {
+      formula: "3x + 2 + 4x + 5",
+      question: "3x + 2 + 4x + 5 를\n간단히 계산하면?",
+      options: ["① 7x + 7", "② 14x", "③ 7x + 10"],
+      answer: 0,
+      exp: "문자끼리 (3x+4x=7x),\n숫자끼리 (2+5=7)! 7x + 7 이야!"
+    },
+    {
+      formula: "5x + 4 - 2x - 7",
+      question: "5x + 4 - 2x - 7 을\n바르게 계산한 결과는?",
+      options: ["① 3x + 11", "② 3x - 3", "③ 7x - 3"],
+      answer: 1,
+      exp: "문자끼리 (5x-2x=3x),\n숫자끼리 (4-7=-3)! 정답은 3x - 3!"
+    }
+  ];
+
+  let currentQuizIdx = 0;
+  let quizScore = 0;
+  let quizAnswered = false;
+
+  function setDialogue(speaker1, text1, speaker2, text2, delay = 1000) {
+    if (replyTimer) clearTimeout(replyTimer);
+    if (replyTimer2) clearTimeout(replyTimer2);
+    speechBubble1.text = "";
+    speechBubble2.text = "";
+
+    if (speaker1 === 'char') speechBubble1.text = text1;
+    else if (speaker1 === 'friend') speechBubble2.text = text1;
+
+    if (text2 && speaker2) {
+      replyTimer = setTimeout(() => {
+        if (speaker2 === 'char') speechBubble1.text = text2;
+        else if (speaker2 === 'friend') speechBubble2.text = text2;
+        playSound('pop');
+      }, delay);
+    }
+  }
+
+  function loadScene(newScene) {
+    scene = newScene;
+    if (replyTimer) clearTimeout(replyTimer);
+    if (replyTimer2) clearTimeout(replyTimer2);
+    if (stage3Timer) clearTimeout(stage3Timer);
+    showStage3Extra = false;
+
+    quizChoicePanel.style.display = 'none';
+
+    if (scene <= maxConceptScene) {
+      // 0 ~ 9: 개념 학습 모드
+      normalControls.style.display = 'flex';
+      resultControls.style.display = 'none';
+      prevBtn.style.display = scene > 0 ? 'inline-block' : 'none';
+      nextBtn.style.display = 'inline-block';
+      nextBtn.innerText = (scene === maxConceptScene) ? "🚨 실전 퀴즈 풀기 (10문제) ▶" : "다음 ▶";
+      nextBtn.onclick = goNext;
+
+      if (scene === 0) {
+        statusText.innerText = "1단계: 항에서 용어정리 (2x - 1)";
+        highlightTarget = 'all';
+        setDialogue('char', "야, 2x - 1 은 도대체\n외계어야 수학이야?!", 
+                    'friend', "쫄지 마! 하나씩 뜯어보면\n완전 별거 아니거든 ㅋㅋㅋ", 1000);
+      }
+      else if (scene === 1) {
+        statusText.innerText = "2단계: 덧셈으로 분리 !";
+        highlightTarget = 'term';
+        // 사용자 요청: "+ 로 분리되니 항 2개" 로 변경 ('묶인' 표현 제거)
+        setDialogue('friend', "2x - 1 은 사실 2x + (-1) 이야!\n+ 로 분리되니 항 2개야!",
+                    'char', "아하! 부호(-)까지 챙겨서\n{c:#1d4ed8}2x{/c} 랑 {c:#7e22ce}-1{/c}, 총 2개의 항이구나!", 1200);
+      }
+      else if (scene === 2) {
+        statusText.innerText = "3단계: 곱셈 기호(×) 생략의 비밀";
+        highlightTarget = 'mult';
+        // 사용자 요청: "곱하기 생략하면 덩어리가 잘 보여." 반영
+        setDialogue('friend', "수학에서는 수와 문자 사이의\n곱하기(×) 기호를 쿨하게 생략해!",
+                    'char', "곱하기 생략하면 덩어리가 잘 보여!\n딱 붙여서 {c:#0284c7}한 덩어리(항 1개){/c}가 되네!", 1200);
+        // 사용자 요청: 두 말풍선 사이에 나중에 뜨도록 예시 카드 딜레이 (1.6초 후)
+        stage3Timer = setTimeout(() => {
+          showStage3Extra = true;
+          playSound('pop');
+        }, 1600);
+      }
+      else if (scene === 3) {
+        statusText.innerText = "4단계: 문자(변수) - '모르는 수'";
+        highlightTarget = 'x';
+        setDialogue('friend', "초딩 때 쓰던 {c:#0284c7}□, △{/c} 대신\n문자(x)를 쓴 거야!",
+                    'char', "값이 수시로 변할 수 있어서\n'변수'라고도 부르지!", 1200);
+      }
+      else if (scene === 4) {
+        statusText.innerText = "5단계: 계수 - '문자에 곱해진 수'";
+        highlightTarget = '2';
+        speechBubble1.text = "";
+        speechBubble2.text = "x 앞에 찰떡처럼 곱해진\n2가 바로 계수야!";
+        replyTimer = setTimeout(() => {
+          // 사용자 요청 수정 문구 적용
+          speechBubble1.text = "{c:#dc2626}-x 계수는 -1 !{/c} , {c:#16a34a}x 계수는 1 !{/c} 맞지?";
+          playSound('pop');
+          replyTimer2 = setTimeout(() => {
+            speechBubble2.text = "오~ 완벽해!\n1은 곱할 때 생략되니까!";
+            playSound('pop');
+          }, 1600);
+        }, 2200);
+      }
+      else if (scene === 5) {
+        statusText.innerText = "6단계: 상수항 - '문자와 곱해지지 않는 수'";
+        highlightTarget = 'const';
+        // 사용자 요청: "식에서 항상 일정한 값을 가져서 상수항이구나!" 반영
+        setDialogue('friend', "뒤에 있는 -1 은\n{c:#9333ea}x에 영향을 받지 않아!{/c}",
+                    'char', "식에서 항상 일정한 값을 가져서\n{c:#9333ea}'상수항'{/c}이구나!", 1200);
+      }
+      else if (scene === 6) {
+        statusText.innerText = "7단계: 차수와 일차식·이차식";
+        highlightTarget = 'deg';
+        // 사용자 요청: 3x²은 x를 두번 곱했으니 2차. 그 식에서 최고차네!
+        setDialogue('friend', "x 머리 위 1은 생략돼서 1차!\n그럼 3x² 처럼 2번 곱해지면?",
+                    'char', "{c:#dc2626}3x²은 x를 두 번 곱했으니 2차!{/c}\n그 식에서 최고차네!", 1300);
+        replyTimer2 = setTimeout(() => {
+          speechBubble2.text = "맞아! {c:#dc2626}최고차항의 차수{/c}로\n'일차식', '이차식'이라 불러!";
+          playSound('pop');
+        }, 2900);
+      }
+      else if (scene === 7) {
+        statusText.innerText = "8단계: 동류항 - '끼리 끼리'";
+        highlightTarget = 'like';
+        // 사용자 요청: 친구(문자와 차수가 같으면 동류항 !! 동류항끼리 계산 !) / 주인공(상수항 +3과 -1 합체 ! 2x와 5x 합체 !)
+        setDialogue('friend', "{c:#2563eb}문자와 차수가 같으면 동류항 !!{/c}\n{c:#1d4ed8}동류항끼리 계산 !{/c}",
+                    'char', "{c:#16a34a}상수항 +3과 -1 합체 !{/c}\n{c:#2563eb}2x와 5x 합체 !{/c}", 1100);
+      }
+      else if (scene === 8) {
+        statusText.innerText = "9단계: 단항식과 다항식 - '포함 관계'";
+        highlightTarget = 'poly';
+        setDialogue('friend', "항이 1개면 단항식,\n1개 이상이면 다항식이야!",
+                    'char', "{c:#ea580c}⭐ 핵심!{/c} 항이 1개인 단항식도\n{c:#2563eb}다항식에 쏙 포함{/c}돼!", 1200);
+        replyTimer2 = setTimeout(() => {
+          speechBubble2.text = "맞아! 단항식도 다항식의\n한 가족이라고 기억해둬!";
+          playSound('pop');
+        }, 2800);
+      }
+      else if (scene === 9) {
+        statusText.innerText = "10단계: 실전 적용! 새로운 식 (-1/2 x + 3)";
+        highlightTarget = 'table';
+        // 사용자 요청: 분모에 문자가 있으면 1차가 아님을 설명 & 말풍선 2줄 분할로 중앙 여백 확보
+        setDialogue('friend', "음수나 분수가 나와도\n규칙은 똑같다.",
+                    'char', "{c:#dc2626}참! 분모에 문자가 있으면{/c}\n{c:#dc2626}일차식이 아니래!{/c} 잊지 말자!", 1200);
+        replyTimer2 = setTimeout(() => {
+          speechBubble2.text = "오~ 핵심 함정까지 완벽해!\n이제 실전 퀴즈로 가보자! 🚀";
+          playSound('pop');
+        }, 2900);
+      }
+    } 
+    else if (scene === quizScene) {
+      // 10: 퀴즈 시작
+      startQuiz();
+    }
+    else if (scene === resultScene) {
+      // 11: 퀴즈 결과 화면
+      showQuizResult();
+    }
+  }
+
+  function startQuiz() {
+    scene = quizScene;
+    currentQuizIdx = 0;
+    quizScore = 0;
+    normalControls.style.display = 'flex';
+    resultControls.style.display = 'none';
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+    loadQuizQuestion(0);
+  }
+
+  function loadQuizQuestion(idx) {
+    currentQuizIdx = idx;
+    quizAnswered = false;
+    highlightTarget = 'quiz';
+    const q = quizList[idx];
+    statusText.innerText = `🚨 실전 퀴즈 (${idx + 1} / ${quizList.length} 문제)`;
+
+    speechBubble1.text = q.question;
+    speechBubble2.text = "알맞은 번호를 골라봐!";
+
+    quizChoicePanel.style.display = 'flex';
+    qbtns.forEach((btn, i) => {
+      btn.innerText = q.options[i];
+      btn.className = "quiz-btn";
+      btn.disabled = false;
+    });
+  }
+
+  window.submitQuizAnswer = function(chosenIdx) {
+    if (quizAnswered) return;
+    quizAnswered = true;
+
+    const q = quizList[currentQuizIdx];
+    const isCorrect = (chosenIdx === q.answer);
+
+    qbtns.forEach((btn, i) => {
+      btn.disabled = true;
+      if (i === q.answer) btn.classList.add('correct');
+      else if (i === chosenIdx) btn.classList.add('wrong');
+    });
+
+    if (isCorrect) {
+      quizScore++;
+      playSound('correct');
+      speechBubble2.text = "딩동댕! 정답이야! 👏\n" + q.exp;
+    } else {
+      playSound('wrong');
+      speechBubble2.text = "앗! 아쉬워! 😅\n" + q.exp;
+    }
+
+    // 다음 문제로 넘어가기 버튼 준비
+    setTimeout(() => {
+      if (currentQuizIdx + 1 < quizList.length) {
+        nextBtn.innerText = "다음 문제 ▶";
+        nextBtn.style.display = 'inline-block';
+        nextBtn.onclick = function() {
+          playSound('next');
+          loadQuizQuestion(currentQuizIdx + 1);
+        };
+      } else {
+        nextBtn.innerText = "🏆 최종 결과 확인하기 ▶";
+        nextBtn.style.display = 'inline-block';
+        nextBtn.onclick = function() {
+          playSound('next');
+          loadScene(resultScene);
+        };
+      }
+    }, 600);
+  };
+
+  function showQuizResult() {
+    scene = resultScene;
+    statusText.innerText = "🎉 축하합니다! 퀴즈 완주 성공!";
+    highlightTarget = 'result';
+    normalControls.style.display = 'none';
+    resultControls.style.display = 'flex';
+    quizChoicePanel.style.display = 'none';
+    playSound('fanfare');
+
+    const perfect = (quizScore === quizList.length);
+    if (perfect) {
+      speechBubble1.text = "와! 10문제 다 맞혔어!!\n나 수학 천재인가 봐 ㅋㅋㅋ";
+      speechBubble2.text = "10점 만점에 10점 완벽해!!\n용어와 계산 완전 정복!";
+    } else {
+      speechBubble1.text = `10문제 중 ${quizScore}개 맞혔어!\n틀린 건 다시 복습해야지!`;
+      speechBubble2.text = `수고했어! ${quizScore} / ${quizList.length} 점!\n개념 복습하고 다시 도전해봐!`;
+    }
+  }
+
+  // 캐릭터 그리기 (linear.html 완성본 표준 사이즈)
+  function drawDoodleChar(x, y, isFriend = false) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#111";
+    ctx.fillStyle = "#fff";
+
+    // 머리 (반지름 16)
+    ctx.beginPath();
+    ctx.arc(0, -50, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // 친구 파란 모자
+    if (isFriend) {
+      ctx.fillStyle = "#3498db";
+      ctx.beginPath();
+      ctx.arc(0, -62, 14, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-18, -62); ctx.lineTo(18, -62);
+      ctx.stroke();
+    }
+
+    // 눈
+    ctx.fillStyle = "#111";
+    ctx.beginPath();
+    ctx.arc(-5, -52, 2.2, 0, Math.PI * 2);
+    ctx.arc(5, -52, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 입 (미소)
+    ctx.beginPath();
+    ctx.arc(0, -46, 6, 0.2 * Math.PI, 0.8 * Math.PI);
+    ctx.stroke();
+
+    // 몸통 및 팔다리
+    ctx.beginPath();
+    ctx.moveTo(0, -34); ctx.lineTo(0, -10); // 몸
+    ctx.moveTo(0, -25); ctx.lineTo(-12, -15); // 왼팔
+    ctx.moveTo(0, -25); ctx.lineTo(12, -15);  // 오른팔
+    ctx.moveTo(0, -10); ctx.lineTo(-8, 5);    // 왼다리
+    ctx.moveTo(0, -10); ctx.lineTo(8, 5);     // 오른다리
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // 색상 태그 {c:color}text{/c} 지원하는 리치 텍스트 파서
+  function parseRichText(line, defaultColor = "#0f172a") {
+    // 줄바꿈으로 끊긴 미완성 태그 정리
+    line = line.replace(/\{c:[^}]+\}$/g, '').replace(/^\{\/c\}/g, '');
+    const parts = [];
+    const regex = /\{c:([^}]+)\}(.*?)\{\/c\}/g;
+    let lastIdx = 0;
+    let match;
+    while ((match = regex.exec(line)) !== null) {
+      if (match.index > lastIdx) {
+        parts.push({ text: line.substring(lastIdx, match.index), color: defaultColor });
+      }
+      parts.push({ text: match[2], color: match[1] });
+      lastIdx = regex.lastIndex;
+    }
+    if (lastIdx < line.length) {
+      parts.push({ text: line.substring(lastIdx).replace(/\{c:[^}]+\}|\{\/c\}/g, ''), color: defaultColor });
+    }
+    return parts;
+  }
+
+  function getPlainLength(line) {
+    return line.replace(/\{c:[^}]+\}(.*?)\{\/c\}/g, '$1').replace(/\{c:[^}]+\}|\{\/c\}/g, '');
+  }
+
+  // 말풍선 그리기 (화면 중앙 쪽으로 당겨 가장자리 잘림 완전 방지)
+  function drawBubble(x, y, text, isFriend = false) {
+    if (!text) return;
+    ctx.save();
+
+    if ('letterSpacing' in ctx) {
+      ctx.letterSpacing = "1.2px";
+    }
+
+    ctx.font = "bold 17px 'Pretendard', -apple-system, sans-serif";
+    const lines = text.split('\n');
+    let maxW = 0;
+    lines.forEach(l => {
+      const plain = getPlainLength(l);
+      maxW = Math.max(maxW, ctx.measureText(plain).width);
+    });
+
+    const boxW = Math.max(maxW + 42, 170);
+    const boxH = Math.max(lines.length * 28 + 26, 62);
+    const bubbleY = y - 95 - boxH;
+
+    // 사용자 요청: 말풍선을 중앙 쪽으로 당겨서 양쪽 끝이 잘리지 않도록 조정
+    let bubbleCenterX;
+    if (isFriend) {
+      // 오른쪽 친구: 왼쪽(중앙 쪽)으로 25px 당김 & 오른쪽 경계(935)와 중앙 경계(625) 사이 클램프
+      bubbleCenterX = x - 25;
+      bubbleCenterX = Math.min(935 - boxW / 2, Math.max(625 + boxW / 2, bubbleCenterX));
+    } else {
+      // 왼쪽 주인공: 오른쪽(중앙 쪽)으로 25px 당김 & 왼쪽 경계(25)와 중앙 경계(345) 사이 클램프
+      bubbleCenterX = x + 25;
+      bubbleCenterX = Math.max(25 + boxW / 2, Math.min(345 - boxW / 2, bubbleCenterX));
+    }
+
+    ctx.fillStyle = isFriend ? "#eff6ff" : "#ffffff";
+    ctx.strokeStyle = isFriend ? "#2563eb" : "#334155";
+    ctx.lineWidth = 2.5;
+
+    // 말풍선 박스
+    ctx.beginPath();
+    ctx.roundRect(bubbleCenterX - boxW / 2, bubbleY, boxW, boxH, 14);
+    ctx.fill();
+    ctx.stroke();
+
+    // 말풍선 꼬리 (말풍선 밑면에서 캐릭터 정수리 x를 자연스럽게 가리킴)
+    const tailBaseX = Math.max(bubbleCenterX - boxW / 2 + 25, Math.min(bubbleCenterX + boxW / 2 - 25, x));
+    ctx.beginPath();
+    ctx.moveTo(tailBaseX - 8, bubbleY + boxH);
+    ctx.lineTo(x, bubbleY + boxH + 12);
+    ctx.lineTo(tailBaseX + 8, bubbleY + boxH);
+    ctx.fillStyle = isFriend ? "#eff6ff" : "#ffffff";
+    ctx.fill();
+    ctx.stroke();
+
+    // 리치 텍스트 렌더링
+    ctx.textBaseline = "middle";
+    lines.forEach((line, idx) => {
+      const parts = parseRichText(line, "#0f172a");
+      let totalLineWidth = 0;
+      parts.forEach(p => { totalLineWidth += ctx.measureText(p.text).width; });
+
+      let startX = bubbleCenterX - totalLineWidth / 2;
+      const lineY = bubbleY + 22 + (idx * 28);
+
+      parts.forEach(p => {
+        ctx.fillStyle = p.color;
+        const w = ctx.measureText(p.text).width;
+        ctx.textAlign = "left";
+        ctx.fillText(p.text, startX, lineY);
+        startX += w;
+      });
+    });
+
+    ctx.restore();
+  }
+
+  // 진짜 수학 분수 (Numerator / Denominator) 드로잉 헬퍼
+  function drawFraction(ctx, num, den, x, y, size = 18, color = "#0f172a") {
+    ctx.save();
+    ctx.font = `bold ${Math.round(size * 0.82)}px 'Pretendard', sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(size * 0.08, 1.8);
+
+    const numW = ctx.measureText(num).width;
+    const denW = ctx.measureText(den).width;
+    const barW = Math.max(numW, denW) + size * 0.35;
+
+    // 분자 (위)
+    ctx.textBaseline = "bottom";
+    ctx.fillText(num, x, y - size * 0.1);
+
+    // 분수선 (가운데)
+    ctx.beginPath();
+    ctx.moveTo(x - barW / 2, y);
+    ctx.lineTo(x + barW / 2, y);
+    ctx.stroke();
+
+    // 분모 (아래)
+    ctx.textBaseline = "top";
+    ctx.fillText(den, x, y + size * 0.15);
+
+    ctx.restore();
+    return barW;
+  }
+
+  // 중앙 칠판/카드 수식 및 용어 시각화
+  function drawBoardFormula() {
+    const cx = 480;
+    const cy = 175;
+
+    ctx.save();
+    if ('letterSpacing' in ctx) {
+      ctx.letterSpacing = "0.5px";
+    }
+
+    // 1. 퀴즈 화면 모드 (scene === quizScene)
+    // 1. 퀴즈 화면 모드 (scene === quizScene) - 사용자 요청: 말풍선 겹침 완전 방지 위해 컴팩트 카드 적용
+    if (highlightTarget === 'quiz') {
+      const q = quizList[currentQuizIdx];
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#7c3aed";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cx - 230, cy - 95, 460, 130, 18);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#6d28d9";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      const partName = (currentQuizIdx < 5) ? "[Part 1] 계수 · 상수항 · 차수" : "[Part 2] 동류항 찾기 & 계산";
+      ctx.fillText(`Q${currentQuizIdx + 1}.  ${partName}`, cx, cy - 62);
+
+      // 퀴즈 타겟 수식
+      if (q.isFraction) {
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 48px 'Pretendard', sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("-", cx - 74, cy - 8);
+        drawFraction(ctx, q.num, q.den, cx - 38, cy - 8, 40, "#0f172a");
+        ctx.font = "bold 48px 'Pretendard', sans-serif";
+        ctx.fillText("x  +  4", cx + 48, cy - 8);
+      } else {
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 48px 'Pretendard', sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(q.formula, cx, cy - 8);
+      }
+
+      ctx.restore();
+      return;
+    }
+
+    // 2. 퀴즈 최종 결과 화면 (scene === resultScene)
+    if (highlightTarget === 'result') {
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#10b981";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cx - 270, cy - 95, 540, 155, 18);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#059669";
+      ctx.font = "bold 24px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🏆 수고하셨습니다! 용어 & 계산 정복!", cx, cy - 50);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 23px 'Pretendard', sans-serif";
+      ctx.fillText(`최종 퀴즈 점수:  ${quizScore} / ${quizList.length} 점`, cx, cy - 4);
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("항, 계수, 상수항, 차수, 동류항 계산까지 완벽하게 마스터했습니다!", cx, cy + 38);
+
+      ctx.restore();
+      return;
+    }
+
+    // 3. 요약 표 모드 (scene === 9) - 동류항 예시 제외, 4개 칸으로 여유 있게 배치
+    if (highlightTarget === 'table') {
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cx - 330, cy - 95, 660, 205, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      // 메인 수식 제목: 순차적 정렬로 완벽한 폰트/간격 유지
+      ctx.font = "bold 22px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.textAlign = "left";
+      let titleX = cx - 235;
+      ctx.fillText("📋  [  - ", titleX, cy - 70);
+      titleX += ctx.measureText("📋  [  - ").width;
+
+      const fracW = drawFraction(ctx, "1", "2", titleX + 10, cy - 70, 21, "#2563eb");
+      titleX += fracW + 8;
+
+      ctx.font = "bold 22px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText(" x  +  3  ]   새로운 식 실전 총정리 표", titleX, cy - 70);
+
+      // 4개 요약 카드 (동류항 예시 제외, 각 칸 너비 145px로 확장)
+      const startX = cx - 305;
+      const boxW = 145;
+      const gap = 16;
+      const cardY = cy - 40;
+
+      // 카드 1: 항 2개 (사용자 요청: 괄호 제거 & -1/2x , +3 컴마 추가)
+      ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(startX, cardY, boxW, 122, 10); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#2563eb"; ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.textAlign = "center"; ctx.fillText("항 2개", startX + boxW / 2, cardY + 22);
+
+      const cx1 = startX + boxW / 2;
+      ctx.fillStyle = "#0f172a"; ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillText("-", cx1 - 42, cardY + 62);
+      drawFraction(ctx, "1", "2", cx1 - 24, cardY + 62, 18, "#0f172a");
+      ctx.fillText("x ,", cx1 + 3, cardY + 62);
+      ctx.fillText("+3", cx1 + 38, cardY + 62);
+      ctx.font = "13px 'Pretendard', sans-serif"; ctx.fillStyle = "#2563eb";
+      ctx.fillText("(총 2개의 항)", cx1, cardY + 96);
+
+      // 카드 2: x의 계수
+      const bx2 = startX + boxW + gap;
+      ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(bx2, cardY, boxW, 122, 10); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#16a34a"; ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillText("x의 계수", bx2 + boxW / 2, cardY + 22);
+      ctx.fillStyle = "#0f172a"; ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillText("-", bx2 + boxW / 2 - 16, cardY + 62);
+      drawFraction(ctx, "1", "2", bx2 + boxW / 2 + 4, cardY + 62, 20, "#0f172a");
+      ctx.font = "13px 'Pretendard', sans-serif"; ctx.fillStyle = "#15803d";
+      ctx.fillText("(부호·분수 포함)", bx2 + boxW / 2, cardY + 96);
+
+      // 카드 3: 상수항
+      const bx3 = bx2 + boxW + gap;
+      ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#9333ea"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(bx3, cardY, boxW, 122, 10); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#9333ea"; ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillText("상수항", bx3 + boxW / 2, cardY + 22);
+      ctx.fillStyle = "#0f172a"; ctx.font = "bold 22px 'Pretendard', sans-serif";
+      ctx.fillText("+3", bx3 + boxW / 2, cardY + 62);
+      ctx.font = "13px 'Pretendard', sans-serif"; ctx.fillStyle = "#7e22ce";
+      ctx.fillText("(문자 없는 수)", bx3 + boxW / 2, cardY + 96);
+
+      // 카드 4: 차수 / 식 이름
+      const bx4 = bx3 + boxW + gap;
+      ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#ea580c"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(bx4, cardY, boxW, 122, 10); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#ea580c"; ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillText("차수 / 이름", bx4 + boxW / 2, cardY + 22);
+      ctx.fillStyle = "#0f172a"; ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillText("1차", bx4 + boxW / 2, cardY + 58);
+      ctx.fillText("일차식 (다항식)", bx4 + boxW / 2, cardY + 86);
+
+      // 사용자 요청: 캐릭터 말풍선 사이 빈 공간(중앙)에 "참! 분모에 문자가 있으면 일차식 아님" 주의 카드
+      ctx.fillStyle = "#fffbeb";
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 123, 276, 246, 106, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#b45309";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🚨 참! 분모에 문자가 있으면?", cx, 298);
+
+      // 1행: 1/2 x (일차식 맞음)
+      drawFraction(ctx, "1", "2", cx - 78, 328, 16, "#16a34a");
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#16a34a";
+      ctx.fillText("x", cx - 64, 328);
+      ctx.font = "bold 12.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#15803d";
+      ctx.textAlign = "left";
+      ctx.fillText("➔  일차식 맞음! (계수 1/2)", cx - 50, 328);
+
+      // 2행: 1 / 2x (일차식 아님!)
+      drawFraction(ctx, "1", "2x", cx - 72, 362, 16, "#dc2626");
+      ctx.font = "bold 12.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#dc2626";
+      ctx.textAlign = "left";
+      ctx.fillText("➔  일차식 아님! (분모 x) ❌", cx - 50, 362);
+
+      ctx.restore();
+      return;
+    }
+
+    // 4. 단항식 / 다항식 포함 관계 모드 (scene === 8) - 다항식 안에 단항식이 쏙 포함되는 그림
+    if (highlightTarget === 'poly') {
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cx - 310, cy - 95, 620, 195, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 21px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("💡 다항식 안에 단항식이 쏙 포함돼요! (포함 관계)", cx, cy - 64);
+
+      // [큰 울타리] 다항식 (항이 1개 이상인 식 전체)
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 285, cy - 36, 570, 122, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      // 다항식 큰 울타리 라벨
+      ctx.fillStyle = "#1d4ed8";
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("📦 다항식 (항이 1개 이상인 식 전체의 모임)", cx - 270, cy - 12);
+
+      // [작은 울타리 - 다항식 안에 쏙 들어간 단항식]
+      ctx.fillStyle = "#f0fdf4";
+      ctx.strokeStyle = "#16a34a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(cx - 270, cy + 3, 275, 73, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#15803d";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillText("🌱 단항식 (항이 딱 1개)", cx - 256, cy + 24);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillText("예:  5x ,   -3 ,   y²", cx - 256, cy + 46);
+
+      ctx.fillStyle = "#16a34a";
+      ctx.font = "bold 12px 'Pretendard', sans-serif";
+      ctx.fillText("➔ 단항식도 다항식의 한 종류!", cx - 256, cy + 65);
+
+      // [다항식 내부의 오른쪽] 항이 2개 이상인 식들
+      ctx.fillStyle = "#2563eb";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillText("🌿 항이 2개 이상인 식", cx + 30, cy + 24);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillText("예:  2x - 1 ,   a + b + 3", cx + 30, cy + 46);
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.fillText("항들이 덧셈으로 연결된 식", cx + 30, cy + 65);
+
+      // 9단계 중앙 카드 (캐릭터 사이 핵심 요약)
+      ctx.fillStyle = "#f0fdf4";
+      ctx.strokeStyle = "#16a34a";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 123, 276, 246, 106, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#15803d";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("⭐ 시험 단골 함정!", cx, 298);
+
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("단항식(항 1개)도", cx, 326);
+
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#16a34a";
+      ctx.fillText("다항식에 쏙 포함돼요!", cx, 351);
+
+      ctx.font = "12px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#15803d";
+      ctx.fillText("다항식 = 항이 1개 이상인 식", cx, 371);
+
+      ctx.restore();
+      return;
+    }
+
+    // 5. 동류항 모드 (scene === 7) - 사용자 요청: 가운데 화면에는 합체 결과만 뜨게 간소화
+    if (highlightTarget === 'like') {
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cx - 300, cy - 90, 600, 180, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 21px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🤝 끼리 끼리 ! 문자와 차수가 같으면 동류항 !", cx, cy - 58);
+
+      // 예시 카드 (합체 결과만 깔끔하게 표시)
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 260, cy - 30, 520, 105, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.textAlign = "center";
+
+      // 1행: 원래 식
+      ctx.font = "bold 22px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e293b";
+      ctx.fillText("원래 식:   2x  +  3  +  5x  -  1", cx, cy + 6);
+
+      // 2행: 합체 결과 (큼직하고 선명하게 강조)
+      ctx.font = "bold 28px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText("➔   합체 결과:   7x  +  2", cx, cy + 50);
+
+      // 8단계 중앙 카드 (끼리끼리 합체 공식)
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 123, 276, 246, 106, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#1d4ed8";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🤝 끼리끼리 합체 공식!", cx, 298);
+
+      ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("2x  +  5x   ➔   7x", cx, 326);
+
+      ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#16a34a";
+      ctx.fillText("+3  -  1   ➔   +2", cx, 351);
+
+      ctx.font = "12px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("문자와 차수가 같으면 동류항!", cx, 371);
+
+      ctx.restore();
+      return;
+    }
+
+    // 6. 차수와 일차식/이차식 모드 (scene === 6)
+    if (highlightTarget === 'deg') {
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cx - 310, cy - 95, 620, 180, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 21px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("📐 최고차항이 식의 이름을 결정한다!", cx, cy - 64);
+
+      // 좌측: 일차식
+      ctx.fillStyle = "#f0fdf4";
+      ctx.strokeStyle = "#16a34a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(cx - 290, cy - 36, 270, 110, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#16a34a";
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillText("일차식", cx - 155, cy - 10);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 28px 'Pretendard', sans-serif";
+      ctx.fillText("2x - 1", cx - 155, cy + 22);
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#15803d";
+      ctx.fillText("최고차수가 1차 (x¹)", cx - 155, cy + 52);
+
+      // 우측: 이차식
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(cx + 20, cy - 36, 270, 110, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#dc2626";
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillText("이차식", cx + 155, cy - 10);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 28px 'Pretendard', sans-serif";
+      ctx.fillText("3x² + 2x - 1", cx + 155, cy + 22);
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#b91c1c";
+      ctx.fillText("최고차수가 2차 (x² 대장!)", cx + 155, cy + 52);
+
+      // 7단계 중앙 카드 (1차식 지수 1 생략 꿀팁)
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 123, 276, 246, 106, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#1d4ed8";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("📐 1차식의 비밀", cx, 298);
+
+      ctx.font = "bold 19px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("2x", cx - 44, 326);
+      ctx.font = "bold 22px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText("¹", cx - 28, 320);
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#334155";
+      ctx.fillText("➔   생략 !", cx + 25, 326);
+
+      ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("2x 는 차수가 1차!", cx, 351);
+
+      ctx.font = "12px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("최고차항이 식의 이름을 결정!", cx, 371);
+
+      ctx.restore();
+      return;
+    }
+
+    // 7. 곱셈 기호 생략 모드 (scene === 2)
+    if (highlightTarget === 'mult') {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cx - 300, cy - 90, 600, 195, 18);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = "bold 52px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // 2 × x
+      ctx.fillStyle = "#16a34a";
+      ctx.fillText("2", cx - 170, cy - 24);
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText("×", cx - 115, cy - 24);
+      ctx.fillStyle = "#0284c7";
+      ctx.fillText("x", cx - 60, cy - 24);
+
+      // 화살표 및 중앙 생략 안내
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 38px 'Pretendard', sans-serif";
+      ctx.fillText("➔", cx, cy - 24);
+
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("곱하기 생략!", cx, cy - 54);
+
+      // [ 2x ] 덩어리 박스
+      ctx.fillStyle = "rgba(37, 99, 235, 0.08)";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx + 60, cy - 65, 140, 80, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = "bold 54px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1d4ed8";
+      ctx.fillText("2x", cx + 130, cy - 24);
+
+      // 박스 아래 라벨
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("한 덩어리 (항 1개!)", cx + 130, cy + 30);
+
+      // 곱하기 생략 라벨
+      ctx.fillStyle = "#dc2626";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("▲ 곱하기(×) 기호 생략!", cx - 115, cy + 20);
+
+      // 3단계 중앙 카드 (곱하기 생략 ➔ 한 덩어리 합체)
+      ctx.fillStyle = "#f0fdf4";
+      ctx.strokeStyle = "#0284c7";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 123, 276, 246, 106, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#0284c7";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("✨ 곱하기로 합체 ➔ 항 1개!", cx, 298);
+
+      ctx.font = "bold 19px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("(-2x) × 3x  ➔  -6x²", cx, 326);
+
+      ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#15803d";
+      ctx.fillText("한 덩어리로 합체되어 한 항 완성!", cx, 351);
+
+      ctx.font = "12px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0284c7";
+      ctx.fillText("곱하기 생략하면 덩어리가 보여요", cx, 371);
+
+      ctx.restore();
+      return;
+    }
+
+    // 8. 2단계: '항' 덧셈으로 분리 모드 (scene === 1)
+    if (highlightTarget === 'term') {
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cx - 320, cy - 92, 640, 202, 18);
+      ctx.fill();
+      ctx.stroke();
+
+      // [ 2x ] 박스 (항 ①)
+      ctx.setLineDash([7, 6]);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#2563eb";
+      ctx.fillStyle = "rgba(37, 99, 235, 0.08)";
+      ctx.beginPath();
+      ctx.roundRect(cx - 250, cy - 70, 170, 100, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+      ctx.font = "bold 60px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#1d4ed8";
+      ctx.fillText("2x", cx - 165, cy - 22);
+
+      // 항 ① 큰 라벨
+      ctx.fillStyle = "#2563eb";
+      ctx.font = "bold 22px 'Pretendard', sans-serif";
+      ctx.fillText("항 ① : 2x", cx - 165, cy + 52);
+
+      // 가운데 덧셈 연결 기호 '+'
+      ctx.fillStyle = "#475569";
+      ctx.font = "bold 48px 'Pretendard', sans-serif";
+      ctx.fillText("+", cx, cy - 22);
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("+ 로 분리!", cx, cy + 20);
+
+      // [ -1 ] 박스 (항 ②)
+      ctx.setLineDash([7, 6]);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#9333ea";
+      ctx.fillStyle = "rgba(147, 51, 234, 0.08)";
+      ctx.beginPath();
+      ctx.roundRect(cx + 80, cy - 70, 170, 100, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+      ctx.font = "bold 60px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#7e22ce";
+      ctx.fillText("-1", cx + 165, cy - 22);
+
+      // 항 ② 큰 라벨
+      ctx.fillStyle = "#9333ea";
+      ctx.font = "bold 22px 'Pretendard', sans-serif";
+      ctx.fillText("항 ② : -1", cx + 165, cy + 52);
+
+      // 2단계 중앙 카드 (사용자 요청: 하단 노란 배너를 중앙 박스로 이동!):
+      ctx.fillStyle = "#fffbeb";
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 123, 276, 246, 106, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#b45309";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("💡 부호(-) 챙기기 꿀팁!", cx, 298);
+
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("2x - 1  ➔  2x + (-1)", cx, 326);
+
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText("숫자 앞 '-' 는 뒤 숫자 것!", cx, 351);
+
+      ctx.font = "bold 12.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#16a34a";
+      ctx.fillText("+ 로 분리되어 총 2개의 항!", cx, 371);
+
+      ctx.restore();
+      return;
+    }
+
+    // 9. 기본 칠판 수식 카드: "2x - 1" (단계별 하이라이트)
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(cx - 280, cy - 90, 560, 195, 18);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = "bold 62px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // 1. 숫자 '2' (계수)
+    ctx.fillStyle = (highlightTarget === '2' || highlightTarget === 'all') ? "#16a34a" : "#475569";
+    ctx.fillText("2", cx - 65, cy - 14);
+
+    // 2. 문자 'x'
+    ctx.fillStyle = (highlightTarget === 'x' || highlightTarget === 'all') ? "#0284c7" : "#475569";
+    ctx.fillText("x", cx - 15, cy - 14);
+
+    // 3. 연산자 및 상수항 "- 1"
+    ctx.fillStyle = (highlightTarget === 'const' || highlightTarget === 'all') ? "#9333ea" : "#475569";
+    ctx.fillText("- 1", cx + 70, cy - 14);
+
+    // 4단계 문자(변수)
+    if (highlightTarget === 'x') {
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = "#0284c7";
+      ctx.beginPath(); ctx.ellipse(cx - 15, cy - 14, 28, 42, 0, 0, Math.PI * 2); ctx.stroke();
+      drawTag(cx - 15, cy + 42, "문자 (변수)", "#0284c7");
+
+      // 4단계 중앙 카드 (초등 수학과 연결)
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#0284c7";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 123, 276, 246, 106, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#0284c7";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("💡 초등 수학과 연결!", cx, 298);
+
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("2 × □ - 1   ➔   2x - 1", cx, 326);
+
+      ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("네모(□) 대신 문자(x)를 써요!", cx, 351);
+
+      ctx.font = "12px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("수시로 값이 변해서 '변수(變數)'", cx, 371);
+    } 
+    // 5단계 계수: 질문은 캐릭터 사이 중앙에 배치!
+    else if (highlightTarget === '2') {
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = "#16a34a";
+      ctx.beginPath(); ctx.ellipse(cx - 65, cy - 14, 28, 42, 0, 0, Math.PI * 2); ctx.stroke();
+      drawTag(cx - 65, cy + 42, "계수 (곱해진 수: 2)", "#16a34a");
+
+      // 5단계 중앙 질문 카드 (표준 규격)
+      ctx.fillStyle = "#fffbeb";
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 123, 276, 246, 106, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#b45309";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🤔 깜짝 질문!", cx, 298);
+
+      ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText("-x 의 계수는?  ➔  -1", cx, 326);
+
+      ctx.fillStyle = "#16a34a";
+      ctx.fillText("x 의 계수는?   ➔   1", cx, 351);
+
+      ctx.font = "12px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#b45309";
+      ctx.fillText("1은 곱할 때 생략되니까 주의!", cx, 371);
+    } 
+    // 6단계 상수항: 중앙에 크고 시원하게 설명 카드 배치!
+    else if (highlightTarget === 'const') {
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = "#9333ea";
+      ctx.beginPath(); ctx.ellipse(cx + 70, cy - 14, 52, 42, 0, 0, Math.PI * 2); ctx.stroke();
+      drawTag(cx + 70, cy + 38, "상수항 (-1)", "#9333ea");
+
+      // 6단계 중앙 카드 (상수항 설명)
+      ctx.fillStyle = "#faf5ff";
+      ctx.strokeStyle = "#a855f7";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 123, 276, 246, 106, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#7e22ce";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("👑 상수항 (常數項)", cx, 298);
+
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("문자 없이 나홀로 숫자!", cx, 326);
+
+      ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#9333ea";
+      ctx.fillText("-1 은 x에 영향받지 않아요", cx, 351);
+
+      ctx.font = "12px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("항상 일정한 값(常數)을 가져요", cx, 371);
+    }
+    // 1단계: 전체 용어정리 도입부 중앙 카드
+    else if (highlightTarget === 'all') {
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - 123, 276, 246, 106, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#1d4ed8";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🧭 2x - 1 완전 정복 코스", cx, 298);
+
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("하나씩 뜯어서 정복하기!", cx, 326);
+
+      ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("항 ➔ 문자 ➔ 계수 ➔ 차수", cx, 351);
+
+      ctx.font = "12px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("순서대로 차근차근 알아봐요!", cx, 371);
+    }
+
+    ctx.restore();
+  }
+
+  function drawTag(x, y, text, color) {
+    ctx.save();
+    ctx.font = "bold 18px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillStyle = color;
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 중앙 수식 카드 렌더링
+    drawBoardFormula();
+
+    // 두 캐릭터
+    const char1X = 180;
+    const char2X = 780;
+    const charY = 475;
+
+    drawDoodleChar(char1X, charY, false);
+    drawBubble(char1X, charY, speechBubble1.text, false);
+
+    drawDoodleChar(char2X, charY, true);
+    drawBubble(char2X, charY, speechBubble2.text, true);
+
+    requestAnimationFrame(render);
+  }
+
+  window.goPrev = function() {
+    playSound('click');
+    if (scene > 0) loadScene(scene - 1);
+  };
+
+  window.goNext = function() {
+    playSound('next');
+    if (scene < resultScene) loadScene(scene + 1);
+  };
+
+  // 초기화 및 구동 (URL 파라미터 ?scene=N 및 &quizAns=M 지원)
+  const urlParams = new URLSearchParams(window.location.search);
+  const startScene = parseInt(urlParams.get('scene'), 10);
+  loadScene(!isNaN(startScene) ? startScene : 0);
+  if (urlParams.get('quizAns') !== null) {
+    submitQuizAnswer(parseInt(urlParams.get('quizAns'), 10));
+  }
+  if (urlParams.get('showExtra') === '1') {
+    showStage3Extra = true;
+  }
+  render();
+</script>
+</body>
+</html>
