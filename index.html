@@ -112,6 +112,7 @@
     .bg-emerald { background: #10b981; }
     .bg-blue    { background: #2563eb; }
     .bg-indigo  { background: #6366f1; }
+    .bg-rose    { background: #f43f5e; }
 
     .item-text {
       color: #f1f5f9;
@@ -132,6 +133,31 @@
 
     .menu-item:hover .item-right {
       color: #38bdf8;
+    }
+
+    /* 서브/연계 메뉴 항목 스타일 (일차식 계산 하위 연계) */
+    .menu-item.sub-item {
+      margin-left: 18px;
+      background: #172033;
+      border: 1px solid #334155;
+      border-left: 4px solid #ea580c;
+      padding: 12px 18px;
+    }
+
+    .menu-item.sub-item:hover {
+      background: #1e2c44;
+      border-color: #475569;
+      border-left-color: #f97316;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.2);
+    }
+
+    .menu-item.sub-item .item-right {
+      color: #fb923c;
+      font-weight: 800;
+    }
+
+    .menu-item.sub-item:hover .item-right {
+      color: #fdba74;
     }
   </style>
 </head>
@@ -184,20 +210,38 @@
       <div class="item-right">시작하기 ▶</div>
     </a>
 
-    <!-- 5. 일차식과 방정식·함수의 차이 -->
-    <a href="linear.html" class="menu-item">
+    <!-- 5. 일차식 계산 -->
+    <a href="calc.html?scene=1" class="menu-item">
       <div class="item-left">
-        <span class="badge bg-pink">일차식</span>
-        <span class="item-text">5. 일차식과 방정식·함수의 차이</span>
+        <span class="badge bg-rose">일차식 계산</span>
+        <span class="item-text">5. 일차식의 계산 원리 (괄호·분수·규칙 학습)</span>
       </div>
       <div class="item-right">시작하기 ▶</div>
     </a>
 
-    <!-- 6. 방정식 x를 구하라 -->
+    <!-- [연계 메뉴] 함정 일차식 : 복잡한 일차식 완벽 해결 -->
+    <a href="calc.html" class="menu-item sub-item">
+      <div class="item-left">
+        <span class="badge bg-orange">함정 일차식</span>
+        <span class="item-text">↳ 복잡한 일차식 완벽 해결 (5대 함정 정복 & 실전 퀴즈)</span>
+      </div>
+      <div class="item-right">도전하기 🔥</div>
+    </a>
+
+    <!-- 6. 일차식과 방정식·함수의 차이 -->
+    <a href="linear.html" class="menu-item">
+      <div class="item-left">
+        <span class="badge bg-pink">일차식</span>
+        <span class="item-text">6. 일차식과 방정식·함수의 차이</span>
+      </div>
+      <div class="item-right">시작하기 ▶</div>
+    </a>
+
+    <!-- 7. 방정식 x를 구하라 -->
     <a href="equation.html" class="menu-item">
       <div class="item-left">
         <span class="badge bg-emerald">방정식</span>
-        <span class="item-text">6. 방정식 x를 구하라 (등식의 성질과 이항)</span>
+        <span class="item-text">7. 방정식 x를 구하라 (등식의 성질과 이항)</span>
       </div>
       <div class="item-right">시작하기 ▶</div>
     </a>

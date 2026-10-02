@@ -1,0 +1,2235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>함정 일차식 - 복잡한 일차식 완벽 해결</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #0b1120;
+      color: #f8fafc;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 12px;
+      overflow-x: hidden;
+    }
+
+    #app-container {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* 상단 타이틀 헤더 바: 고대비 화이트 카드로 어두운 배경에서도 선명하게 돋보임! */
+    .top-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-icon {
+      font-size: 22px;
+    }
+
+    .header-main-title {
+      font-size: 18.5px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+
+    .header-main-title .highlight {
+      color: #2563eb;
+    }
+
+    .header-badge {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 2px solid #bfdbfe;
+      font-size: 14.5px;
+      font-weight: 800;
+      padding: 6px 18px;
+      border-radius: 22px;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+      white-space: nowrap;
+    }
+
+    /* 메인 캔버스 래퍼 */
+    .canvas-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 960 / 540;
+    }
+
+    /* 하단 내비게이션 바 (캔버스 밖 아래에 배치하여 말풍선과 절대 겹치지 않음!) */
+    #ui-panel {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 9px 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+      border: 2px solid #cbd5e1;
+    }
+
+    .nav-btn {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 9px 24px;
+      font-size: 15px;
+      font-weight: 800;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .nav-btn:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+    .nav-btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none;
+    }
+    .nav-btn.home {
+      background: #475569;
+    }
+    .nav-btn.home:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  <!-- 상단 타이틀 헤더 바: 고대비 화이트 카드로 어두운 배경에서도 선명하게 시선 집중! -->
+  <div class="top-header">
+    <div class="header-left">
+      <span class="header-icon">📐</span>
+      <span class="header-main-title"><span class="highlight">함정 일차식</span> 복잡한 일차식 완벽 해결</span>
+    </div>
+    <span class="header-badge" id="scene-badge">1. 5대 함정 문제 한눈에 보기</span>
+  </div>
+
+  <!-- 캔버스 카드 -->
+  <div class="canvas-card">
+    <canvas id="canvas" width="960" height="540"></canvas>
+  </div>
+
+  <!-- 하단 내비게이션 바 (캔버스 아래 독립 배치) -->
+  <div id="ui-panel">
+    <a href="index.html" class="nav-btn home" id="btn-home">🏠 목차</a>
+    <button class="nav-btn" id="btn-prev" onclick="goPrev()">◀ 이전</button>
+    <button class="nav-btn" id="btn-next" onclick="goNext()">다음 ▶</button>
+  </div>
+</div>
+
+<script>
+  // Web Audio 효과음 신디사이저 (외부 의존성 없음)
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = null;
+  function playSound(type) {
+    try {
+      if (!audioCtx) audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+
+      if (type === 'click') {
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(220, now + 0.08);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'step') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.12); // E5
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } else if (type === 'pop') {
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      } else if (type === 'success') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.09);
+        osc.frequency.setValueAtTime(783.99, now + 0.18);
+        osc.frequency.setValueAtTime(1046.50, now + 0.27);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.45);
+        osc.start(now);
+        osc.stop(now + 0.45);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.18);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      }
+    } catch (e) {}
+  }
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const sceneBadge = document.getElementById('scene-badge');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+
+  // 총 11개 씬:
+  // 0: 5대 문제 하나씩 등장 브리핑
+  // 1: 규칙 1 (소/중/대괄호 순서 & 부호 분배)
+  // 2: 규칙 2 (분수 밖 마이너스 & 통분)
+  // 3: 규칙 3 (A, B 대문자에 식을 대입하는 문제는 간단한 A, B 식으로 정리)
+  // 4: [문제 1] 대괄호·중괄호 계산
+  // 5: [문제 2] 분수 밖 마이너스 통분
+  // 6: [문제 3] 대문자 식 정리 후 대입
+  // 7: [문제 4] 분수와 중괄호 혼합
+  // 8: [문제 5] 이항과 식의 대입
+  // 9: 최종 5대 문제 정복 축하 & 요약
+  // 10: 🎯 [스피드 퀴즈] 5대 함정 탈출 3초 스피드 퀴즈! (총 5문제)
+  const totalScenes = 11;
+  let currentScene = 0;
+  let subStep = 0;
+
+  const sceneTitles = [
+    "1. 5대 함정 문제 한눈에 보기",
+    "2. [규칙 ①] 괄호 풀기 순서와 부호 분배",
+    "3. [규칙 ②] 분수 밖 마이너스(-)와 통분",
+    "4. [규칙 ③] A, B 대문자에 식을 대입하는 문제는 간단한 A, B 식으로 정리",
+    "5. [문제 1] 대괄호·중괄호 단계별 계산",
+    "6. [문제 2] 분수 통분과 분자 마이너스",
+    "7. [문제 3] A, B 식 정리 후 대입",
+    "8. [문제 4] 분수와 중괄호 복합 계산",
+    "9. [문제 5] 이항과 대입으로 식 구하기",
+    "10. 🏆 5대 함정 완벽 정복 요약",
+    "11. 🎯 [도전] 5대 함정 탈출 3초 스피드 퀴즈!"
+  ];
+
+  const subStepMaxMap = {
+    0: 5, // 문제 하나씩 등장 (0:Q1, 1:Q2, 2:Q3, 3:Q4, 4:Q5, 5:친구들 말풍선)
+    1: 4, // 규칙 ① (0:소괄호, 1:중괄호, 2:대괄호/순서, 3:부호반전, 4:말풍선)
+    2: 3, // 규칙 ② (0:함정실수, 1:분자괄호해결, 2:통분합체, 3:말풍선)
+    3: 3, // 규칙 ③ (0:답답한방법, 1:A,B다이어트, 2:1번대입, 3:말풍선)
+    4: 3, // 문제 1 (0:문제, 1:1단계, 2:2단계, 3:3단계/정답)
+    5: 3, // 문제 2 (0:문제, 1:1단계, 2:2단계, 3:3단계/정답)
+    6: 3, // 문제 3 (0:문제, 1:1단계, 2:2단계, 3:3단계/정답)
+    7: 3, // 문제 4 (0:문제, 1:1단계, 2:2단계, 3:3단계/정답)
+    8: 3, // 문제 5 (0:문제, 1:1단계, 2:2단계, 3:3단계/정답)
+    9: 1, // 정복 축하 (0:카드요약, 1:친구들 총정리 & 퀴즈도전)
+    10: 0 // 실전 퀴즈 화면 (총 5문제 자체 내부 상태)
+  };
+
+  // 실전 퀴즈 데이터 (총 5문제: 분모가 들어간 분수 형태 문제 2개 포함!)
+  const quizData = [
+    {
+      badge: "함정 1. 괄호 앞 마이너스 폭탄",
+      question: "다음 식에서 괄호를 올바르게 푼 것은 무엇일까요?",
+      formula: "-( 4x - 6 )",
+      isFracQuestion: false,
+      isFracOptions: false,
+      options: [
+        { text: "-4x - 6", isCorrect: false, desc: "앗! -6의 부호를 바꾸지 않았어 💣 청개구리 법칙을 기억해봐!" },
+        { text: "-4x + 6", isCorrect: true, desc: "정답! 괄호 앞 마이너스로 둘 다 부호 반전 (-4x + 6) 🎯" }
+      ],
+      tip: "괄호 앞의 '-'는 괄호 속의 모든 항의 부호를 반대로 뒤집는다!"
+    },
+    {
+      badge: "함정 2. 분수 밖 마이너스 통분",
+      question: "다음 식을 분모 4로 통분하여 하나의 분수로 바르게 합친 것은?",
+      formula: "x - (3x - 2)/4",
+      isFracQuestion: true,
+      fracQ: { type: "single", prefix: "x   -  ", num: "3x - 2", den: "4" },
+      isFracOptions: true,
+      options: [
+        { num: "4x - 3x - 2", den: "4", isCorrect: false, desc: "앗! 분자 뒤의 -2 부호를 바꾸지 않았어 💣 분자 전체 괄호 필수!" },
+        { num: "4x - 3x + 2", den: "4", isCorrect: true, desc: "정답! 4x - (3x - 2) = 4x - 3x + 2 완벽해! 🎯" }
+      ],
+      tip: "분수 앞 마이너스는 분자 전체에 괄호 -(3x - 2) 씌우기!"
+    },
+    {
+      badge: "함정 3. 두 분수의 뺄셈 통분",
+      question: "다음 두 분수식을 분모 6으로 통분할 때, 올바른 분수식은?",
+      formula: "(x + 1)/2 - (x - 3)/3",
+      isFracQuestion: true,
+      fracQ: { type: "double", num1: "x + 1", den1: "2", op: "  -  ", num2: "x - 3", den2: "3" },
+      isFracOptions: true,
+      options: [
+        { num: "3(x + 1) - 2(x - 3)", den: "6", isCorrect: true, desc: "정답! 분자마다 괄호로 묶어 3과 2를 안전하게 곱했어! 🎯" },
+        { num: "3x + 1 - 2x - 3", den: "6", isCorrect: false, desc: "앗! 괄호 없이 곱해서 분자의 숫자와 부호가 틀렸어 💣" }
+      ],
+      tip: "통분할 땐 분자 전체에 괄호를 씌우고 3(x+1) - 2(x-3) 으로 곱해줘야 실수 제로!"
+    },
+    {
+      badge: "함정 4. 대문자 식 대입 다이어트",
+      question: "A = 3x - 2,  B = -x + 1 일 때, 4A - 3(A - B) - 2B 를 가장 빠르게 푸는 비법은?",
+      formula: "4A - 3(A - B) - 2B",
+      isFracQuestion: false,
+      isFracOptions: false,
+      options: [
+        { text: "처음부터 A, B 자리에 식을 길게 바로 넣는다", isCorrect: false, desc: "식이 너무 길어져서 계산 실수 100%! 🐢" },
+        { text: "식부터 A + B 로 간단히 정리하고 대입한다", isCorrect: true, desc: "정답! 4A - 3A + 3B - 2B = A + B 로 먼저 줄이면 3초 컷! 🚀" }
+      ],
+      tip: "대문자 식은 간단한 A, B 식으로 먼저 정리한 후 딱 1번만 대입!"
+    },
+    {
+      badge: "함정 5. 이항과 부호 반전",
+      question: "등식 A - 3B = 2x + 5 에서 일차식 A를 구하기 위해 올바르게 정리한 식은?",
+      formula: "A - 3B = 2x + 5",
+      isFracQuestion: false,
+      isFracOptions: false,
+      options: [
+        { text: "A = 2x + 5 - 3B", isCorrect: false, desc: "앗! -3B를 넘길 때 부호를 바꾸지 않았어 💣" },
+        { text: "A = 2x + 5 + 3B", isCorrect: true, desc: "정답! -3B가 이항되면 +3B로 부호가 반전돼! 🎯" }
+      ],
+      tip: "이항할 때는 등호(=)를 넘어가며 부호가 반대로 바뀐다! (-3B ➔ +3B)"
+    }
+  ];
+
+  let quizQuestionIdx = 0;
+  let quizSelectedOption = null;
+  let quizFeedback = null;
+  let quizCompleted = false;
+
+  function updateUI() {
+    if (sceneBadge) {
+      sceneBadge.innerText = sceneTitles[currentScene];
+    }
+
+    btnPrev.disabled = (currentScene === 0 && subStep === 0);
+
+    if (currentScene === 10) {
+      if (quizCompleted) {
+        btnNext.disabled = false;
+        btnNext.innerText = "처음으로 ↺";
+        btnNext.style.background = "#10b981";
+      } else {
+        if (quizFeedback && quizFeedback.isCorrect) {
+          btnNext.disabled = false;
+          btnNext.innerText = (quizQuestionIdx < quizData.length - 1) ? `다음 퀴즈 (Q${quizQuestionIdx + 2}) ▶` : "최종 결과 확인 🏆";
+          btnNext.style.background = "#2563eb";
+        } else {
+          btnNext.disabled = true;
+          btnNext.innerText = "정답을 골라봐 👇";
+          btnNext.style.background = "";
+        }
+      }
+      return;
+    }
+
+    btnNext.style.background = "";
+
+    if (currentScene === 0) {
+      btnNext.disabled = false;
+      if (subStep < 4) {
+        btnNext.innerText = `다음 문제 (Q${subStep + 2}) ▶`;
+      } else if (subStep === 4) {
+        btnNext.innerText = "친구들 반응 보기 ▶";
+      } else {
+        btnNext.innerText = "비밀 규칙 배우기 ▶";
+      }
+    } else if (currentScene === 1) {
+      btnNext.disabled = false;
+      btnNext.innerText = (subStep === subStepMaxMap[1]) ? "규칙 ② 보러가기 ▶" : "다음 단계 ▶";
+    } else if (currentScene === 2) {
+      btnNext.disabled = false;
+      btnNext.innerText = (subStep === subStepMaxMap[2]) ? "규칙 ③ 보러가기 ▶" : "다음 단계 ▶";
+    } else if (currentScene === 3) {
+      btnNext.disabled = false;
+      btnNext.innerText = (subStep === subStepMaxMap[3]) ? "문제 1번 풀러가기 ▶" : "다음 단계 ▶";
+    } else if (currentScene >= 4 && currentScene <= 8) {
+      btnNext.disabled = false;
+      if (subStep === 0) btnNext.innerText = "1단계 풀기 ▶";
+      else if (subStep === 1) btnNext.innerText = "2단계 풀기 ▶";
+      else if (subStep === 2) btnNext.innerText = "정답 확인 ▶";
+      else btnNext.innerText = (currentScene === 8) ? "최종 요약 보기 ▶" : "다음 문제 ▶";
+    } else if (currentScene === 9) {
+      btnNext.disabled = false;
+      if (subStep === 0) btnNext.innerText = "다음 ▶";
+      else btnNext.innerText = "🎯 함정 탈출 퀴즈 (5문제) 풀기 ▶";
+    }
+  }
+
+  function loadScene(idx, step = 0) {
+    currentScene = Math.max(0, Math.min(totalScenes - 1, idx));
+    subStep = step;
+    if (currentScene === 10) {
+      quizQuestionIdx = 0;
+      quizSelectedOption = null;
+      quizFeedback = null;
+      quizCompleted = false;
+    }
+    updateUI();
+  }
+
+  function goNext() {
+    if (currentScene === 10) {
+      if (!quizCompleted) {
+        if (quizFeedback && quizFeedback.isCorrect) {
+          if (quizQuestionIdx < quizData.length - 1) {
+            quizQuestionIdx++;
+            quizSelectedOption = null;
+            quizFeedback = null;
+            playSound('step');
+            updateUI();
+          } else {
+            quizCompleted = true;
+            playSound('success');
+            updateUI();
+          }
+        }
+      } else {
+        playSound('step');
+        loadScene(0, 0);
+      }
+      return;
+    }
+
+    const maxS = subStepMaxMap[currentScene] || 0;
+    if (subStep < maxS) {
+      subStep++;
+      playSound('step');
+      updateUI();
+    } else {
+      if (currentScene < totalScenes - 1) {
+        playSound('click');
+        loadScene(currentScene + 1, 0);
+      } else {
+        playSound('success');
+        loadScene(0, 0);
+      }
+    }
+  }
+
+  function goPrev() {
+    playSound('click');
+    if (currentScene === 10) {
+      if (quizCompleted) {
+        quizCompleted = false;
+        quizQuestionIdx = quizData.length - 1;
+        quizSelectedOption = 1;
+        quizFeedback = { isCorrect: true, msg: quizData[quizQuestionIdx].options[1].desc };
+        updateUI();
+      } else if (quizQuestionIdx > 0) {
+        quizQuestionIdx--;
+        quizSelectedOption = null;
+        quizFeedback = null;
+        updateUI();
+      } else {
+        loadScene(9, subStepMaxMap[9] || 1);
+      }
+      return;
+    }
+
+    if (subStep > 0) {
+      subStep--;
+      updateUI();
+    } else {
+      if (currentScene > 0) {
+        const prevScene = currentScene - 1;
+        const prevMax = subStepMaxMap[prevScene] || 0;
+        loadScene(prevScene, prevMax);
+      }
+    }
+  }
+
+  function handleQuizOptionClick(idx) {
+    if (currentScene !== 10 || quizCompleted) return;
+    const q = quizData[quizQuestionIdx];
+    quizSelectedOption = idx;
+    const isCorrect = q.options[idx].isCorrect;
+
+    if (isCorrect) {
+      quizFeedback = { isCorrect: true, msg: q.options[idx].desc };
+      playSound('success');
+    } else {
+      quizFeedback = { isCorrect: false, msg: q.options[idx].desc };
+      playSound('wrong');
+    }
+    updateUI();
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (currentScene === 10 && !quizCompleted) {
+      if (e.key === '1') {
+        handleQuizOptionClick(0);
+        return;
+      } else if (e.key === '2') {
+        handleQuizOptionClick(1);
+        return;
+      }
+    }
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      goNext();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goPrev();
+    }
+  });
+
+  function getCanvasPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    const { x, y } = getCanvasPos(e);
+    let pointer = false;
+
+    if (currentScene === 10) {
+      if (!quizCompleted) {
+        if ((x >= 80 && x <= 465 && y >= 196 && y <= 272) || (x >= 495 && x <= 880 && y >= 196 && y <= 272)) {
+          pointer = true;
+        }
+      }
+    } else if (currentScene >= 4 && currentScene <= 8) {
+      if (x >= 75 && x <= 885) {
+        if ((y >= 148 && y <= 220) || (y >= 224 && y <= 296) || (y >= 298 && y <= 380)) {
+          pointer = true;
+        }
+      }
+    } else if (currentScene >= 1 && currentScene <= 3) {
+      if (subStep < subStepMaxMap[currentScene]) {
+        pointer = true;
+      }
+    } else if (currentScene === 0) {
+      pointer = true;
+    }
+
+    canvas.style.cursor = pointer ? 'pointer' : 'default';
+  });
+
+  canvas.addEventListener('click', (e) => {
+    const { x, y } = getCanvasPos(e);
+
+    if (currentScene === 10) {
+      if (!quizCompleted) {
+        if (x >= 80 && x <= 465 && y >= 196 && y <= 272) {
+          handleQuizOptionClick(0);
+        } else if (x >= 495 && x <= 880 && y >= 196 && y <= 272) {
+          handleQuizOptionClick(1);
+        }
+      }
+    } else if (currentScene >= 4 && currentScene <= 8) {
+      if (x >= 75 && x <= 885) {
+        if (y >= 148 && y <= 220) {
+          subStep = 1;
+          playSound('step');
+          updateUI();
+        } else if (y >= 224 && y <= 296) {
+          subStep = 2;
+          playSound('step');
+          updateUI();
+        } else if (y >= 298 && y <= 380) {
+          subStep = 3;
+          playSound('pop');
+          updateUI();
+        }
+      }
+    } else if (currentScene >= 1 && currentScene <= 3) {
+      goNext();
+    } else if (currentScene === 0) {
+      goNext();
+    }
+  });
+
+  // ==========================================
+  // 도해 드로잉 헬퍼 함수들
+  // ==========================================
+
+  function drawFraction(ctx, num, den, x, y, size = 18, color = "#0f172a") {
+    ctx.save();
+    ctx.font = `bold ${Math.round(size * 0.82)}px 'Pretendard', sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+
+    const numW = ctx.measureText(num).width;
+    const denW = ctx.measureText(den).width;
+    const barW = Math.max(numW, denW) + 12;
+
+    ctx.textBaseline = "bottom";
+    ctx.fillText(num, x, y - 2);
+
+    ctx.lineWidth = Math.max(1.8, Math.round(size * 0.08));
+    ctx.beginPath();
+    ctx.moveTo(x - barW / 2, y);
+    ctx.lineTo(x + barW / 2, y);
+    ctx.stroke();
+
+    ctx.textBaseline = "top";
+    ctx.fillText(den, x, y + 3);
+
+    ctx.restore();
+    return barW;
+  }
+
+  function drawComicFace(ctx, x, y, isFriend = false, mood = 'smile') {
+    ctx.save();
+    ctx.translate(x, y);
+
+    const r = 24;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = isFriend ? "#2563eb" : "#1e293b";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    if (!isFriend) {
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(-10, -r + 2); ctx.lineTo(-14, -r - 7);
+      ctx.moveTo(0, -r); ctx.lineTo(0, -r - 9);
+      ctx.moveTo(10, -r + 2); ctx.lineTo(14, -r - 7);
+      ctx.stroke();
+
+      ctx.fillStyle = "#1e293b";
+      if (mood === 'shock') {
+        ctx.beginPath();
+        ctx.arc(-8, -4, 4, 0, Math.PI * 2);
+        ctx.arc(8, -4, 4, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.arc(-8, -4, 3, 0, Math.PI * 2);
+        ctx.arc(8, -4, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
+        ctx.beginPath();
+        ctx.arc(-14, 4, 4, 0, Math.PI * 2);
+        ctx.arc(14, 4, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "#38bdf8";
+      ctx.strokeStyle = "#0284c7";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(r - 3, -12, 3.5, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      if (mood === 'shock') {
+        ctx.arc(0, 8, 4.5, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        ctx.arc(0, 5, 8, 0.1 * Math.PI, 0.9 * Math.PI);
+        ctx.stroke();
+      }
+    } else {
+      ctx.fillStyle = "#3b82f6";
+      ctx.strokeStyle = "#1d4ed8";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -5, r, Math.PI * 1.05, Math.PI * 1.95);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(-16, -16);
+      ctx.quadraticCurveTo(8, -32, 28, -14);
+      ctx.quadraticCurveTo(8, -20, -16, -16);
+      ctx.fillStyle = "#1d4ed8";
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#f59e0b";
+      ctx.beginPath();
+      ctx.arc(0, -r - 4, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(-12, -2); ctx.lineTo(-8, -6); ctx.lineTo(-4, -2);
+      ctx.stroke();
+
+      ctx.fillStyle = "#1e293b";
+      ctx.beginPath();
+      ctx.arc(8, -4, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(245, 158, 11, 0.25)";
+      ctx.beginPath();
+      ctx.arc(-13, 6, 4, 0, Math.PI * 2);
+      ctx.arc(13, 6, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.arc(1, 6, 8, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function drawCompactBubble(ctx, x, y, text, isFriend = false) {
+    if (!text) return;
+    ctx.save();
+    ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+    const lines = text.split('\n');
+
+    let maxW = 0;
+    lines.forEach(l => { maxW = Math.max(maxW, ctx.measureText(l).width); });
+    const boxW = Math.max(maxW + 28, 140);
+    const boxH = Math.max(lines.length * 22 + 18, 48);
+
+    let boxX;
+    if (!isFriend) {
+      boxX = x + 38;
+    } else {
+      boxX = x - 38 - boxW;
+    }
+    const boxY = y - boxH / 2 - 2;
+
+    ctx.fillStyle = isFriend ? "#eff6ff" : "#ffffff";
+    ctx.strokeStyle = isFriend ? "#3b82f6" : "#64748b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxW, boxH, 12);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    if (!isFriend) {
+      ctx.moveTo(boxX, y - 4);
+      ctx.lineTo(x + 22, y);
+      ctx.lineTo(boxX, y + 6);
+    } else {
+      ctx.moveTo(boxX + boxW, y - 4);
+      ctx.lineTo(x - 22, y);
+      ctx.lineTo(boxX + boxW, y + 6);
+    }
+    ctx.fillStyle = isFriend ? "#eff6ff" : "#ffffff";
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = isFriend ? "#1e40af" : "#0f172a";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    lines.forEach((l, i) => {
+      ctx.fillText(l, boxX + 14, boxY + 16 + (i * 22));
+    });
+
+    ctx.restore();
+  }
+
+  // ==========================================
+  // 각 씬별 캔버스 렌더링
+  // ==========================================
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (currentScene === 0) {
+      renderScene0();
+    } else if (currentScene === 1) {
+      renderScene1();
+    } else if (currentScene === 2) {
+      renderScene2();
+    } else if (currentScene === 3) {
+      renderScene3();
+    } else if (currentScene === 4) {
+      renderSceneProblem1();
+    } else if (currentScene === 5) {
+      renderSceneProblem2();
+    } else if (currentScene === 6) {
+      renderSceneProblem3();
+    } else if (currentScene === 7) {
+      renderSceneProblem4();
+    } else if (currentScene === 8) {
+      renderSceneProblem5();
+    } else if (currentScene === 9) {
+      renderSceneSuccess();
+    } else if (currentScene === 10) {
+      renderSceneQuiz();
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  // ------------------------------------------
+  // Scene 0: 5대 문제 하나씩 등장 브리핑
+  // ------------------------------------------
+  function renderScene0() {
+    const cx = canvas.width / 2;
+
+    const cards = [
+      {
+        num: "Q1",
+        type: "대괄호·중괄호 괄호 지옥",
+        badgeColor: "#8b5cf6",
+        f: "2x - [ 3x - { 4x - (x - 2) + 3 } ]",
+        q: "x의 계수와 상수항의 합은?",
+        x: 40, y: 35, w: 280, h: 155
+      },
+      {
+        num: "Q2",
+        type: "분수 앞 마이너스 폭탄",
+        badgeColor: "#ea580c",
+        isFrac: true,
+        q: "x의 계수는?",
+        x: 340, y: 35, w: 280, h: 155
+      },
+      {
+        num: "Q3",
+        type: "대문자 A, B 복합식 대입",
+        badgeColor: "#059669",
+        f: "A = 2x-3,  B = -x+4",
+        f2: "3A - 2(A - B) + B 간단히?",
+        q: "식을 간단히 하면?",
+        x: 640, y: 35, w: 280, h: 155
+      },
+      {
+        num: "Q4",
+        type: "분수와 중괄호 혼합 계산",
+        badgeColor: "#dc2626",
+        f: "1/2(6x-4) - { 3/4 x - (2x-1)/3 }",
+        q: "상수항은?",
+        x: 180, y: 208, w: 290, h: 160
+      },
+      {
+        num: "Q5",
+        type: "이항과 식의 대입",
+        badgeColor: "#2563eb",
+        f: "A - 2B = 3x + 1,  B = -x + 2",
+        q: "일차식 A를 구하면?",
+        x: 490, y: 208, w: 290, h: 160
+      }
+    ];
+
+    const visibleCount = Math.min(cards.length, subStep + 1);
+
+    for (let i = 0; i < visibleCount; i++) {
+      const c = cards[i];
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = (i === subStep && subStep < 5) ? c.badgeColor : "#cbd5e1";
+      ctx.lineWidth = (i === subStep && subStep < 5) ? 2.5 : 1.5;
+      ctx.beginPath();
+      ctx.roundRect(c.x, c.y, c.w, c.h, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = c.badgeColor;
+      ctx.beginPath();
+      ctx.roundRect(c.x + 12, c.y + 12, 42, 22, 6);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(c.num, c.x + 33, c.y + 23);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(c.type, c.x + 62, c.y + 23);
+
+      if (c.isFrac) {
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 16px 'Pretendard', sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText("x  -", c.x + 18, c.y + 75);
+        drawFraction(ctx, "5x - 3", "4", c.x + 95, c.y + 75, 16, "#0f172a");
+        ctx.font = "bold 16px 'Pretendard', sans-serif";
+        ctx.fillText("-", c.x + 150, c.y + 75);
+        drawFraction(ctx, "3x - 2", "6", c.x + 205, c.y + 75, 16, "#0f172a");
+      } else if (c.num === 'Q4') {
+        ctx.fillStyle = "#0f172a";
+        drawFraction(ctx, "1", "2", c.x + 28, c.y + 75, 16, "#0f172a");
+        ctx.font = "bold 15px 'Pretendard', sans-serif";
+        ctx.fillText("(6x - 4)  -  {", c.x + 55, c.y + 75);
+        drawFraction(ctx, "3", "4", c.x + 160, c.y + 75, 15, "#0f172a");
+        ctx.font = "bold 15px 'Pretendard', sans-serif";
+        ctx.fillText("x -", c.x + 182, c.y + 75);
+        drawFraction(ctx, "2x - 1", "3", c.x + 235, c.y + 75, 15, "#0f172a");
+        ctx.font = "bold 15px 'Pretendard', sans-serif";
+        ctx.fillText("}", c.x + 270, c.y + 75);
+      } else {
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 15px 'Pretendard', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(c.f, c.x + c.w / 2, c.y + 72);
+        if (c.f2) {
+          ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+          ctx.fillStyle = "#475569";
+          ctx.fillText(c.f2, c.x + c.w / 2, c.y + 96);
+        }
+      }
+
+      ctx.fillStyle = "#f1f5f9";
+      ctx.beginPath();
+      ctx.roundRect(c.x + 12, c.y + c.h - 36, c.w - 24, 24, 6);
+      ctx.fill();
+      ctx.fillStyle = "#334155";
+      ctx.font = "bold 12.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`🎯 ${c.q}`, c.x + c.w / 2, c.y + c.h - 24);
+    }
+
+    if (subStep < 5) {
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`👇 아래 [다음 문제 ▶] 버튼을 누르면 문제가 하나씩 등장합니다 (${subStep + 1} / 5)`, cx, 435);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "야... 괄호에 분수에 난리 났다!\n이걸 도대체 어떻게 다 푸냐?! 😱", false);
+
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "쫄지 마! 비밀 규칙 3개만 알면\n1분 컷이야 ㅋㅋㅋ 규칙부터 가보자! 🚀", true);
+    }
+  }
+
+  // ------------------------------------------
+  // Scene 1: 규칙 1 - 소 ➔ 중 ➔ 대괄호 순서 & 부호 분배
+  // ------------------------------------------
+  function renderScene1() {
+    drawRuleHeader("규칙 ①", "괄호는 안쪽부터 차례대로 풀고, 앞의 마이너스(-)는 부호 반전!", "#8b5cf6");
+
+    ctx.fillStyle = "#f5f3ff";
+    ctx.strokeStyle = "#8b5cf6";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(50, 75, 410, 310, 16);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#6d28d9";
+    ctx.font = "bold 18px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("📦 1. 괄호 푸는 순서 (안쪽 ➔ 바깥)", 255, 110);
+
+    drawStepPill(ctx, 80, 140, 350, 48, "1단계: ( 소괄호 )", "제일 안쪽부터 쏙 먼저 풀기!", "#c4b5fd", "#4c1d95");
+
+    if (subStep >= 1) {
+      drawStepPill(ctx, 80, 200, 350, 48, "2단계: { 중괄호 }", "소괄호 정리된 후 두 번째로!", "#a78bfa", "#4c1d95");
+    } else {
+      drawEmptyPill(ctx, 80, 200, 350, 48, "👉 [다음 단계 ▶] 버튼을 누르면 2단계 공개");
+    }
+
+    if (subStep >= 2) {
+      drawStepPill(ctx, 80, 260, 350, 48, "3단계: [ 대괄호 ]", "마지막 가장 바깥 껍질 벗기기!", "#8b5cf6", "#ffffff");
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#6d28d9";
+      ctx.fillText("순서:  (  소  )   ➔   {  중  }   ➔   [  대  ]", 255, 350);
+    } else {
+      drawEmptyPill(ctx, 80, 260, 350, 48, "👉 [다음 단계 ▶] 버튼을 누르면 3단계 공개");
+    }
+
+    if (subStep >= 3) {
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(500, 75, 410, 310, 16);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#b91c1c";
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillText("⚡ 2. 괄호 앞 마이너스(-)의 마법", 705, 110);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#fca5a5";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(525, 140, 360, 85, 12);
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "bold 26px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText("- ( a  -  b )", 705, 173);
+      ctx.font = "bold 24px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#059669";
+      ctx.fillText("➔   -a  +  b", 705, 207);
+
+      ctx.fillStyle = "#fee2e2";
+      ctx.beginPath();
+      ctx.roundRect(525, 240, 360, 110, 10);
+      ctx.fill();
+
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#991b1b";
+      ctx.fillText("🚨 청개구리 법칙!", 705, 267);
+      ctx.font = "14px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#7f1d1d";
+      ctx.fillText("괄호 앞의 '-' 는 괄호 속의", 705, 293);
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText("모든 항의 부호를 반대로 뒤집는다!", 705, 320);
+    } else {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(500, 75, 410, 310, 16);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("⚡ 2. 괄호 앞 마이너스(-)의 마법", 705, 180);
+      ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("👉 [다음 단계 ▶] 버튼을 누르면", 705, 225);
+      ctx.fillText("부호 반전 청개구리 법칙이 공개됩니다!", 705, 253);
+    }
+
+    if (subStep === 0) {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "괄호가 여러 개면 제일 안쪽\n( 소괄호 )부터 먼저 까는 거지? 🧅", false);
+    } else if (subStep === 1) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "소괄호 정리하고 나면\n그 다음이 { 중괄호 } 차례네!", false);
+    } else if (subStep === 2) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "마지막 바깥 [ 대괄호 ]까지 벗기면\n양파 껍질 벗기기 완성! 쉽다 쉬워!", false);
+    } else if (subStep === 3) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "우와, 마이너스 들어가니까 부호가\n싹 반대로 바뀌네! 완전 청개구리잖아? 🐸", false);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "소➔중➔대 순서랑 청개구리 부호!\n야, 1번 문제는 이미 껌인데? ㅋㅋㅋ", false);
+
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "인정! 부호 뒤집는 것만 안 까먹으면\n절대 안 틀려 ㅋㅋㅋ 다음 거 가자! 🚀", true);
+    }
+  }
+
+  // ------------------------------------------
+  // Scene 2: 규칙 2 - 분수 밖 마이너스 & 통분 처리
+  // ------------------------------------------
+  function renderScene2() {
+    drawRuleHeader("규칙 ②", "분수 밖 마이너스는 분자 전체에 괄호! + 통분 합체!", "#ea580c");
+
+    ctx.fillStyle = "#fff7ed";
+    ctx.strokeStyle = "#f97316";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(50, 75, 410, 310, 16);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#c2410c";
+    ctx.font = "bold 18px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("🚨 학생들이 가장 많이 틀리는 함정!", 255, 110);
+
+    ctx.fillStyle = "#fef2f2";
+    ctx.strokeStyle = "#fca5a5";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(75, 135, 360, 80, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = "bold 18px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.fillText("-", 105, 173);
+    drawFraction(ctx, "5x - 3", "4", 175, 173, 18, "#0f172a");
+    ctx.fillStyle = "#dc2626";
+    ctx.font = "bold 20px 'Pretendard', sans-serif";
+    ctx.fillText("≠", 245, 173);
+    drawFraction(ctx, "-5x - 3", "4", 315, 173, 18, "#dc2626");
+    ctx.fillText("❌", 385, 173);
+
+    ctx.font = "12px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#b91c1c";
+    ctx.fillText("(-3의 부호를 안 바꿔서 폭망!)", 315, 200);
+
+    if (subStep >= 1) {
+      ctx.fillStyle = "#f0fdf4";
+      ctx.strokeStyle = "#86efac";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(75, 230, 360, 130, 10);
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("-", 100, 270);
+      drawFraction(ctx, "5x - 3", "4", 165, 270, 17, "#0f172a");
+      ctx.fillStyle = "#15803d";
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillText("➔", 225, 270);
+      drawFraction(ctx, "-( 5x - 3 )", "4", 305, 270, 17, "#15803d");
+      ctx.fillText("⭕", 380, 270);
+
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#16a34a";
+      ctx.fillText("➔   ", 225, 325);
+      drawFraction(ctx, "-5x + 3", "4", 305, 325, 17, "#16a34a");
+    } else {
+      drawEmptyPill(ctx, 75, 245, 360, 80, "👉 [다음 단계 ▶] 버튼을 누르면 올바른 해결법 공개");
+    }
+
+    if (subStep >= 2) {
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(500, 75, 410, 310, 16);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#1d4ed8";
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillText("📏 통분하여 긴 분수선으로 합체!", 705, 110);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#93c5fd";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(525, 135, 360, 130, 12);
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      drawFraction(ctx, "A", "4", 570, 170, 16, "#2563eb");
+      ctx.fillText(" - ", 615, 170);
+      drawFraction(ctx, "B", "6", 660, 170, 16, "#ea580c");
+      ctx.fillText("➔  (최소공배수 12)", 775, 170);
+
+      drawFraction(ctx, "3A  -  2B", "12", 705, 230, 19, "#1d4ed8");
+
+      ctx.fillStyle = "#dbeafe";
+      ctx.beginPath();
+      ctx.roundRect(525, 280, 360, 80, 8);
+      ctx.fill();
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e40af";
+      ctx.fillText("💡 분자 전체를 괄호로 묶어 곱해준다!", 705, 307);
+      ctx.font = "13px 'Pretendard', sans-serif";
+      ctx.fillText("3×(A) - 2×(B) 형태로 안전하게 분배!", 705, 333);
+    } else {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(500, 75, 410, 310, 16);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("📏 통분하여 긴 분수선으로 합체!", 705, 180);
+      ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("👉 [다음 단계 ▶] 버튼을 누르면", 705, 225);
+      ctx.fillText("통분 합체 비법이 공개됩니다!", 705, 253);
+    }
+
+    if (subStep === 0) {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "나 분수 앞 마이너스 때문에\n부호 안 바꿔서 맨날 틀렸잖아 😭", false);
+    } else if (subStep === 1) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "아하! 분자 전체에 괄호 씌우니까\n-(5x - 3) = -5x + 3 딱 되네!", false);
+    } else if (subStep === 2) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "통분해서 긴 분수선 하나로 쫙 합치니까\n실수할 틈이 1도 없는데?!", false);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "분자 괄호 + 긴 분수선 합체!\n야, 분수 마이너스도 이제 접수했다!", false);
+
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "빙고! 괄호만 딱 쳐두면 실수 0%야.\n너 수학 천재 되는 거 아님? 👍", true);
+    }
+  }
+
+  // ------------------------------------------
+  // Scene 3: 규칙 3 - A, B 대문자에 식을 대입하는 문제는 간단한 A, B 식으로 정리
+  // ------------------------------------------
+  function renderScene3() {
+    drawRuleHeader("규칙 ③", "A, B 대문자에 식을 대입하는 문제는 간단한 A, B 식으로 정리", "#059669");
+
+    ctx.fillStyle = "#fef2f2";
+    ctx.strokeStyle = "#f87171";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(50, 75, 410, 310, 16);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#b91c1c";
+    ctx.font = "bold 17px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("❌ 답답한 방법: 처음부터 바로 대입", 255, 110);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.roundRect(75, 135, 360, 130, 10);
+    ctx.fill();
+
+    ctx.font = "14px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#64748b";
+    ctx.fillText("3A - 2(A - B) + B 식에 바로 넣으면...", 255, 160);
+
+    ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#dc2626";
+    ctx.fillText("3(2x-3) - 2{(2x-3) - (-x+4)} + (-x+4)", 255, 200);
+
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#991b1b";
+    ctx.fillText("😱 식이 너무 길어져서 계산 실수 100% 발생!", 255, 240);
+
+    ctx.fillStyle = "#fee2e2";
+    ctx.beginPath();
+    ctx.roundRect(75, 280, 360, 80, 8);
+    ctx.fill();
+    ctx.font = "13px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#7f1d1d";
+    ctx.fillText("괄호 안에 또 괄호가 생겨 멘붕에 빠져요!", 255, 320);
+
+    if (subStep >= 1) {
+      ctx.fillStyle = "#f0fdf4";
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(500, 75, 410, 310, 16);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#15803d";
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillText("⭕ 똑똑한 방법: 간단한 A, B 식으로 정리!", 705, 110);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.roundRect(525, 135, 360, 130, 10);
+      ctx.fill();
+
+      ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e293b";
+      ctx.fillText("1단계: A, B 식 자체를 먼저 정리!", 705, 160);
+
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("3A - 2A + 2B + B   ➔   A + 3B", 705, 195);
+
+      if (subStep >= 2) {
+        ctx.font = "bold 15px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#15803d";
+        ctx.fillText("2단계: 홀쭉해진 식에 딱 1번만 대입!", 705, 235);
+
+        ctx.fillStyle = "#dcfce7";
+        ctx.beginPath();
+        ctx.roundRect(525, 280, 360, 80, 8);
+        ctx.fill();
+        ctx.font = "bold 14px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#14532d";
+        ctx.fillText("✨ 계산 과정이 1/3로 줄어들고 암산 가능!", 705, 320);
+      } else {
+        ctx.font = "14px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#16a34a";
+        ctx.fillText("👇 [다음 단계 ▶] 버튼을 누르면 2단계 대입 과정 공개!", 705, 240);
+      }
+    } else {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(500, 75, 410, 310, 16);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("⭕ 똑똑한 방법: 간단한 A, B 식으로 정리!", 705, 180);
+      ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#059669";
+      ctx.fillText("👉 [다음 단계 ▶] 버튼을 누르면", 705, 225);
+      ctx.fillText("간단한 A, B 식 다이어트 비법이 열립니다!", 705, 253);
+    }
+
+    if (subStep === 0) {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "야, A, B에 식을 바로 집어넣으면\n식 너무 길어서 토 나오겠는데? 😱", false);
+    } else if (subStep === 1) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "대박! A, B 문자부터 먼저 줄이니까\n식이 A + 3B 로 확 다이어트되네!", false);
+    } else if (subStep === 2) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "홀쭉해진 식에 딱 1번만 넣으니까\n암산으로도 풀리는데?! ㅋㅋㅋ", false);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "A, B 대문자 식은 먼저 간단히 정리 후 대입!\n야, 나 3대 무기 다 모았다! ⚔️", false);
+
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "완벽해! 이제 무기 다 장착했으니까\n실전 문제 하나씩 부수러 가자! 🔥", true);
+    }
+  }
+
+  // ------------------------------------------
+  // Scene 4: [문제 1] 대괄호·중괄호 계산
+  // ------------------------------------------
+  function renderSceneProblem1() {
+    drawProblemHeader("문제 1", "다음 식을 간단히 하였을 때, x의 계수와 상수항의 합을 구하시오.", "#8b5cf6");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(50, 72, 860, 325, 16);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.beginPath();
+    ctx.roundRect(75, 85, 810, 60, 10);
+    ctx.fill();
+    ctx.font = "bold 26px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("2x  -  [  3x  -  {  4x  -  ( x - 2 )  +  3  }  ]", 480, 115);
+
+    const s1Active = subStep >= 1;
+    drawStepCard(ctx, 75, 155, 810, 60, s1Active, "1단계: 소괄호 (x - 2) 풀기", 
+                 "4x - (x - 2) + 3  ➔  4x - x + 2 + 3  = ", "{c:#2563eb}3x + 5{/c}", "안쪽 소괄호의 마이너스 분배!");
+
+    const s2Active = subStep >= 2;
+    drawStepCard(ctx, 75, 225, 810, 60, s2Active, "2단계: 중괄호 { 3x + 5 } 풀기",
+                 "3x - { 3x + 5 }  ➔  3x - 3x - 5  = ", "{c:#dc2626}-5{/c}", "3x가 사라지고 -5만 남음!");
+
+    const s3Active = subStep >= 3;
+    drawFinalAnswerCard(ctx, 75, 295, 810, 72, s3Active, "3단계: 대괄호 풀고 최종 결과!",
+                        "2x - [ -5 ]   ➔   2x + 5",
+                        "x의 계수 = 2 ,  상수항 = 5   ➔   합 = 2 + 5 = ", "7");
+
+    if (subStep === 0) {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "야, 괄호가 3중으로 겹쳤어!\n이거 어디부터 뜯어야 돼?!", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "쫄지 마! 제일 안쪽 소괄호 (x - 2) 먼저!\n아래 [1단계 풀기 ▶] 눌러봐!", true);
+    } else if (subStep === 1) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "-(x - 2) 가 -x + 2 돼서\n중괄호 속이 3x + 5 로 쏙 줄었어!", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "나이스! 이제 중괄호 앞 '-' 를\n3x + 5 에 청개구리 분배해보자!", true);
+    } else if (subStep === 2) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "대박! 3x - 3x 지워지고\n대괄호 속이 달랑 -5만 남았어 ㅋㅋㅋ", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "맞지? 이제 마지막 대괄호만\n벗겨버리면 바로 답 나와!", true);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "2x - (-5) = 2x + 5 !\n계수 2 + 상수 5 = 정답 7 나왔다! 🎉", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "캬~ 복잡해 보이더니 알고 나니까\n완전 껌이지? 다음 문제로 고고! 🚀", true);
+    }
+  }
+
+  // ------------------------------------------
+  // Scene 5: [문제 2] 분수 밖 마이너스 & 통분
+  // ------------------------------------------
+  function renderSceneProblem2() {
+    drawProblemHeader("문제 2", "다음 일차식을 간단히 하였을 때, x의 계수는?", "#ea580c");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(50, 72, 860, 325, 16);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.beginPath();
+    ctx.roundRect(75, 85, 810, 60, 10);
+    ctx.fill();
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 26px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("x   -  ", 340, 115);
+    drawFraction(ctx, "5x - 3", "4", 415, 115, 22, "#0f172a");
+    ctx.font = "bold 26px 'Pretendard', sans-serif";
+    ctx.fillText("  -  ", 490, 115);
+    drawFraction(ctx, "3x - 2", "6", 565, 115, 22, "#0f172a");
+
+    const s1Active = subStep >= 1;
+    ctx.fillStyle = s1Active ? "#eff6ff" : "#f8fafc";
+    ctx.strokeStyle = s1Active ? "#3b82f6" : "#cbd5e1";
+    ctx.lineWidth = s1Active ? 2 : 1.5;
+    ctx.beginPath();
+    ctx.roundRect(75, 154, 810, 66, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = s1Active ? "#1d4ed8" : "#64748b";
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(s1Active ? "✅ 1단계: 분모의 최소공배수 12로 통분하고 분자 괄호 치기!" : "👉 1단계: 분모 12로 통분하고 분자 괄호 치기 (클릭하여 풀기 ➔)", 90, 172);
+
+    if (s1Active) {
+      drawFraction(ctx, "12x", "12", 220, 196, 17, "#1e293b");
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText(" - ", 265, 196);
+      drawFraction(ctx, "3(5x - 3)", "12", 340, 196, 17, "#dc2626");
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#ea580c";
+      ctx.fillText(" - ", 415, 196);
+      drawFraction(ctx, "2(3x - 2)", "12", 490, 196, 17, "#ea580c");
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("➔ 분자에 3과 2를 통째로 괄호 곱!", 575, 196);
+    } else {
+      ctx.font = "13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("👆 여기를 클릭하거나 아래 버튼을 누르면 통분 풀이가 열립니다.", 90, 196);
+    }
+
+    const s2Active = subStep >= 2;
+    ctx.fillStyle = s2Active ? "#fef3c7" : "#f8fafc";
+    ctx.strokeStyle = s2Active ? "#f59e0b" : "#cbd5e1";
+    ctx.lineWidth = s2Active ? 2 : 1.5;
+    ctx.beginPath();
+    ctx.roundRect(75, 227, 810, 66, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = s2Active ? "#b45309" : "#64748b";
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.fillText(s2Active ? "✅ 2단계: 하나의 분수선 위로 합체 & 마이너스 부호 분배!" : "👉 2단계: 하나의 분수선 위로 합체 & 마이너스 부호 분배 (클릭하여 풀기 ➔)", 90, 245);
+
+    if (s2Active) {
+      drawFraction(ctx, "12x  -  15x  +  9  -  6x  +  4", "12", 480, 270, 18, "#0f172a");
+    } else {
+      ctx.font = "13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("👆 여기를 클릭하거나 아래 버튼을 누르면 분수선 합체 과정이 열립니다.", 90, 270);
+    }
+
+    const s3Active = subStep >= 3;
+    drawFinalAnswerCard(ctx, 75, 300, 810, 70, s3Active, "3단계: 동류항 묶기 & 약분 결과",
+                        "-9x + 13 / 12  =  -9/12 x + 13/12",
+                        "약분하면:  -3/4 x + 13/12   ➔   x의 계수는: ", "-3/4");
+
+    if (subStep === 0) {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "분수 앞에 마이너스가 2개나 있어!\n이거 어떻게 안 낚이고 풀지?!", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "규칙 2 기억나지? 12로 통분부터 해!\n아래 [1단계 풀기 ▶] 눌러봐!", true);
+    } else if (subStep === 1) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "분자 전체에 괄호 씌우니까\n-3(5x-3), -2(3x-2) 딱 잡혔어!", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "굿굿! 이제 긴 분수선 하나로\n합체해서 전개 쫙 때려보자!", true);
+    } else if (subStep === 2) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "-3×(-3)=+9, -2×(-2)=+4 !\n부호가 둘 다 +로 뒤집히네!", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "바로 그거지! 이제 x끼리, 숫자끼리\n동류항 싹 모아주면 끝이야!", true);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "12x - 15x - 6x = -9x !\n-9/12 약분해서 계수는 -3/4 완성! 🎉", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "완벽해! 함정 폭탄 싹 해체했다!\n3번 문제 바로 격파하러 가자! 🚀", true);
+    }
+  }
+
+  // ------------------------------------------
+  // Scene 6: [문제 3] A, B 식 정리 후 대입
+  // ------------------------------------------
+  function renderSceneProblem3() {
+    drawProblemHeader("문제 3", "두 일차식 A = 2x - 3, B = -x + 4 에 대하여, 식 3A - 2(A - B) + B 를 간단히 하면?", "#059669");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(50, 72, 860, 325, 16);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.beginPath();
+    ctx.roundRect(75, 85, 810, 54, 10);
+    ctx.fill();
+
+    ctx.font = "bold 18px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("조건:   A = 2x - 3 ,    B = -x + 4   |   구하는 식:   3A - 2(A - B) + B", 480, 112);
+
+    const s1Active = subStep >= 1;
+    drawStepCard(ctx, 75, 148, 810, 68, s1Active, "1단계: [규칙 ③ 적용] A, B 식 자체를 먼저 간단히 정리!",
+                 "3A - 2(A - B) + B  ➔  3A - 2A + 2B + B  = ", "{c:#2563eb}A + 3B{/c}", "식이 홀쭉하게 다이어트 완료!");
+
+    const s2Active = subStep >= 2;
+    drawStepCard(ctx, 75, 224, 810, 68, s2Active, "2단계: 간단해진 A + 3B 식에 괄호 쳐서 대입!",
+                 "A + 3B   ➔   (2x - 3)  +  3( -x + 4 )", "", "B 앞의 3을 분배할 준비!");
+
+    const s3Active = subStep >= 3;
+    drawFinalAnswerCard(ctx, 75, 300, 810, 72, s3Active, "3단계: 분배법칙 전개 및 동류항 합체!",
+                        "2x - 3 - 3x + 12   ➔   (2x - 3x) + (-3 + 12)",
+                        "최종 간단히 한 결과: ", "-x + 9");
+
+    if (subStep === 0) {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "야, A, B에 식 바로 넣으면\n종이 터지겠다... 어떡하지?", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "규칙 3번 써야지! 3A-2(A-B)+B 부터\n아래 [1단계 풀기 ▶]로 줄여봐!", true);
+    } else if (subStep === 1) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "우와! 3A - 2A + 2B + B 푸니까\nA + 3B 로 식 확 줄었어 ㅋㅋㅋ", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "나이스! 이제 A에 (2x-3),\nB에 (-x+4)를 괄호 쳐서 넣어봐!", true);
+    } else if (subStep === 2) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "(2x - 3) + 3(-x + 4) 넣고\n3 분배하니까 -3x + 12 나왔어!", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "이제 동류항끼리 묶기만 하면\n순식간에 게임 끝이야!", true);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "2x - 3x = -x ,  -3 + 12 = 9 !\n정답 -x + 9 나왔다! 대박 👏", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "처음부터 넣었으면 3분 걸렸을 텐데\n30초 컷 했네? 너 폼 미쳤다! 🚀", true);
+    }
+  }
+
+  // ------------------------------------------
+  // Scene 7: [문제 4] 분수와 중괄호 혼합 계산
+  // ------------------------------------------
+  function renderSceneProblem4() {
+    drawProblemHeader("문제 4", "다음 식을 간단히 하였을 때, 상수항은?", "#dc2626");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(50, 72, 860, 325, 16);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.beginPath();
+    ctx.roundRect(75, 85, 810, 58, 10);
+    ctx.fill();
+
+    ctx.font = "bold 22px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    drawFraction(ctx, "1", "2", 240, 114, 20, "#0f172a");
+    ctx.font = "bold 20px 'Pretendard', sans-serif";
+    ctx.fillText(" ( 6x - 4 )   -   { ", 350, 114);
+    drawFraction(ctx, "3", "4", 450, 114, 18, "#0f172a");
+    ctx.font = "bold 20px 'Pretendard', sans-serif";
+    ctx.fillText(" x   -   ", 495, 114);
+    drawFraction(ctx, "2x - 1", "3", 565, 114, 18, "#0f172a");
+    ctx.font = "bold 20px 'Pretendard', sans-serif";
+    ctx.fillText(" }", 625, 114);
+
+    const s1Active = subStep >= 1;
+    ctx.fillStyle = s1Active ? "#eff6ff" : "#f8fafc";
+    ctx.strokeStyle = s1Active ? "#3b82f6" : "#cbd5e1";
+    ctx.lineWidth = s1Active ? 2 : 1.5;
+    ctx.beginPath();
+    ctx.roundRect(75, 151, 810, 66, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = s1Active ? "#1d4ed8" : "#64748b";
+    ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(s1Active ? "✅ 1단계: 앞 괄호는 1/2 분배하고, 중괄호 속은 분모 12로 통분!" : "👉 1단계: 앞 괄호 1/2 분배 & 중괄호 속 12로 통분 (클릭하여 풀기 ➔)", 90, 168);
+
+    if (s1Active) {
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#16a34a";
+      ctx.fillText("( 3x - 2 )", 120, 194);
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("  -  {  ", 195, 194);
+      drawFraction(ctx, "9x - 4(2x - 1)", "12", 310, 194, 16, "#dc2626");
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText(" }", 400, 194);
+      ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("➔ 중괄호 안:  (9x - 8x + 4) / 12  =  (x + 4) / 12", 440, 194);
+    } else {
+      ctx.font = "13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("👆 여기를 클릭하거나 아래 버튼을 누르면 통분 풀이가 열립니다.", 90, 194);
+    }
+
+    const s2Active = subStep >= 2;
+    ctx.fillStyle = s2Active ? "#fef3c7" : "#f8fafc";
+    ctx.strokeStyle = s2Active ? "#f59e0b" : "#cbd5e1";
+    ctx.lineWidth = s2Active ? 2 : 1.5;
+    ctx.beginPath();
+    ctx.roundRect(75, 225, 810, 66, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = s2Active ? "#b45309" : "#64748b";
+    ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+    ctx.fillText(s2Active ? "✅ 2단계: 중괄호 풀고 동류항(x항과 상수항) 분리하기!" : "👉 2단계: 중괄호 풀고 동류항 분리하기 (클릭하여 풀기 ➔)", 90, 242);
+
+    if (s2Active) {
+      ctx.textAlign = "left";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("( 3x - 2 )  - ", 95, 268);
+      drawFraction(ctx, "x + 4", "12", 215, 268, 16, "#dc2626");
+      ctx.textAlign = "left";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("  =   ( 3 - 1/12 ) x   +   ( -2 - 4/12 )", 265, 268);
+    } else {
+      ctx.font = "13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("👆 여기를 클릭하거나 아래 버튼을 누르면 중괄호 정리 풀이가 열립니다.", 90, 268);
+    }
+
+    const s3Active = subStep >= 3;
+    drawFinalAnswerCard(ctx, 75, 299, 810, 72, s3Active, "3단계: 질문에서 물어본 '상수항' 계산하기!",
+                        "상수항 = -2 - 4/12  =  -2 - 1/3  =  -6/3 - 1/3",
+                        "최종 상수항: ", "-7/3");
+
+    if (subStep === 0) {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "분수에 중괄호까지 섞여있네...\n이거 어디서부터 건드려야 돼?", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "앞 1/2 분배하고 중괄호는 12로 통분!\n아래 [1단계 풀기 ▶] 눌러봐!", true);
+    } else if (subStep === 1) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "앞은 3x - 2 가 되고,\n중괄호 속은 (x + 4)/12 로 정리됐어!", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "문제에서 물어본 건 '상수항'이니까\n숫자 부분만 집중해서 봐봐!", true);
+    } else if (subStep === 2) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "상수항은 앞의 -2 랑\n뒤의 -(+4/12) = -1/3 이네!", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "맞아! -2 - 1/3 통분해서\n더해주면 바로 답 나와!", true);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "-6/3 - 1/3 = -7/3 !\n상수항 -7/3 구했다! 🎯", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "캬~ 젤 까다로운 분수 복합형도\n원펀치로 끝냈네! 마지막 문제 고! 🚀", true);
+    }
+  }
+
+  // ------------------------------------------
+  // Scene 8: [문제 5] 이항과 식의 대입
+  // ------------------------------------------
+  function renderSceneProblem5() {
+    drawProblemHeader("문제 5", "일차식 A가 A - 2B = 3x + 1 을 만족하고, B = -x + 2 일 때, 일차식 A를 구하면?", "#2563eb");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(50, 72, 860, 325, 16);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.beginPath();
+    ctx.roundRect(75, 85, 810, 54, 10);
+    ctx.fill();
+
+    ctx.font = "bold 18px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("조건:   A - 2B = 3x + 1   |   B = -x + 2   ➔   일차식 A 구하기", 480, 112);
+
+    const s1Active = subStep >= 1;
+    drawStepCard(ctx, 75, 148, 810, 68, s1Active, "1단계: -2B를 오른쪽으로 이항하여 식을 'A = ...' 로 정리!",
+                 "A - 2B = 3x + 1   ➔   ", "{c:#2563eb}A = (3x + 1) + 2B{/c}", "-2B가 넘어가면서 +2B로 부호 반전!");
+
+    const s2Active = subStep >= 2;
+    drawStepCard(ctx, 75, 224, 810, 68, s2Active, "2단계: B 자리에 (-x + 2) 를 괄호 쳐서 쏙 대입!",
+                 "A = 3x + 1 + 2( -x + 2 )", "", "2를 괄호 안의 -x와 2에 분배법칙!");
+
+    const s3Active = subStep >= 3;
+    drawFinalAnswerCard(ctx, 75, 300, 810, 72, s3Active, "3단계: 분배법칙 전개 및 동류항 합체!",
+                        "A = 3x + 1 - 2x + 4   ➔   (3x - 2x) + (1 + 4)",
+                        "최종 일차식 A: ", "x + 5");
+
+    if (subStep === 0) {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "A - 2B = 3x + 1 에서\nA는 어떻게 꺼내야 돼?", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "-2B를 오른쪽으로 이항해야지!\n아래 [1단계 풀기 ▶] 눌러봐!", true);
+    } else if (subStep === 1) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "이항하니까 부호 반전돼서\nA = 3x + 1 + 2B 됐어!", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "그렇지! 이제 B 자리에 (-x + 2)를\n괄호 쳐서 쏙 넣어줘봐!", true);
+    } else if (subStep === 2) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "3x + 1 + 2(-x + 2) 전개하니까\n3x + 1 - 2x + 4 로 풀렸어!", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "이제 동류항만 묶어주면\n5번 문제도 클리어야!", true);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "3x - 2x = x , 1 + 4 = 5 !\nA = x + 5 정답이다! 🎉", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "와우! 5대 함정 문제 전부 다\n퍼펙트하게 정복했네! 대박 🏆", true);
+    }
+  }
+
+  // ------------------------------------------
+  // Scene 9: 최종 축하 & 요약
+  // ------------------------------------------
+  function renderSceneSuccess() {
+    const cx = canvas.width / 2;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#10b981";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(50, 36, 860, 360, 20);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#059669";
+    ctx.font = "bold 26px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🏆 축하합니다! 일차식 계산 5대 함정 완벽 정복!", cx, 76);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "16px 'Pretendard', sans-serif";
+    ctx.fillText("괄호, 분수 마이너스, 통분, 식의 대입까지 마스터했습니다.", cx, 110);
+
+    const summaryCards = [
+      {
+        title: "규칙 1. 괄호 순서",
+        color: "#8b5cf6",
+        bg: "#f5f3ff",
+        l1: "( 소 ) ➔ { 중 } ➔ [ 대 ]",
+        l2: "괄호 앞 '-' 는 부호 반전!",
+        x: 80, y: 145, w: 250, h: 180
+      },
+      {
+        title: "규칙 2. 분수 마이너스",
+        color: "#ea580c",
+        bg: "#fff7ed",
+        l1: "- (분자) 괄호 씌우기!",
+        l2: "통분 후 긴 분수선 합체!",
+        x: 355, y: 145, w: 250, h: 180
+      },
+      {
+        title: "규칙 3. 식의 대입",
+        color: "#059669",
+        bg: "#f0fdf4",
+        l1: "A, B 대문자 식 대입은",
+        l2: "간단한 A, B 식으로 정리 후 대입!",
+        x: 630, y: 145, w: 250, h: 180
+      }
+    ];
+
+    summaryCards.forEach(c => {
+      ctx.fillStyle = c.bg;
+      ctx.strokeStyle = c.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(c.x, c.y, c.w, c.h, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = c.color;
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillText(c.title, c.x + c.w / 2, c.y + 36);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText(c.l1, c.x + c.w / 2, c.y + 90);
+
+      ctx.fillStyle = "#475569";
+      ctx.font = "14px 'Pretendard', sans-serif";
+      ctx.fillText(c.l2, c.x + c.w / 2, c.y + 130);
+    });
+
+    if (subStep === 0) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "야, 이제 시험이나 문제집에서\n어떤 일차식이 나와도 자신 있어 😆", false);
+
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "인정! 이 3가지 규칙만 기억하면\n일차식 계산은 무조건 100점이지 💯", true);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "야, 실전 퀴즈로 5대 함정\n3초 컷 챌린지 해볼래! 드루와 🔥", false);
+
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "좋지! 아래 [🎯 함정 탈출 퀴즈 풀기 ▶]\n눌러서 5문제 연속 만점 도전해봐! 🚀", true);
+    }
+  }
+
+  // ------------------------------------------
+  // Scene 10: 🎯 [신규] 5대 함정 탈출 3초 스피드 퀴즈! (총 5문제)
+  // ------------------------------------------
+  function renderSceneQuiz() {
+    const cx = canvas.width / 2;
+
+    if (quizCompleted) {
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#10b981";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(50, 36, 860, 365, 20);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#059669";
+      ctx.font = "bold 28px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🏆 축하합니다! 5대 함정 탈출 마스터 등극!", cx, 80);
+
+      ctx.fillStyle = "#1e293b";
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillText(`🎉 5문제 모두 완벽하게 함정을 피했습니다! (점수: 5 / 5)`, cx, 122);
+
+      const badges = [
+        { title: "1. 괄호 부호", sub: "청개구리 반전 마스터", color: "#8b5cf6", bg: "#f5f3ff", x: 70 },
+        { title: "2. 분수 마이너스", sub: "분자 전체 괄호 장착", color: "#ea580c", bg: "#fff7ed", x: 232 },
+        { title: "3. 분수 통분", sub: "분모 합체 & 안전 분배", color: "#dc2626", bg: "#fef2f2", x: 394 },
+        { title: "4. 대문자 식", sub: "A,B 먼저 다이어트", color: "#059669", bg: "#f0fdf4", x: 556 },
+        { title: "5. 이항 법칙", sub: "부호 반전 이항 마스터", color: "#2563eb", bg: "#eff6ff", x: 718 }
+      ];
+      badges.forEach(b => {
+        ctx.fillStyle = b.bg;
+        ctx.strokeStyle = b.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(b.x, 160, 150, 140, 14);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = b.color;
+        ctx.font = "bold 15px 'Pretendard', sans-serif";
+        ctx.fillText("✅ " + b.title, b.x + 75, 195);
+
+        ctx.fillStyle = "#475569";
+        ctx.font = "13px 'Pretendard', sans-serif";
+        ctx.fillText(b.sub, b.x + 75, 235);
+      });
+
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "야, 함정 5개 싹 피하니까\n수학이 게임보다 더 재밌는데? ㅋㅋㅋ 😆", false);
+
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "너 진짜 대박이다! 이제 학교 시험에서\n일차식 나오면 무조건 100점이야 💯", true);
+      return;
+    }
+
+    const q = quizData[quizQuestionIdx];
+
+    // 헤더 배지 & 진행 표시
+    ctx.fillStyle = "#2563eb";
+    ctx.beginPath();
+    ctx.roundRect(50, 20, 110, 32, 8);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("실전 퀴즈", 105, 36);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 19px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`Q${quizQuestionIdx + 1}. ${q.badge}`, 172, 36);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "bold 15px 'Pretendard', sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`진행: ${quizQuestionIdx + 1} / ${quizData.length}`, 910, 36);
+
+    // 문제 보드 카드
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(50, 62, 860, 335, 16);
+    ctx.fill(); ctx.stroke();
+
+    // 질문 텍스트
+    ctx.fillStyle = "#1e293b";
+    ctx.font = "bold 18px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(q.question, cx, 92);
+
+    // 수식 강조 박스
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(140, 112, 680, 68, 12);
+    ctx.fill(); ctx.stroke();
+
+    if (q.isFracQuestion) {
+      if (q.fracQ.type === "single") {
+        ctx.font = "bold 24px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#2563eb";
+        ctx.textAlign = "right";
+        ctx.fillText(q.fracQ.prefix, 440, 146);
+        drawFraction(ctx, q.fracQ.num, q.fracQ.den, 515, 146, 22, "#dc2626");
+      } else if (q.fracQ.type === "double") {
+        ctx.font = "bold 24px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#2563eb";
+        drawFraction(ctx, q.fracQ.num1, q.fracQ.den1, 410, 146, 22, "#2563eb");
+        ctx.fillText(q.fracQ.op, 480, 146);
+        drawFraction(ctx, q.fracQ.num2, q.fracQ.den2, 550, 146, 22, "#dc2626");
+      }
+    } else {
+      ctx.font = "bold 24px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.textAlign = "center";
+      ctx.fillText(q.formula, cx, 146);
+    }
+
+    // 2개 보기 카드
+    const optCards = [
+      { idx: 0, x: 80, y: 196, w: 385, h: 76, data: q.options[0] },
+      { idx: 1, x: 495, y: 196, w: 385, h: 76, data: q.options[1] }
+    ];
+
+    optCards.forEach(c => {
+      const isSelected = (quizSelectedOption === c.idx);
+      let bg = "#f8fafc";
+      let border = "#cbd5e1";
+      let textColor = "#0f172a";
+
+      if (isSelected) {
+        if (c.data.isCorrect) {
+          bg = "#f0fdf4";
+          border = "#10b981";
+          textColor = "#15803d";
+        } else {
+          bg = "#fef2f2";
+          border = "#ef4444";
+          textColor = "#b91c1c";
+        }
+      }
+
+      ctx.fillStyle = bg;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = isSelected ? 2.5 : 1.5;
+      ctx.beginPath();
+      ctx.roundRect(c.x, c.y, c.w, c.h, 12);
+      ctx.fill(); ctx.stroke();
+
+      const prefix = c.idx === 0 ? "① " : "② ";
+
+      if (q.isFracOptions) {
+        ctx.font = "bold 18px 'Pretendard', sans-serif";
+        ctx.fillStyle = textColor;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(prefix, c.x + 18, c.y + c.h / 2);
+
+        const fracX = c.x + 160;
+        drawFraction(ctx, c.data.num, c.data.den, fracX, c.y + c.h / 2, 18, textColor);
+      } else {
+        ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = textColor;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(prefix + c.data.text, c.x + 18, c.y + c.h / 2);
+      }
+
+      if (isSelected) {
+        ctx.textAlign = "right";
+        ctx.font = "bold 17px 'Pretendard', sans-serif";
+        ctx.fillText(c.data.isCorrect ? "⭕ 정답!" : "❌ 함정!", c.x + c.w - 18, c.y + c.h / 2);
+      }
+    });
+
+    // 하단 피드백 배너
+    if (quizFeedback) {
+      const fbBoxY = 286;
+      ctx.fillStyle = quizFeedback.isCorrect ? "#dcfce7" : "#fee2e2";
+      ctx.strokeStyle = quizFeedback.isCorrect ? "#86efac" : "#fca5a5";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(80, fbBoxY, 800, 52, 10);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "bold 15.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = quizFeedback.isCorrect ? "#15803d" : "#b91c1c";
+      ctx.fillText(quizFeedback.msg, cx, fbBoxY + 26);
+    } else {
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "14.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("💡 정답이라고 생각하는 보기를 클릭해봐! (키보드 1, 2번 키도 가능)", cx, 312);
+    }
+
+    // 캐릭터 대화
+    if (!quizFeedback) {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "야, 어디 함정 숨어있냐?\n눈 크게 뜨고 분모 분자 다 본다! 👀", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "배운 규칙만 떠올리면 바로 보여!\n자, 골라봐! 👇", true);
+    } else if (quizFeedback.isCorrect) {
+      drawComicFace(ctx, 65, 460, false, 'smile');
+      drawCompactBubble(ctx, 65, 460, "나이스! 함정 0.1초 만에 피했다! 🎉", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "오~ 눈치 빠른데? ㅋㅋㅋ\n아래 [다음 퀴즈 ▶] 누르고 계속 가자! 🚀", true);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "으악! 깜빡하고 함정에 낚였어! 😱", false);
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, `야야 힌트: ${q.tip}\n다시 한 번 골라봐! 할 수 있어 💪`, true);
+    }
+  }
+
+  // ==========================================
+  // 유틸리티 드로잉 컴포넌트
+  // ==========================================
+
+  function drawRuleHeader(badge, title, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(50, 20, 76, 32, 8);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(badge, 88, 36);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 19px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(title, 140, 36);
+  }
+
+  function drawProblemHeader(badge, title, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(50, 20, 76, 32, 8);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 15px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(badge, 88, 36);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 18px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(title, 138, 36);
+  }
+
+  function drawStepPill(ctx, x, y, w, h, title, sub, bg, textCol) {
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 10);
+    ctx.fill();
+
+    ctx.fillStyle = textCol;
+    ctx.font = "bold 15px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(title, x + 16, y + h / 2);
+
+    ctx.font = "13px 'Pretendard', sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(sub, x + w - 16, y + h / 2);
+  }
+
+  function drawEmptyPill(ctx, x, y, w, h, placeholder) {
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "bold 13px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(placeholder, x + w / 2, y + h / 2);
+  }
+
+  function drawStepCard(ctx, x, y, w, h, isActive, title, formula, highlight, tip) {
+    ctx.fillStyle = isActive ? "#eff6ff" : "#f8fafc";
+    ctx.strokeStyle = isActive ? "#3b82f6" : "#cbd5e1";
+    ctx.lineWidth = isActive ? 2 : 1.5;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = isActive ? "#1d4ed8" : "#64748b";
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(isActive ? `✅ ${title}` : `👉 ${title} (클릭하여 풀기 ➔)`, x + 16, y + 18);
+
+    if (isActive) {
+      ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText(formula, x + 16, y + 44);
+      const fw = ctx.measureText(formula).width;
+
+      if (highlight) {
+        const parts = parseRichText(highlight, "#2563eb");
+        let hx = x + 16 + fw;
+        parts.forEach(p => {
+          ctx.fillStyle = p.color;
+          ctx.fillText(p.text, hx, y + 44);
+          hx += ctx.measureText(p.text).width;
+        });
+      }
+
+      if (tip) {
+        ctx.font = "12.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#2563eb";
+        ctx.textAlign = "right";
+        ctx.fillText(`💡 ${tip}`, x + w - 16, y + 44);
+      }
+    } else {
+      ctx.font = "13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("👆 여기를 클릭하거나 아래 버튼을 누르면 이 단계 풀이가 열립니다.", x + 16, y + 44);
+    }
+  }
+
+  function drawFinalAnswerCard(ctx, x, y, w, h, isActive, title, formula, qText, answer) {
+    ctx.fillStyle = isActive ? "#f0fdf4" : "#f8fafc";
+    ctx.strokeStyle = isActive ? "#16a34a" : "#cbd5e1";
+    ctx.lineWidth = isActive ? 2.5 : 1.5;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 12);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = isActive ? "#15803d" : "#64748b";
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(isActive ? `🎉 ${title}` : `👉 ${title} (클릭하여 정답 확인 ➔)`, x + 16, y + 18);
+
+    if (isActive) {
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText(formula, x + 16, y + 46);
+
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#15803d";
+      ctx.textAlign = "right";
+      const ansLabel = qText;
+      ctx.fillText(ansLabel, x + w - 75, y + 46);
+
+      ctx.fillStyle = "#dc2626";
+      ctx.beginPath();
+      ctx.roundRect(x + w - 68, y + 26, 54, 38, 8);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 20px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(answer, x + w - 41, y + 46);
+    } else {
+      ctx.font = "13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("👆 여기를 클릭하거나 아래 버튼을 누르면 최종 정답이 공개됩니다.", x + 16, y + 46);
+    }
+  }
+
+  function parseRichText(line, defaultColor = "#0f172a") {
+    const parts = [];
+    const regex = /\{c:([^}]+)\}(.*?)\{\/c\}/g;
+    let lastIdx = 0;
+    let match;
+    while ((match = regex.exec(line)) !== null) {
+      if (match.index > lastIdx) {
+        parts.push({ text: line.substring(lastIdx, match.index), color: defaultColor });
+      }
+      parts.push({ text: match[2], color: match[1] });
+      lastIdx = regex.lastIndex;
+    }
+    if (lastIdx < line.length) {
+      parts.push({ text: line.substring(lastIdx), color: defaultColor });
+    }
+    return parts;
+  }
+
+  // URL 해시 및 쿼리 파라미터 지원 (#scene=N&step=M 또는 ?scene=N&step=M)
+  let sParam = NaN, stepParam = NaN;
+  if (window.location.hash) {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    sParam = parseInt(hashParams.get('scene'), 10);
+    stepParam = parseInt(hashParams.get('step'), 10);
+  }
+  if (isNaN(sParam) && window.location.search) {
+    const urlParams = new URLSearchParams(window.location.search);
+    sParam = parseInt(urlParams.get('scene'), 10);
+    stepParam = parseInt(urlParams.get('step'), 10);
+  }
+  loadScene(!isNaN(sParam) ? sParam : 0, !isNaN(stepParam) ? stepParam : 0);
+  render();
+</script>
+</body>
+</html>
