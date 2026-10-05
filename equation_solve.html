@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>특명 ! X 를 구하라 > 방정식을 풀어라</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #0b1120;
+      color: #f8fafc;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 12px;
+      overflow-x: hidden;
+    }
+
+    #app-container {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* 상단 헤더: 고대비 화이트 카드 */
+    .top-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-icon {
+      font-size: 22px;
+    }
+
+    .header-main-title {
+      font-size: 18.5px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+
+    .header-main-title .highlight {
+      color: #7c3aed;
+    }
+
+    .header-badge {
+      background: #f5f3ff;
+      color: #6d28d9;
+      border: 2px solid #ddd6fe;
+      font-size: 14.5px;
+      font-weight: 800;
+      padding: 6px 18px;
+      border-radius: 22px;
+      box-shadow: 0 2px 6px rgba(109, 40, 217, 0.08);
+      white-space: nowrap;
+    }
+
+    /* 메인 캔버스 래퍼 */
+    .canvas-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 540px;
+      background: #ffffff;
+    }
+
+    /* 하단 조작 내비게이션 바 (캔버스 바깥 독립 분리) */
+    #ui-panel {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      padding: 6px 0;
+    }
+
+    .nav-btn {
+      background: #7c3aed;
+      color: #ffffff;
+      border: none;
+      padding: 13px 26px;
+      font-size: 16px;
+      font-weight: 800;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      user-select: none;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: #6d28d9;
+      transform: translateY(-1px);
+    }
+    .nav-btn:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+    .nav-btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none;
+      box-shadow: none;
+    }
+    .nav-btn.home {
+      background: #475569;
+      box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3);
+    }
+    .nav-btn.home:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  <!-- 상단 타이틀 헤더 바 -->
+  <div class="top-header">
+    <div class="header-left">
+      <span class="header-icon">🎯</span>
+      <span class="header-main-title"><span class="highlight">특명 ! X 를 구하라</span> &gt; 방정식을 풀어라</span>
+    </div>
+    <!-- 오른쪽 위 배지: 요청하신 '쫌 복잡한 5개 문제 도전!' -->
+    <span class="header-badge" id="scene-badge">쫌 복잡한 5개 문제 도전!</span>
+  </div>
+
+  <!-- 캔버스 카드 -->
+  <div class="canvas-card">
+    <canvas id="canvas" width="960" height="540"></canvas>
+  </div>
+
+  <!-- 하단 내비게이션 바 -->
+  <div id="ui-panel">
+    <a href="index.html" class="nav-btn home" id="btn-home">🏠 목차</a>
+    <button class="nav-btn" id="btn-prev" onclick="goPrev()">◀ 이전</button>
+    <button class="nav-btn" id="btn-next" onclick="goNext()">다음 ▶</button>
+  </div>
+</div>
+
+<script>
+  // Web Audio 효과음 신디사이저
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = null;
+  function playSound(type) {
+    try {
+      if (!audioCtx) audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+
+      if (type === 'step') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.12);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } else if (type === 'pop') {
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      } else if (type === 'success') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.09);
+        osc.frequency.setValueAtTime(783.99, now + 0.18);
+        osc.frequency.setValueAtTime(1046.50, now + 0.27);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.45);
+        osc.start(now);
+        osc.stop(now + 0.45);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.18);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      }
+    } catch (e) {}
+  }
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const sceneBadge = document.getElementById('scene-badge');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+
+  // 총 8개 씬 구성
+  const totalScenes = 8;
+  let currentScene = 0;
+  let subStep = 0;
+
+  const sceneTitles = [
+    "쫌 복잡한 5개 문제 도전!",
+    "2. [유형 1] 괄호가 들어간 방정식 (이항시 부호 주의 !)",
+    "3. [유형 2] 비례식이 들어간 방정식 (내항곱 = 외항곱 !)",
+    "4. [유형 3] 소수가 들어간 방정식 (소수와 분배법칙)",
+    "5. [유형 4] 분수가 들어간 방정식 (항마다 다 곱해 !)",
+    "6. [유형 5] 분수·소수·괄호 혼합 방정식 (끝판왕)",
+    "7. 🏆 양변 x 방정식 5대 황금 원칙 총정리",
+    "8. 🎯 [도전] 10대 함정 탈출 3초 스피드 퀴즈!"
+  ];
+
+  // 서브 스텝 맵
+  // 0: 특명 안내 카드(0) -> Q1(1) -> Q2(2) -> Q3(3) -> Q4(4) -> Q5(5) -> 말풍선(6)
+  // 1~5: 0(문제확인) -> 1(1단계&주의사항) -> 2(2단계) -> 3(3단계) -> 4(4단계정답) -> 5(친구들 꿀팁)
+  // 6: 1(총정리)
+  // 7: 퀴즈 10문제 (자체 진행)
+  const subStepMaxMap = {
+    0: 6,
+    1: 5,
+    2: 5,
+    3: 5,
+    4: 5,
+    5: 5,
+    6: 1,
+    7: 0
+  };
+
+  // 🎯 실전 스피드 퀴즈 10문제 (사용자 요청: 소수 자릿수, 최소공배수 골고루, 괄호 처리 등 전면 보강!)
+  const quizData = [
+    {
+      badge: "함정 1. 양변 동시 이항 부호 실수",
+      eq: "3x - 5 = 5x + 3",
+      question: "우변의 5x를 좌변으로, 좌변의 -5를 우변으로\n올바르게 이항한 식은?",
+      options: [
+        { text: "3x + 5x = 3 - 5", isCorrect: false, desc: "앗! 등호다리 건너갈 때 부호를 바꾸지 않았어! 💣" },
+        { text: "3x - 5x = 3 + 5", isCorrect: true, desc: "정답! 등호다리 건너면 부호 바꿔! (+5x ➔ -5x, -5 ➔ +5) 🎯" }
+      ],
+      tip: "등호다리 건너면 부호 바꿔! (+ ➔ -, - ➔ +)"
+    },
+    {
+      badge: "함정 2. 비례식 괄호 묶기 누락",
+      eq: "(x + 2) : 4 = (2x - 1) : 3",
+      question: "내항곱 = 외항곱 으로 바꿀 때\n올바른 식은?",
+      options: [
+        { text: "3(x + 2) = 4(2x - 1)", isCorrect: true, desc: "정답! 내항곱 = 외항곱! 항이 2개면 반드시 괄호로 묶어야 해! 🎯" },
+        { text: "3x + 2 = 4 × 2x - 1", isCorrect: false, desc: "앗! 괄호로 묶지 않으면 상수항 곱하기가 누락돼 💣" }
+      ],
+      tip: "비례식은 내항곱 = 외항곱! 항이 2개면 반드시 괄호로~"
+    },
+    {
+      badge: "함정 3. 소수 자릿수가 다를 때 곱할 수",
+      eq: "0.25x - 0.3 = 1.2",
+      question: "소수를 모두 정수로 만들기 위해\n양변에 곱해야 하는 가장 알맞은 수는?",
+      options: [
+        { text: "양변에 100을 곱한다", isCorrect: true, desc: "정답! 0.25가 소수 둘째 자리이므로 100을 곱해야 모두 정수가 돼! 🎯" },
+        { text: "양변에 10을 곱한다", isCorrect: false, desc: "앗! 10만 곱하면 0.25는 정수가 못 된다 ㅜㅜ 💣" }
+      ],
+      tip: "소수 자릿수가 다를 땐 가장 자릿수가 큰 소수에 맞춰 100을 곱한다!"
+    },
+    {
+      badge: "함정 4. 소수 괄호 밖 대표에만 곱하기",
+      eq: "0.1(x + 6) = 2",
+      question: "양변에 10을 곱하여 소수를 없앨 때\n좌변의 올바른 모습은?",
+      options: [
+        { text: "1(10x + 60)", isCorrect: false, desc: "앗! 괄호 밖 0.1에 곱했으면 괄호 속까지 또 곱하면 안 돼! 💣" },
+        { text: "1(x + 6)", isCorrect: true, desc: "정답! 괄호 밖 대표 0.1에만 10을 곱하고 괄호는 그대로 둔다! 🎯" }
+      ],
+      tip: "양변에 100이나 10을 곱할 땐 괄호 밖 대표에만 곱한다!"
+    },
+    {
+      badge: "함정 5. 괄호를 풀어야 이항 자격 생김!",
+      eq: "2(x - 3) = 4x",
+      question: "괄호 속의 x를 이항하기 위해\n가장 먼저 해야 할 일은?",
+      options: [
+        { text: "분배법칙으로 괄호를 먼저 푼다", isCorrect: true, desc: "정답! 2x - 6 = 4x 로 괄호를 먼저 풀어야 비로소 이항 자격이 생겨! 🎯" },
+        { text: "괄호 속 -3을 우변으로 바로 넘긴다", isCorrect: false, desc: "앗! 괄호 속에 갇힌 x와 수는 밖으로 바로 이항할 수 없어! 💣" }
+      ],
+      tip: "원칙 ①: 괄호를 풀어야 이항 자격 생김!"
+    },
+    {
+      badge: "함정 6. 항마다 다 곱해! (상수항 주의)",
+      eq: "x / 3 = (x - 2) / 2 + 1",
+      question: "분모를 없애기 위해 양변에 6을 곱할 때\n우변의 올바른 모습은?",
+      options: [
+        { text: "3(x - 2) + 1", isCorrect: false, desc: "앗! 분수만 6 곱하면 땡! 뒤의 상수항 +1에도 6을 곱해야 해! 💣" },
+        { text: "3(x - 2) + 6", isCorrect: true, desc: "정답! 항마다 다 곱해! 숫자 홀로 있는 상수항도 꼭꼭! 🎯" }
+      ],
+      tip: "원칙 ④: 항마다 다 곱해! (숫자 홀로 있는 상수항도 꼭꼭!)"
+    },
+    {
+      badge: "함정 7. 소수와 분수가 섞였을 때 통일",
+      eq: "0.5x - 1 = (1/3)x",
+      question: "소수와 분수가 섞여 있을 때\n가장 좋은 해결 전략은?",
+      options: [
+        { text: "0.5를 분수 1/2로 통일한다", isCorrect: true, desc: "정답! 분수로 통일하면 분모 2와 3의 공배수 6을 한눈에 곱할 수 있어! 🎯" },
+        { text: "1/3을 소수 0.333... 으로 바꾼다", isCorrect: false, desc: "앗! 순환소수가 되어 계산이 훨씬 엉켜버려요 💣" }
+      ],
+      tip: "소수와 분수가 섞이면 분수로 만들어 한 가지로 통일!"
+    },
+    {
+      badge: "함정 8. 최소공배수 양변에 골고루 곱하기",
+      eq: "(x - 1) / 2 - (x + 1) / 4 = 3",
+      question: "분모 2와 4의 최소공배수인 4를 곱할 때\n우변의 올바른 값은?",
+      options: [
+        { text: "우변은 12 (3 × 4)", isCorrect: true, desc: "정답! 좌변뿐만 아니라 우변의 상수항 3에도 4를 꼭 곱해야 해! 🎯" },
+        { text: "우변은 그대로 3", isCorrect: false, desc: "앗! 우변에 4 곱하기를 빼먹으면 등식이 깨져요 💣" }
+      ],
+      tip: "최소공배수는 좌변과 우변의 모든 항에 공평하게 곱한다!"
+    },
+    {
+      badge: "함정 9. 괄호 앞 마이너스 분배 부호 폭탄",
+      eq: "5 - (2x - 3) = x + 2",
+      question: "좌변의 괄호 앞 마이너스(-)를 분배할 때\n올바른 좌변의 모습은?",
+      options: [
+        { text: "5 - 2x + 3", isCorrect: true, desc: "정답! -(-3) = +3 이 되므로 부호가 반전되어 5 - 2x + 3 이 맞아! 🎯" },
+        { text: "5 - 2x - 3", isCorrect: false, desc: "앗! 괄호 속 -3의 부호를 바꾸지 않아 틀렸어 💣" }
+      ],
+      tip: "괄호 앞 마이너스는 괄호 속 모든 항의 부호를 반대로 뒤집는다!"
+    },
+    {
+      badge: "함정 10. 마지막 음수 x 계수 부호 처리",
+      eq: "-x = 5",
+      question: "마지막 줄에 -x = 5 가 나왔을 때\n최종 미지수 x의 값은?",
+      options: [
+        { text: "x = 5", isCorrect: false, desc: "앗! -x 앞의 마이너스(-) 부호를 반전시키지 않았어! 💣" },
+        { text: "x = -5", isCorrect: true, desc: "정답! 양변에 -1을 곱해 x = -5 로 부호 반전! 🎯" }
+      ],
+      tip: "-x는 (-1)×x 이므로 양변에 -1을 곱하면 x = -5 가 된다!"
+    }
+  ];
+
+  let quizQuestionIdx = 0;
+  let quizSelectedOption = null;
+  let quizFeedback = null;
+  let quizCompleted = false;
+
+  function updateUI() {
+    if (sceneBadge) {
+      sceneBadge.innerText = sceneTitles[currentScene];
+    }
+
+    btnPrev.disabled = (currentScene === 0 && subStep === 0);
+
+    if (currentScene === 7) {
+      if (quizCompleted) {
+        btnNext.disabled = false;
+        btnNext.innerText = "처음으로 ↺";
+        btnNext.style.background = "#10b981";
+      } else {
+        if (quizFeedback && quizFeedback.isCorrect) {
+          btnNext.disabled = false;
+          btnNext.innerText = (quizQuestionIdx < quizData.length - 1) ? `다음 퀴즈 (Q${quizQuestionIdx + 2}) ▶` : "최종 결과 확인 🏆";
+          btnNext.style.background = "#7c3aed";
+        } else {
+          btnNext.disabled = true;
+          btnNext.innerText = "정답을 골라봐 👇";
+          btnNext.style.background = "";
+        }
+      }
+      return;
+    }
+
+    btnNext.style.background = "";
+
+    const maxSub = subStepMaxMap[currentScene] || 0;
+    if (currentScene === 0) {
+      if (subStep === 0) {
+        btnNext.disabled = false;
+        btnNext.innerText = "특명 시작! 5개 문제 보기 ▶";
+      } else if (subStep < 5) {
+        btnNext.disabled = false;
+        btnNext.innerText = `다음 유형 보기 (${subStep}/5) ▶`;
+      } else if (subStep === 5) {
+        btnNext.disabled = false;
+        btnNext.innerText = "친구들 꿀팁 듣기 ▶";
+      } else {
+        btnNext.disabled = false;
+        btnNext.innerText = "1번 괄호 방정식 풀기 ▶";
+      }
+    } else if (currentScene >= 1 && currentScene <= 5) {
+      if (subStep < maxSub) {
+        btnNext.disabled = false;
+        const stepLabels = ["1단계 풀이 보기 ▶", "2단계 풀이 보기 ▶", "3단계 풀이 보기 ▶", "4단계 풀이 보기 ▶", "친구들 꿀팁 듣기 ▶"];
+        btnNext.innerText = stepLabels[subStep] || `다음 풀이 단계 (${subStep + 1}/${maxSub}) ▶`;
+      } else {
+        btnNext.disabled = false;
+        btnNext.innerText = (currentScene === 5) ? "양변 x 5대 원칙 총정리 ▶" : `유형 ${currentScene + 1} 풀기 ▶`;
+      }
+    } else if (currentScene === 6) {
+      btnNext.disabled = false;
+      btnNext.innerText = "실전 10대 퀴즈 도전! 🎯";
+      btnNext.style.background = "#f97316";
+    }
+  }
+
+  function goNext() {
+    playSound('step');
+    const maxSub = subStepMaxMap[currentScene] || 0;
+
+    if (currentScene === 7) {
+      if (quizCompleted) {
+        currentScene = 0;
+        subStep = 0;
+        quizQuestionIdx = 0;
+        quizSelectedOption = null;
+        quizFeedback = null;
+        quizCompleted = false;
+        updateUI();
+        return;
+      }
+      if (quizFeedback && quizFeedback.isCorrect) {
+        if (quizQuestionIdx < quizData.length - 1) {
+          quizQuestionIdx++;
+          quizSelectedOption = null;
+          quizFeedback = null;
+        } else {
+          quizCompleted = true;
+          playSound('success');
+        }
+      }
+      updateUI();
+      return;
+    }
+
+    if (subStep < maxSub) {
+      subStep++;
+    } else {
+      if (currentScene < totalScenes - 1) {
+        currentScene++;
+        subStep = 0;
+      }
+    }
+    updateUI();
+  }
+
+  function goPrev() {
+    playSound('pop');
+    if (currentScene === 7) {
+      if (quizQuestionIdx > 0 && !quizCompleted) {
+        quizQuestionIdx--;
+        quizSelectedOption = null;
+        quizFeedback = null;
+        updateUI();
+        return;
+      }
+      currentScene = 6;
+      subStep = subStepMaxMap[6];
+      updateUI();
+      return;
+    }
+
+    if (subStep > 0) {
+      subStep--;
+    } else {
+      if (currentScene > 0) {
+        currentScene--;
+        subStep = subStepMaxMap[currentScene] || 0;
+      }
+    }
+    updateUI();
+  }
+
+  function loadScene(sceneIdx, stepIdx = 0) {
+    currentScene = Math.max(0, Math.min(totalScenes - 1, sceneIdx));
+    const maxSub = subStepMaxMap[currentScene] || 0;
+    subStep = Math.max(0, Math.min(maxSub, stepIdx));
+    updateUI();
+  }
+
+  // ==========================================
+  // 도해 드로잉 헬퍼 함수들
+  // ==========================================
+
+  // 정통 분수 드로잉 (분모, 분자, 분수선)
+  function drawFraction(ctx, num, den, x, y, size = 18, color = "#0f172a") {
+    ctx.save();
+    ctx.font = `bold ${Math.round(size * 0.85)}px 'Pretendard', sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+
+    const numW = ctx.measureText(num).width;
+    const denW = ctx.measureText(den).width;
+    const barW = Math.max(numW, denW) + 8;
+
+    ctx.textBaseline = "bottom";
+    ctx.fillText(num, x, y - 2);
+
+    ctx.lineWidth = Math.max(1.8, Math.round(size * 0.08));
+    ctx.beginPath();
+    ctx.moveTo(x - barW / 2, y);
+    ctx.lineTo(x + barW / 2, y);
+    ctx.stroke();
+
+    ctx.textBaseline = "top";
+    ctx.fillText(den, x, y + 3);
+
+    ctx.restore();
+    return barW;
+  }
+
+  // 귀여운 캐릭터 얼굴 (주인공 & 수학 친구)
+  function drawComicFace(ctx, x, y, isFriend = false, mood = 'smile') {
+    ctx.save();
+    ctx.translate(x, y);
+
+    const r = 24;
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = isFriend ? "#7c3aed" : "#1e293b";
+    ctx.lineWidth = 2.5;
+
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    if (!isFriend) {
+      // 주인공 (주황 머리)
+      ctx.fillStyle = "#f97316";
+      ctx.strokeStyle = "#c2410c";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -6, r, Math.PI * 1.1, Math.PI * 1.9);
+      ctx.fill(); ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(-16, -14); ctx.lineTo(-6, -26); ctx.lineTo(4, -14); ctx.lineTo(14, -24); ctx.lineTo(18, -12);
+      ctx.fillStyle = "#ea580c"; ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#1e293b";
+      if (mood === 'shock') {
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(-8, -4, 4.5, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(8, -4, 4.5, 0, Math.PI * 2); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.arc(-8, -4, 3, 0, Math.PI * 2); ctx.arc(8, -4, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
+        ctx.beginPath(); ctx.arc(-14, 4, 4, 0, Math.PI * 2); ctx.arc(14, 4, 4, 0, Math.PI * 2); ctx.fill();
+      }
+
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      if (mood === 'shock') {
+        ctx.arc(0, 8, 4.5, 0, Math.PI * 2); ctx.stroke();
+      } else {
+        ctx.arc(0, 5, 8, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke();
+      }
+    } else {
+      // 수학 친구 (보라 헤어)
+      ctx.fillStyle = "#8b5cf6";
+      ctx.strokeStyle = "#6d28d9";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -5, r, Math.PI * 1.05, Math.PI * 1.95);
+      ctx.fill(); ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(-16, -16); ctx.quadraticCurveTo(8, -32, 28, -14); ctx.quadraticCurveTo(8, -20, -16, -16);
+      ctx.fillStyle = "#7c3aed"; ctx.fill(); ctx.stroke();
+
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(-12, -2); ctx.lineTo(-8, -6); ctx.lineTo(-4, -2);
+      ctx.stroke();
+
+      ctx.fillStyle = "#1e293b";
+      ctx.beginPath(); ctx.arc(8, -4, 3.5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = "rgba(168, 85, 247, 0.25)";
+      ctx.beginPath(); ctx.arc(-13, 6, 4, 0, Math.PI * 2); ctx.arc(13, 6, 4, 0, Math.PI * 2); ctx.fill();
+
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.arc(0, 5, 9, 0.1 * Math.PI, 0.9 * Math.PI);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  // 친구들 티키타카 말풍선
+  function drawCompactBubble(ctx, targetX, targetY, text, isFriend = false) {
+    ctx.save();
+
+    ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+    const lines = text.split("\n");
+    let maxW = 0;
+    lines.forEach(l => {
+      const w = ctx.measureText(l).width;
+      if (w > maxW) maxW = w;
+    });
+
+    const padX = 14;
+    const padY = 9;
+    const lineH = 18;
+    const bubbleW = maxW + padX * 2;
+    const bubbleH = lines.length * lineH + padY * 2;
+
+    let bx, by;
+    if (!isFriend) {
+      bx = targetX + 34;
+      by = targetY - bubbleH / 2;
+    } else {
+      bx = targetX - 34 - bubbleW;
+      by = targetY - bubbleH / 2;
+    }
+
+    // 말풍선 배경
+    ctx.fillStyle = isFriend ? "#f5f3ff" : "#fffbeb";
+    ctx.strokeStyle = isFriend ? "#7c3aed" : "#f59e0b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bubbleW, bubbleH, 12);
+    ctx.fill(); ctx.stroke();
+
+    // 꼬리표
+    ctx.beginPath();
+    if (!isFriend) {
+      ctx.moveTo(bx, targetY - 4);
+      ctx.lineTo(bx - 10, targetY);
+      ctx.lineTo(bx, targetY + 6);
+    } else {
+      ctx.moveTo(bx + bubbleW, targetY - 4);
+      ctx.lineTo(bx + bubbleW + 10, targetY);
+      ctx.lineTo(bx + bubbleW, targetY + 6);
+    }
+    ctx.fillStyle = isFriend ? "#f5f3ff" : "#fffbeb";
+    ctx.fill(); ctx.stroke();
+
+    // 텍스트 출력
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    lines.forEach((line, idx) => {
+      ctx.fillText(line, bx + padX, by + padY + idx * lineH + lineH / 2);
+    });
+
+    ctx.restore();
+  }
+
+  // ==========================================
+  // 메인 렌더링 루프
+  // ==========================================
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 미세 그리드 배경
+    ctx.fillStyle = "#fafafa";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = "#f1f5f9";
+    ctx.lineWidth = 1;
+    for (let x = 0; x < canvas.width; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+    }
+
+    if (currentScene === 0) {
+      renderScene0();
+    } else if (currentScene === 1) {
+      renderSceneProblem1();
+    } else if (currentScene === 2) {
+      renderSceneProblem2();
+    } else if (currentScene === 3) {
+      renderSceneProblem3();
+    } else if (currentScene === 4) {
+      renderSceneProblem4();
+    } else if (currentScene === 5) {
+      renderSceneProblem5();
+    } else if (currentScene === 6) {
+      renderSceneSummary();
+    } else if (currentScene === 7) {
+      renderSceneQuiz();
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  // ------------------------------------------
+  // Scene 0: 첫 화면 (가운데 특명 카드 -> 버튼 누르면 문제 등장!)
+  // ------------------------------------------
+  function renderScene0() {
+    const cx = canvas.width / 2;
+
+    if (subStep === 0) {
+      const cardW = 760;
+      const cardH = 390;
+      const cardX = cx - cardW / 2;
+      const cardY = 50;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#7c3aed";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cardX, cardY, cardW, cardH, 20);
+      ctx.fill(); ctx.stroke();
+
+      // 상단 배지
+      ctx.fillStyle = "#f5f3ff";
+      ctx.strokeStyle = "#ddd6fe";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(cx - 150, cardY - 18, 300, 36, 18);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#7c3aed";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🎯 방정식 풀이의 단 하나의 최종 목표!", cx, cardY + 5);
+
+      // 가운데 큰 타이틀
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 26px 'Pretendard', sans-serif";
+      ctx.fillText("오직 좌변에 \"x\" 만 남겨라!", cx, cardY + 68);
+
+      // 핵심 안내 카드
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(cardX + 30, cardY + 100, cardW - 60, 180, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#1e293b";
+      ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+
+      const listX = cardX + 55;
+      ctx.fillText("✨ 같은 수를 양변에 더하거나 빼거나 ( 이항 )", listX, cardY + 140);
+      ctx.fillText("✨ 같은 수를 양변에 곱하거나 0이 아닌 수로 나누거나", listX, cardY + 180);
+      ctx.fillText("✨ 등식의 성질을 이용하여 마침내 \"x = [수]\" 꼴로 만들어라!", listX, cardY + 220);
+
+      // 타겟 비주얼 배지
+      ctx.fillStyle = "#dcfce7";
+      ctx.strokeStyle = "#16a34a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(cx - 110, cardY + 245, 220, 24, 6);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#15803d";
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🎯 목표 형태: x = (숫자)", cx, cardY + 261);
+
+      // 하단 다음 유도 안내
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("👇 아래 [특명 시작! 5개 문제 보기 ▶] 버튼을 누르면 문제가 등장합니다!", cx, cardY + 345);
+
+      drawComicFace(ctx, 85, 470, false, 'smile');
+      drawCompactBubble(ctx, 85, 470, "더하고 빼고 곱하고 나누어서\nx만 혼자 쏙 남기는 게 방정식이구나!", false);
+
+      drawComicFace(ctx, 875, 470, true, 'smile');
+      drawCompactBubble(ctx, 875, 470, "맞아! 이제 버튼 누르고\n쫌 복잡한 5개 문제 부수러 가자! 🚀", true);
+      return;
+    }
+
+    const cards = [
+      {
+        num: "유형 1",
+        title: "괄호가 들어간 방정식",
+        badgeColor: "#7c3aed",
+        eq: "4(x - 3) = 2(3x + 1)",
+        trap: "동시 이항 시 부호 실수 조심!",
+        x: 40, y: 35, w: 280, h: 155
+      },
+      {
+        num: "유형 2",
+        title: "비례식이 들어간 방정식",
+        badgeColor: "#2563eb",
+        eq: "(2x - 1) : 3 = (x + 4) : 2",
+        trap: "내항곱 = 외항곱! 괄호 필수!",
+        x: 340, y: 35, w: 280, h: 155
+      },
+      {
+        num: "유형 3",
+        title: "소수가 들어간 방정식",
+        badgeColor: "#059669",
+        eq: "0.25x - 0.3 = 0.1(x + 6)",
+        trap: "양변에 100! 괄호 안 중복 곱 금지!",
+        x: 640, y: 35, w: 280, h: 155
+      },
+      {
+        num: "유형 4",
+        title: "분수가 들어간 방정식",
+        badgeColor: "#ea580c",
+        isFrac: true,
+        trap: "분수가 아닌 항도 6 꼭 곱하기!",
+        x: 180, y: 205, w: 280, h: 160
+      },
+      {
+        num: "유형 5",
+        title: "분수·소수·괄호 혼합 끝판왕",
+        badgeColor: "#dc2626",
+        isMix: true,
+        trap: "0.5를 1/2로 변환 후 6 곱하기!",
+        x: 500, y: 205, w: 280, h: 160
+      }
+    ];
+
+    const showCount = Math.min(cards.length, subStep);
+
+    for (let i = 0; i < showCount; i++) {
+      const c = cards[i];
+
+      // 카드 배경
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = (i === showCount - 1 && subStep < 5) ? c.badgeColor : "#e2e8f0";
+      ctx.lineWidth = (i === showCount - 1 && subStep < 5) ? 2.5 : 1.5;
+      ctx.beginPath();
+      ctx.roundRect(c.x, c.y, c.w, c.h, 14);
+      ctx.fill(); ctx.stroke();
+
+      // 배지
+      ctx.fillStyle = c.badgeColor;
+      ctx.beginPath();
+      ctx.roundRect(c.x + 12, c.y + 12, 60, 24, 6);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 12px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(c.num, c.x + 42, c.y + 28);
+
+      // 제목
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(c.title, c.x + 78, c.y + 29);
+
+      // 수식 표현
+      ctx.textAlign = "center";
+      if (c.isFrac) {
+        ctx.save();
+        ctx.translate(c.x + c.w / 2, c.y + 78);
+        drawFraction(ctx, "x - 1", "2", -55, 0, 16, "#ea580c");
+        ctx.font = "bold 18px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#0f172a";
+        ctx.fillText("=", -18, 5);
+        drawFraction(ctx, "2x + 1", "3", 22, 0, 16, "#ea580c");
+        ctx.fillText("+ 1", 66, 5);
+        ctx.restore();
+      } else if (c.isMix) {
+        ctx.save();
+        ctx.translate(c.x + c.w / 2, c.y + 78);
+        ctx.font = "bold 15px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#dc2626";
+        ctx.fillText("0.5x - 2  =", -45, 5);
+        drawFraction(ctx, "1", "3", 10, 0, 16, "#dc2626");
+        ctx.font = "bold 14px 'Pretendard', sans-serif";
+        ctx.fillText("(2x - 5)", 55, 5);
+        ctx.restore();
+      } else {
+        ctx.font = "bold 15.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = c.badgeColor;
+        ctx.fillText(c.eq, c.x + c.w / 2, c.y + 80);
+      }
+
+      // 함정 안내 태그
+      ctx.fillStyle = "#f8fafc";
+      ctx.beginPath();
+      ctx.roundRect(c.x + 10, c.y + c.h - 38, c.w - 20, 26, 6);
+      ctx.fill();
+      ctx.fillStyle = "#475569";
+      ctx.font = "bold 11.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`⚡ ${c.trap}`, c.x + c.w / 2, c.y + c.h - 21);
+    }
+
+    if (subStep < 5) {
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`👇 아래 [다음 유형 보기 ▶] 버튼을 누르면 유형이 하나씩 등장합니다 (${subStep} / 5)`, cx, 435);
+    } else {
+      drawComicFace(ctx, 65, 460, false, 'shock');
+      drawCompactBubble(ctx, 65, 460, "야... 좌변에도 x, 우변에도 x 난리 났다!\n이항하다가 부호 실수로 다 틀리겠어 😱", false);
+
+      drawComicFace(ctx, 895, 460, true, 'smile');
+      drawCompactBubble(ctx, 895, 460, "쫄지 마! 양변 x 방정식도 원칙만 지키면\n1분 컷이야 ㅋㅋㅋ 1번 괄호부터 가보자! 🚀", true);
+    }
+  }
+
+  // ==========================================
+  // 문제 풀이 공통 헤더 (분수 정통 표현 및 완벽한 자간 정렬 지원!)
+  // ==========================================
+  function drawProblemHeader(title, typeNum, subTitle, eqStr, fracMode = null) {
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(40, 20, 880, 75, 14);
+    ctx.fill(); ctx.stroke();
+
+    // 배지
+    ctx.fillStyle = "#7c3aed";
+    ctx.beginPath();
+    ctx.roundRect(58, 32, 70, 26, 6);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 13px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(typeNum, 93, 49);
+
+    // 제목
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 17px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(title, 140, 50);
+
+    // [버그 수정 완료] 우측 문제 식 (분수는 / 대신 정통 분수식으로, 괄호 떨어짐 없이 연결!)
+    if (fracMode === 'p4') {
+      ctx.save();
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#ea580c";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+
+      let curX = 660;
+      const curY = 48;
+      const bar1 = drawFraction(ctx, "x - 1", "2", curX + 22, curY, 17, "#ea580c");
+      curX += bar1 + 10;
+
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("=", curX, curY);
+      curX += ctx.measureText("=").width + 12;
+
+      const bar2 = drawFraction(ctx, "2x + 1", "3", curX + 24, curY, 17, "#ea580c");
+      curX += bar2 + 10;
+
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#ea580c";
+      ctx.fillText("+ 1", curX, curY);
+      ctx.restore();
+    } else if (fracMode === 'p5') {
+      ctx.save();
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#dc2626";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+
+      // 괄호 떨어짐 없이 딱 붙여서 드로잉!
+      let curX = 675;
+      const curY = 48;
+      ctx.fillText("0.5x - 2  =", curX, curY);
+      curX += ctx.measureText("0.5x - 2  = ").width + 10;
+
+      const barW = drawFraction(ctx, "1", "3", curX + 8, curY, 17, "#dc2626");
+      curX += barW + 10;
+
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText("(2x - 5)", curX, curY);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = "#4338ca";
+      ctx.font = "bold 19px 'Pretendard', sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(eqStr, 895, 52);
+    }
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "12.5px 'Pretendard', sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(subTitle, 895, 78);
+  }
+
+  // ==========================================
+  // [겹침 완벽 해결] 단계별 풀이 카드 드로잉 함수
+  // 3단 레이아웃 (1행:태그+설명 / 2행:식 단독 / 3행:주의팁 단독)
+  // coloredParts 지원으로 곱해진 6을 빨간색 등 차별화 가능!
+  // ==========================================
+  function drawStepCards(steps, startY = 105, cardW = 425, cardH = 74) {
+    for (let i = 0; i < steps.length; i++) {
+      const y = startY + i * 78;
+
+      if (subStep <= i) {
+        ctx.fillStyle = "#f8fafc";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.roundRect(50, y, cardW, cardH, 10);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(`🔒 [${steps[i].tag} 풀이 보기 ▶] 버튼을 누르면 공개!`, 50 + cardW / 2, y + 42);
+        continue;
+      }
+
+      const s = steps[i];
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(50, y, cardW, cardH, 10);
+      ctx.fill(); ctx.stroke();
+
+      // 1행: 단계 태그 배지 + 행동 타이틀
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.roundRect(62, y + 10, 50, 20, 5);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 11px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(s.tag, 87, y + 24);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(s.action, 120, y + 25);
+
+      // 2행: 풀이 식 단독 배치 (글자 겹침 원천 차단!)
+      // [요구사항 반영] 곱해진 6 색상 차별화 (coloredParts 지원)
+      if (s.coloredParts) {
+        let curX = 64;
+        const curY = y + 47;
+        ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+        s.coloredParts.forEach(p => {
+          ctx.fillStyle = p.color;
+          ctx.fillText(p.text, curX, curY);
+          curX += ctx.measureText(p.text).width;
+        });
+      } else {
+        ctx.fillStyle = s.color;
+        ctx.font = "bold 17px 'Pretendard', sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(s.eq, 64, y + 47);
+      }
+
+      // 3행: 주의/팁 단독 줄 배치
+      if (s.tip) {
+        ctx.fillStyle = "#64748b";
+        ctx.font = "11.5px 'Pretendard', sans-serif";
+        ctx.fillText(s.tip, 64, y + 66);
+      }
+    }
+  }
+
+  // ==========================================
+  // Scene 1: [유형 1] 괄호가 들어간 방정식
+  // 4(x - 3) = 2(3x + 1)
+  // ==========================================
+  function renderSceneProblem1() {
+    drawProblemHeader("괄호가 들어간 방정식 (이항시 부호 주의 !)", "유형 1", "(이항시 부호 주의 !)", "4(x - 3) = 2(3x + 1)");
+
+    const steps = [
+      {
+        tag: "1단계",
+        action: "분배법칙으로 양변의 괄호 풀기",
+        eq: "4x - 12 = 6x + 2",
+        tip: "4×x - 4×3 = 2×3x + 2×1 (모든 항에 골고루 곱!)",
+        color: "#2563eb"
+      },
+      {
+        tag: "2단계",
+        action: "x는 좌변으로 몰아~ 상수항은 우변으로 몰아 ➔ 이항!",
+        eq: "4x - 6x = 2 + 12",
+        tip: "⚠️ 우변 6x ➔ -6x, 좌변 -12 ➔ +12 (등호다리 건너면 부호 바꿔!)",
+        color: "#ea580c"
+      },
+      {
+        tag: "3단계",
+        action: "동류항끼리 계산하여 간단히 정리",
+        eq: "-2x = 14",
+        tip: "(4 - 6)x = -2x ,  2 + 12 = 14",
+        color: "#059669"
+      },
+      {
+        tag: "4단계",
+        action: "x의 계수(-2)로 양변을 나누기",
+        eq: "x = -7",
+        tip: "x = 14 ÷ (-2) ➔ 최종 정답 부호는 마이너스(-)!",
+        color: "#7c3aed"
+      }
+    ];
+
+    drawStepCards(steps);
+
+    // [요구사항 반영] 1단계를 보면 오른쪽 '많이 하는 실수' 부분이 나오도록 연동!
+    const rightX = 490;
+    const rightW = 430;
+
+    if (subStep === 0) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX, 105, rightW, 307, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🔒 [1단계 풀이 보기 ▶] 버튼을 누르면", rightX + rightW / 2, 240);
+      ctx.fillText("'많이 하는 실수'와 꿀팁이 함께 공개됩니다!", rightX + rightW / 2, 268);
+    } else {
+      ctx.fillStyle = "#fffbeb";
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(rightX, 105, rightW, 307, 14);
+      ctx.fill(); ctx.stroke();
+
+      // [요구사항 반영] '많이하는 실수' 로 변경
+      ctx.fillStyle = "#b45309";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("⚡ 많이 하는 실수 💣", rightX + rightW / 2, 134);
+
+      // 오답 예시
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX + 20, 148, rightW - 40, 66, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#dc2626";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("❌ 흔한 오답: 부호 안 바꾸고 그대로 이항", rightX + rightW / 2, 170);
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillText("4x + 6x = 2 - 12   ➔  10x = -10 (오답!)", rightX + rightW / 2, 196);
+
+      ctx.fillStyle = "#f0fdf4";
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX + 20, 226, rightW - 40, 168, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#15803d";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("⭕ 올바른 이항 규칙: 등호다리 건너면 부호 바꿔!", rightX + rightW / 2, 252);
+
+      ctx.fillStyle = "#1e293b";
+      ctx.font = "13.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("1. 우변의 +6x 가 좌변으로 가면 ➔  -6x", rightX + 35, 282);
+      ctx.fillText("2. 좌변의 -12 가 우변으로 가면 ➔  +12", rightX + 35, 310);
+      ctx.fillText("3. 4x - 6x = 2 + 12  ➔  -2x = 14", rightX + 35, 338);
+
+      ctx.fillStyle = "#16a34a";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillText("🎯 최종 해: x = -7", rightX + 35, 368);
+    }
+
+    if (subStep < 5) {
+      drawComicFace(ctx, 65, 465, false, 'thinking');
+      drawCompactBubble(ctx, 65, 465, "괄호 풀고 6x랑 -12 둘 다 넘길 때\n부호 안 바꿔서 틀리는 애들 진짜 많대!", false);
+    } else {
+      drawComicFace(ctx, 65, 465, false, 'smile');
+      drawCompactBubble(ctx, 65, 465, "등호다리 건너면 부호 바꿔! 이항 규칙 딱 잡았다!\n우변 6x는 -6x로, 좌변 -12는 +12로!", false);
+
+      drawComicFace(ctx, 895, 465, true, 'smile');
+      drawCompactBubble(ctx, 895, 465, "나이스! 이제 2번 비례식 방정식으로 가보자!\n내항곱 = 외항곱이 핵심이야 🚀", true);
+    }
+  }
+
+  // ==========================================
+  // Scene 2: [유형 2] 비례식이 들어간 방정식
+  // (2x - 1) : 3 = (x + 4) : 2
+  // ==========================================
+  function renderSceneProblem2() {
+    drawProblemHeader("비례식이 들어간 방정식", "유형 2", "내항곱 = 외항곱 ! 항이 2개면 괄호로~", "(2x - 1) : 3 = (x + 4) : 2");
+
+    const steps = [
+      {
+        tag: "1단계",
+        action: "내항곱 = 외항곱 ! (항이 2개면 반드시 괄호로~)",
+        eq: "2(2x - 1) = 3(x + 4)",
+        tip: "⚠️ 다항식 (2x - 1)과 (x + 4)에 꼭 괄호를 쳐야 분배법칙 적용!",
+        color: "#2563eb"
+      },
+      {
+        tag: "2단계",
+        action: "분배법칙으로 양변 괄호 전개",
+        eq: "4x - 2 = 3x + 12",
+        tip: "2×2x - 2×1 = 3×x + 3×4",
+        color: "#059669"
+      },
+      {
+        tag: "3단계",
+        action: "x는 좌변으로 몰아~ 상수항은 우변으로 몰아 ➔ 이항!",
+        eq: "4x - 3x = 12 + 2",
+        tip: "3x ➔ -3x ,  -2 ➔ +2 (등호다리 건너면 부호 바꿔!)",
+        color: "#ea580c"
+      },
+      {
+        tag: "4단계",
+        action: "동류항 계산하여 최종 x 구하기",
+        eq: "x = 14",
+        tip: "(4 - 3)x = 1x = 14 (정답!)",
+        color: "#7c3aed"
+      }
+    ];
+
+    drawStepCards(steps);
+
+    // [요구사항 반영] 1단계가 나오고 오른쪽 주의사항 나오도록 연동!
+    const rightX = 490;
+    const rightW = 430;
+
+    if (subStep === 0) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX, 105, rightW, 307, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🔒 [1단계 풀이 보기 ▶] 버튼을 누르면", rightX + rightW / 2, 240);
+      ctx.fillText("비례식 주의사항과 공식이 함께 공개됩니다!", rightX + rightW / 2, 268);
+    } else {
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(rightX, 105, rightW, 307, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#1d4ed8";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("💡 내항곱 = 외항곱! 항이 2개면 괄호로~", rightX + rightW / 2, 134);
+
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX + 20, 148, rightW - 40, 66, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#dc2626";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("❌ 괄호 안 묶어서 망치는 대참사", rightX + rightW / 2, 170);
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("2 × 2x - 1 = 3 × x + 4  ➔  4x - 1 = 3x + 4 (상수항 누락!)", rightX + rightW / 2, 196);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX + 20, 226, rightW - 40, 168, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#1e40af";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("⭕ 황금 열쇠: 내항곱 = 외항곱 후 괄호 방패 장착!", rightX + rightW / 2, 252);
+
+      ctx.fillStyle = "#1e293b";
+      ctx.font = "13.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("• 외항의 곱: 2 × (2x - 1)  ➔  4x - 2", rightX + 35, 282);
+      ctx.fillText("• 내항의 곱: 3 × (x + 4)   ➔  3x + 12", rightX + 35, 310);
+      ctx.fillText("• x는 좌변 몰고 상수 우변 몰아 ➔ x = 14", rightX + 35, 338);
+
+      ctx.fillStyle = "#16a34a";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillText("🎯 검산: 27:3 = 9 , 18:2 = 9 (완벽!)", rightX + 35, 368);
+    }
+
+    if (subStep < 5) {
+      drawComicFace(ctx, 65, 465, false, 'smile');
+      drawCompactBubble(ctx, 65, 465, "내항곱 = 외항곱! 곱할 때 항이 2개면\n무조건 괄호로 묶어야 분배가 올바르게 되네!", false);
+    } else {
+      drawComicFace(ctx, 65, 465, false, 'smile');
+      drawCompactBubble(ctx, 65, 465, "괄호 치고 전개하니까 일차방정식으로 변신!\nx = 14 깔끔하게 풀렸다 ㅋㅋㅋ", false);
+
+      drawComicFace(ctx, 895, 465, true, 'smile');
+      drawCompactBubble(ctx, 895, 465, "잘한다! 다음은 자릿수가 다른 소수 방정식!\n10만 곱하면 안 되는 이유 보러 가자! 🚀", true);
+    }
+  }
+
+  // ==========================================
+  // Scene 3: [유형 3] 소수가 들어간 방정식
+  // 0.25x - 0.3 = 0.1(x + 6)
+  // ==========================================
+  function renderSceneProblem3() {
+    // [요구사항 반영] & 대신 100곱하고 괄호풀어라 로 수정!
+    drawProblemHeader("소수가 들어간 방정식 (자릿수가 다른 소수)", "유형 3", "100 곱하고 괄호 풀어라", "0.25x - 0.3 = 0.1(x + 6)");
+
+    // [요구사항 반영] 양변에 100 곱하기에서 괄호 밖에 대표만 100을 곱한다! 넣기
+    const steps = [
+      {
+        tag: "1단계",
+        action: "양변에 100 곱하기 (괄호 밖에 대표만 100을 곱한다!)",
+        eq: "25x - 30 = 10(x + 6)",
+        tip: "⚠️ 0.25가 둘째 자리! 괄호 밖 대표(0.1)에만 100 곱하기!",
+        color: "#059669"
+      },
+      {
+        tag: "2단계",
+        action: "우변의 괄호 먼저 풀기 (★핵심 함정 방지)",
+        eq: "25x - 30 = 10x + 60",
+        tip: "괄호 속 x를 억지로 먼저 이항하려 하면 꼬여요!",
+        color: "#2563eb"
+      },
+      {
+        tag: "3단계",
+        action: "x는 좌변으로 몰아~ 상수항은 우변으로 몰아 ➔ 이항!",
+        eq: "25x - 10x = 60 + 30",
+        tip: "10x ➔ -10x ,  -30 ➔ +30 (등호다리 건너면 부호 바꿔!)",
+        color: "#ea580c"
+      },
+      {
+        tag: "4단계",
+        action: "동류항 정리 및 x의 계수로 나누기",
+        eq: "15x = 90   ➔   x = 6",
+        tip: "x = 90 ÷ 15 = 6 (정답!)",
+        color: "#7c3aed"
+      }
+    ];
+
+    drawStepCards(steps);
+
+    // [요구사항 반영] 1단계 보고 오른쪽 주의 사항 나오도록 연동!
+    const rightX = 490;
+    const rightW = 430;
+
+    if (subStep === 0) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX, 105, rightW, 307, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🔒 [1단계 풀이 보기 ▶] 버튼을 누르면", rightX + rightW / 2, 240);
+      ctx.fillText("소수 자릿수 함정 주의사항이 함께 공개됩니다!", rightX + rightW / 2, 268);
+    } else {
+      ctx.fillStyle = "#f0fdf4";
+      ctx.strokeStyle = "#10b981";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(rightX, 105, rightW, 307, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#047857";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("⚡ 소수 방정식 주의사항 완벽 차단", rightX + rightW / 2, 134);
+
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX + 20, 148, rightW - 40, 66, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#dc2626";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("❌ 10만 곱하면 0.25는 정수가 못된다 ㅜㅜ", rightX + rightW / 2, 170);
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("2.5x - 3 = 1(x + 6) ➔ 소수가 아직 살아있어!", rightX + rightW / 2, 196);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#059669";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX + 20, 226, rightW - 40, 168, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#065f46";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("⭕ 올바른 해법: 가장 자릿수 큰 소수에 맞추기!", rightX + rightW / 2, 252);
+
+      ctx.fillStyle = "#1e293b";
+      ctx.font = "13.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("• 0.25가 소수 둘째 자리 ➔ 양변에 100 곱하기!", rightX + 35, 282);
+      ctx.fillText("• 괄호 밖에 대표(0.1)에만 100을 곱한다! ➔ 10(x + 6)", rightX + 35, 310);
+      ctx.fillText("• 반드시 괄호 먼저 풀고 이항: 25x - 10x = 60 + 30", rightX + 35, 338);
+
+      ctx.fillStyle = "#16a34a";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillText("🎯 15x = 90  ➔  x = 6 (완벽!)", rightX + 35, 368);
+    }
+
+    if (subStep < 5) {
+      drawComicFace(ctx, 65, 465, false, 'thinking');
+      drawCompactBubble(ctx, 65, 465, "10만 곱하면 0.25는 정수가 못된다 ㅜㅜ\n괄호 밖 대표에만 100 곱하는 것 꼭 기억해야지!", false);
+    } else {
+      drawComicFace(ctx, 65, 465, false, 'smile');
+      drawCompactBubble(ctx, 65, 465, "100 곱하고 괄호 풀어라! 그대로 하니까\nx = 6 으로 깔끔하게 풀린다!", false);
+
+      drawComicFace(ctx, 895, 465, true, 'smile');
+      drawCompactBubble(ctx, 895, 465, "맞아! 괄호는 항상 먼저 푸는 게 정답!\n다음은 분수만 6 곱하면 땡인 이유 보러 가자! 🚀", true);
+    }
+  }
+
+  // ==========================================
+  // Scene 4: [유형 4] 분수가 들어간 방정식
+  // (x - 1)/2 = (2x + 1)/3 + 1
+  // ==========================================
+  function renderSceneProblem4() {
+    drawProblemHeader("분수가 들어간 방정식", "유형 4", "항마다 다 곱해 ! (숫자 홀로 있는 상수항도 꼭꼭 !)", "", 'p4');
+
+    const steps = [
+      {
+        tag: "1단계",
+        action: "양변에 분모 최소공배수(6) 곱하기",
+        eq: "3(x - 1) = 2(2x + 1) + 6",
+        tip: "💣 분수만 6 곱하면 땡! 홀로 있는 상수항에도 6 꼭꼭 곱하기!",
+        color: "#ea580c"
+      },
+      {
+        tag: "2단계",
+        action: "괄호 전개 및 우변 상수항 합치기",
+        eq: "3x - 3 = 4x + 2 + 6   ➔   3x - 3 = 4x + 8",
+        tip: "우변 2 + 6 = 8 로 미리 정리하면 계산이 편해요!",
+        color: "#2563eb"
+      },
+      {
+        tag: "3단계",
+        action: "x는 좌변으로 몰아~ 상수항은 우변으로 몰아 ➔ 이항!",
+        eq: "3x - 4x = 8 + 3",
+        tip: "4x ➔ -4x ,  -3 ➔ +3 (등호다리 건너면 부호 바꿔!)",
+        color: "#059669"
+      },
+      {
+        tag: "4단계",
+        action: "동류항 정리 및 음수 부호 처리 (★필수)",
+        eq: "-x = 11   ➔   x = -11",
+        tip: "양변에 -1을 곱해 x = -11 (정답!)",
+        color: "#7c3aed"
+      }
+    ];
+
+    drawStepCards(steps);
+
+    const rightX = 490;
+    const rightW = 430;
+
+    if (subStep === 0) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX, 105, rightW, 307, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🔒 [1단계 풀이 보기 ▶] 버튼을 누르면", rightX + rightW / 2, 240);
+      ctx.fillText("분수 방정식 주의사항이 함께 공개됩니다!", rightX + rightW / 2, 268);
+    } else {
+      ctx.fillStyle = "#fff7ed";
+      ctx.strokeStyle = "#ea580c";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(rightX, 105, rightW, 307, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#c2410c";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("💣 전국 중1 시험 단골 함정 1순위!", rightX + rightW / 2, 134);
+
+      // [요구사항 반영] 최다오답 빼고 분수만 6곱하면 땡!
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX + 20, 148, rightW - 40, 66, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#dc2626";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("❌ 분수만 6 곱하면 땡!", rightX + rightW / 2, 170);
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("3(x - 1) = 2(2x + 1) + 1  ➔ 뒤의 +1 방치하면 폭망!", rightX + rightW / 2, 196);
+
+      // [요구사항 반영] 항마다 다 곱해 ! (숫자 홀로 있는 상수항도 꼭꼭 !)
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#ea580c";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX + 20, 226, rightW - 40, 168, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#9a3412";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("⭕ 백점 비법: 항마다 다 곱해! (홀로 있는 상수항도 꼭꼭!)", rightX + rightW / 2, 252);
+
+      ctx.fillStyle = "#1e293b";
+      ctx.font = "13.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("• 6 × (x - 1)/2  ➔  3(x - 1)", rightX + 35, 282);
+      ctx.fillText("• 6 × (2x + 1)/3 ➔  2(2x + 1)", rightX + 35, 310);
+      ctx.fillText("• 6 × 1           ➔  +6 (숫자 홀로 있는 상수항도 꼭꼭!)", rightX + 35, 338);
+
+      ctx.fillStyle = "#16a34a";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillText("🎯 마지막 -x = 11 에서 부호 반전 ➔ x = -11!", rightX + 35, 368);
+    }
+
+    if (subStep < 5) {
+      drawComicFace(ctx, 65, 465, false, 'shock');
+      drawCompactBubble(ctx, 65, 465, "분수만 6 곱하면 땡! 맞네 ㅋㅋㅋ\n뒤에 외딴 상수항 +1에도 6 꼭 곱해야 해!", false);
+    } else {
+      drawComicFace(ctx, 65, 465, false, 'smile');
+      drawCompactBubble(ctx, 65, 465, "항마다 다 곱해서 +6 만들고,\n-x = 11 에서 부호 바꿔 x = -11 성공!", false);
+
+      drawComicFace(ctx, 895, 465, true, 'smile');
+      drawCompactBubble(ctx, 895, 465, "완벽해! 바로 그 두 개가 킬러 함정이야!\n이제 끝판왕 5번 혼합 방정식 깨러 가자! 🚀", true);
+    }
+  }
+
+  // ==========================================
+  // Scene 5: [유형 5] 분수·소수·괄호 혼합 방정식
+  // 0.5x - 2 = 1/3(2x - 5)
+  // ==========================================
+  function renderSceneProblem5() {
+    drawProblemHeader("분수·소수·괄호 혼합 방정식 (끝판왕)", "유형 5", "분수로 한가지 통일 & 곱하기 전 항들 확인 !", "", 'p5');
+
+    // [요구사항 반영] 곱해진 6을 빨간색으로 시각적 강조!
+    const steps = [
+      {
+        tag: "1단계",
+        action: "소수와 분수가 섞이면 분수로 만들어 한 가지로 통일!",
+        eq: "0.5 = 1/2   ➔   (1/2)x - 2 = (1/3)(2x - 5)",
+        tip: "💡 0.5를 분수 1/2로 바꾸면 분모(2와 3)의 최소공배수(6)가 딱 보여요!",
+        color: "#dc2626"
+      },
+      {
+        tag: "2단계",
+        action: "양변 항에 골고루 곱하기 (곱하기 전 항들 확인 !)",
+        eq: "6 × (1/2)x - 6 × 2 = 6 × (1/3)(2x - 5)",
+        coloredParts: [
+          { text: "6", color: "#dc2626" },
+          { text: " × (1/2)x - ", color: "#0f172a" },
+          { text: "6", color: "#dc2626" },
+          { text: " × 2 = ", color: "#0f172a" },
+          { text: "6", color: "#dc2626" },
+          { text: " × (1/3)(2x - 5)", color: "#0f172a" }
+        ],
+        tip: "➔ 계산하면: 3x - 12 = 2(2x - 5) (-2에도 6 곱해 -12!)",
+        color: "#ea580c"
+      },
+      {
+        tag: "3단계",
+        action: "분배법칙으로 우변의 괄호 풀기",
+        eq: "3x - 12 = 4x - 10",
+        tip: "2×2x - 2×5 = 4x - 10",
+        color: "#2563eb"
+      },
+      {
+        tag: "4단계",
+        action: "x는 좌변으로 몰아~ 상수항은 우변으로 몰아 ➔ 이항!",
+        eq: "3x - 4x = -10 + 12",
+        tip: "4x ➔ -4x ,  -12 ➔ +12 (등호다리 건너면 부호 바꿔!)",
+        color: "#059669"
+      }
+    ];
+
+    drawStepCards(steps);
+
+    const rightX = 490;
+    const rightW = 430;
+
+    if (subStep === 0) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX, 105, rightW, 307, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🔒 [1단계 풀이 보기 ▶] 버튼을 누르면", rightX + rightW / 2, 240);
+      ctx.fillText("혼합 방정식의 3대 황금 열쇠가 공개됩니다!", rightX + rightW / 2, 268);
+    } else {
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(rightX, 105, rightW, 307, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#991b1b";
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("👑 복합 방정식 정복의 3대 황금 열쇠", rightX + rightW / 2, 134);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rightX + 20, 148, rightW - 40, 246, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#1e293b";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("1. 소수와 분수가 섞이면 분수로 한 가지 통일!", rightX + 35, 178);
+      ctx.font = "13px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#475569";
+      ctx.fillText("➔ 0.5를 분수 1/2로 바꾸면 분모가 2와 3!", rightX + 50, 200);
+
+      ctx.fillStyle = "#1e293b";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillText("2. 곱하기 전 항들 확인 ! (양변 모든 항에 곱하기)", rightX + 35, 230);
+      ctx.font = "13px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#475569";
+      ctx.fillText("➔ 6×(1/2)x - 6×2 = 6×(1/3)(2x - 5)", rightX + 50, 252);
+      ctx.fillText("➔ 3x - 12 = 2(2x - 5) (-2에도 6 곱해 -12!)", rightX + 50, 272);
+
+      ctx.fillStyle = "#1e293b";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillText("3. x 좌변 몰고 상수 우변 몰아 차분히 풀기!", rightX + 35, 302);
+      ctx.font = "13px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#475569";
+      ctx.fillText("➔ 3x - 4x = -10 + 12  ➔  -x = 2", rightX + 50, 324);
+
+      ctx.fillStyle = "#16a34a";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillText("🎯 최종 정답: x = -2 (부호 반전!)", rightX + 50, 364);
+    }
+
+    if (subStep < 5) {
+      drawComicFace(ctx, 65, 465, false, 'smile');
+      drawCompactBubble(ctx, 65, 465, "소수랑 분수 섞이면 분수로 만들어 통일하고,\n곱하기 전 항들 확인하니까 -12 안 빼먹네!", false);
+    } else {
+      drawComicFace(ctx, 65, 465, false, 'smile');
+      drawCompactBubble(ctx, 65, 465, "x는 좌변으로 몰고 상수는 우변으로 몰고!\n-x = 2 니까 x = -2 로 완벽 해결! 💯", false);
+
+      drawComicFace(ctx, 895, 465, true, 'smile');
+      drawCompactBubble(ctx, 895, 465, "오...맞아 -X 주의 ! X만 남기기 명심!\n이제 5대 황금 원칙 총정리 보러 가자! 🏆", true);
+    }
+  }
+
+  // ==========================================
+  // Scene 6: 양변 x 방정식 5대 황금 원칙 총정리
+  // ==========================================
+  function renderSceneSummary() {
+    const cx = canvas.width / 2;
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 22px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("🏆 특명 성공! 양변 x 방정식 5대 황금 원칙 🏆", cx, 46);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "14px 'Pretendard', sans-serif";
+    ctx.fillText("이 5가지만 머릿속에 넣으면 어떤 복잡한 방정식도 100점입니다!", cx, 74);
+
+    // [요구사항 반영] 원칙 1 괄호를 풀어야 이항자격 생김! / 원칙 4 항마다 다 곱해 ! (숫자 홀로 있는 상수항도 꼭꼭 !)
+    const rules = [
+      { num: "원칙 ①", title: "괄호를 풀어야 이항 자격 생김!", desc: "괄호 속 x는 이항 불가! 분배법칙으로 먼저 풀어야 이항 자격이 생긴다!", color: "#7c3aed" },
+      { num: "원칙 ②", title: "내항곱 = 외항곱! 항이 2개면 괄호로~", desc: "(2x - 1) : 3 = (x + 4) : 2  ➔  2(2x - 1) = 3(x + 4)", color: "#2563eb" },
+      { num: "원칙 ③", title: "소수는 가장 자릿수 큰 소수에 맞추기", desc: "10만 곱하면 0.25는 정수 못 됨! 100 곱하기 (괄호 밖 대표에만 곱!)", color: "#059669" },
+      { num: "원칙 ④", title: "항마다 다 곱해 ! (숫자 홀로 있는 상수항도 꼭꼭 !)", desc: "분수만 곱하면 땡! 홀로 있는 상수항도 빠짐없이 최소공배수 꼭꼭 곱하기!", color: "#ea580c" },
+      { num: "원칙 ⑤", title: "등호다리 건너면 부호 바꿔!", desc: "등호다리 건너면 (+ ➔ -, - ➔ +), -x = 11 이면 x = -11 !", color: "#dc2626" }
+    ];
+
+    const cardW = 860;
+    const cardH = 58;
+    const startY = 96;
+
+    rules.forEach((r, idx) => {
+      const y = startY + idx * 66;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = r.color;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.roundRect(50, y, cardW, cardH, 10);
+      ctx.fill(); ctx.stroke();
+
+      // 배지
+      ctx.fillStyle = r.color;
+      ctx.beginPath();
+      ctx.roundRect(64, y + 15, 62, 28, 6);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(r.num, 95, y + 34);
+
+      // 제목 및 설명
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(r.title, 140, y + 34);
+
+      ctx.fillStyle = "#475569";
+      ctx.font = "13px 'Pretendard', sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(r.desc, 50 + cardW - 20, y + 34);
+    });
+
+    drawComicFace(ctx, 65, 475, false, 'smile');
+    drawCompactBubble(ctx, 65, 475, "우와! 5대 원칙 한 번에 싹 정리됐다!\n괄호를 풀어야 이항 자격 생김! 절대 안 잊어 ㅋㅋㅋ", false);
+
+    drawComicFace(ctx, 895, 475, true, 'smile');
+    drawCompactBubble(ctx, 895, 475, "그럼 실전 감각 테스트해 봐야지!\n10대 스피드 퀴즈로 10문제 부수러 가자! 🔥", true);
+  }
+
+  // ==========================================
+  // Scene 7: 실전 스피드 퀴즈 (10문제 전면 확장)
+  // ==========================================
+  function renderSceneQuiz() {
+    const cx = canvas.width / 2;
+
+    if (quizCompleted) {
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 26px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🎉 축하합니다! 10대 함정 완벽 정복! 🎉", cx, 110);
+
+      ctx.fillStyle = "#7c3aed";
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillText("양변에 x가 있는 복잡한 방정식 마스터 완료!", cx, 155);
+
+      ctx.fillStyle = "#475569";
+      ctx.font = "15px 'Pretendard', sans-serif";
+      ctx.fillText("등호다리 건너면 부호 바꿔, 괄호를 풀어야 이항 자격 생김, 항마다 다 곱하기까지 100점입니다.", cx, 195);
+      ctx.fillText("이제 학교 시험이나 응용문제에서도 절대 부호 실수를 하지 않을 거예요!", cx, 225);
+
+      drawComicFace(ctx, 80, 360, false, 'smile');
+      drawCompactBubble(ctx, 80, 360, "대박 ㅋㅋㅋ 퀴즈 10개 전부 완벽 정답!\n방정식 풀기 이제 껌이네!", false);
+
+      drawComicFace(ctx, 880, 360, true, 'smile');
+      drawCompactBubble(ctx, 880, 360, "너 진짜 실력 미쳤다!\n친구들한테도 이 비법 알려주자! 🚀", true);
+      return;
+    }
+
+    const q = quizData[quizQuestionIdx];
+
+    // 상단 퀴즈 진행 바
+    ctx.fillStyle = "#7c3aed";
+    ctx.font = "bold 15px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`Q${quizQuestionIdx + 1}. [${q.badge}]`, 60, 42);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "14px 'Pretendard', sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`진행: ${quizQuestionIdx + 1} / ${quizData.length}`, 900, 42);
+
+    // 문제 박스
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(50, 60, 860, 130, 14);
+    ctx.fill(); ctx.stroke();
+
+    // 수식
+    ctx.fillStyle = "#7c3aed";
+    ctx.font = "bold 24px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(q.eq, cx, 100);
+
+    // 질문 텍스트
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 16px 'Pretendard', sans-serif";
+    const qLines = q.question.split("\n");
+    if (qLines.length === 1) {
+      ctx.fillText(qLines[0], cx, 145);
+    } else {
+      ctx.fillText(qLines[0], cx, 136);
+      ctx.fillText(qLines[1], cx, 162);
+    }
+
+    // 선택지 버튼 2개
+    const optY = 210;
+    const optW = 415;
+    const optH = 75;
+
+    for (let i = 0; i < q.options.length; i++) {
+      const opt = q.options[i];
+      const optX = (i === 0) ? 55 : 490;
+
+      let bgColor = "#f8fafc";
+      let borderColor = "#cbd5e1";
+      let textColor = "#1e293b";
+
+      if (quizSelectedOption !== null) {
+        if (i === quizSelectedOption) {
+          if (opt.isCorrect) {
+            bgColor = "#dcfce7";
+            borderColor = "#22c55e";
+            textColor = "#15803d";
+          } else {
+            bgColor = "#fee2e2";
+            borderColor = "#ef4444";
+            textColor = "#b91c1c";
+          }
+        } else if (opt.isCorrect && quizSelectedOption !== null) {
+          bgColor = "#f0fdf4";
+          borderColor = "#86efac";
+          textColor = "#16a34a";
+        }
+      }
+
+      ctx.fillStyle = bgColor;
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(optX, optY, optW, optH, 12);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = textColor;
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`보기 ${i + 1}.   ${opt.text}`, optX + optW / 2, optY + 44);
+    }
+
+    // 피드백 카드
+    if (quizFeedback) {
+      const fbY = 300;
+      ctx.fillStyle = quizFeedback.isCorrect ? "#f0fdf4" : "#fef2f2";
+      ctx.strokeStyle = quizFeedback.isCorrect ? "#22c55e" : "#ef4444";
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.roundRect(55, fbY, 850, 72, 10);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = quizFeedback.isCorrect ? "#15803d" : "#b91c1c";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(quizFeedback.isCorrect ? "⭕ 정답 피드백:" : "❌ 오답 피드백:", 75, fbY + 28);
+
+      ctx.font = "14.5px 'Pretendard', sans-serif";
+      ctx.fillText(quizFeedback.desc, 185, fbY + 28);
+
+      ctx.fillStyle = "#475569";
+      ctx.font = "13px 'Pretendard', sans-serif";
+      ctx.fillText(`💡 꿀팁: ${q.tip}`, 75, fbY + 54);
+    }
+
+    // 하단 캐릭터
+    if (!quizFeedback) {
+      drawComicFace(ctx, 65, 465, false, 'thinking');
+      drawCompactBubble(ctx, 65, 465, "함정에 안 걸리려면 보기 둘 중\n어느 게 맞는지 신중하게 골라야 해!", false);
+    } else {
+      if (quizFeedback.isCorrect) {
+        drawComicFace(ctx, 65, 465, false, 'smile');
+        drawCompactBubble(ctx, 65, 465, "와 맞혔다! 함정 싹 피해갔어 ㅋㅋㅋ\n다음 문제도 바로 가보자!", false);
+
+        drawComicFace(ctx, 895, 465, true, 'smile');
+        drawCompactBubble(ctx, 895, 465, "오 대박! 원칙 완벽하게 꿰뚫었네!\n아래 [다음 퀴즈 ▶] 버튼 눌러봐 🚀", true);
+      } else {
+        drawComicFace(ctx, 65, 465, false, 'shock');
+        drawCompactBubble(ctx, 65, 465, "아차! 바로 그 함정에 걸려버렸네 😱\n다시 확인하고 기억해야지!", false);
+
+        drawComicFace(ctx, 895, 465, true, 'smile');
+        drawCompactBubble(ctx, 895, 465, "괜찮아! 오답 피드백 읽고 다시 골라봐!\n실수하면서 실력이 쑥쑥 크는 거야 💪", true);
+      }
+    }
+  }
+
+  // 캔버스 클릭 이벤트 (퀴즈 선택지)
+  canvas.addEventListener('click', function(e) {
+    if (currentScene !== 7 || quizCompleted) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
+
+    const optY = 210;
+    const optW = 415;
+    const optH = 75;
+
+    // 보기 1
+    if (clickX >= 55 && clickX <= 55 + optW && clickY >= optY && clickY <= optY + optH) {
+      selectQuizOption(0);
+    }
+    // 보기 2
+    else if (clickX >= 490 && clickX <= 490 + optW && clickY >= optY && clickY <= optY + optH) {
+      selectQuizOption(1);
+    }
+  });
+
+  function selectQuizOption(optIdx) {
+    quizSelectedOption = optIdx;
+    const q = quizData[quizQuestionIdx];
+    const opt = q.options[optIdx];
+
+    if (opt.isCorrect) {
+      playSound('success');
+      quizFeedback = { isCorrect: true, desc: opt.desc };
+    } else {
+      playSound('wrong');
+      quizFeedback = { isCorrect: false, desc: opt.desc };
+    }
+    updateUI();
+  }
+
+  // 키보드 방향키 단축키 지원
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      if (!btnNext.disabled) goNext();
+    } else if (e.key === 'ArrowLeft') {
+      if (!btnPrev.disabled) goPrev();
+    }
+  });
+
+  // URL 해시 및 쿼리 파라미터 지원 (#scene=N&step=M)
+  let sParam = NaN, stepParam = NaN;
+  if (window.location.hash) {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    sParam = parseInt(hashParams.get('scene'), 10);
+    stepParam = parseInt(hashParams.get('step'), 10);
+  }
+  if (isNaN(sParam) && window.location.search) {
+    const urlParams = new URLSearchParams(window.location.search);
+    sParam = parseInt(urlParams.get('scene'), 10);
+    stepParam = parseInt(urlParams.get('step'), 10);
+  }
+  loadScene(!isNaN(sParam) ? sParam : 0, !isNaN(stepParam) ? stepParam : 0);
+  render();
+</script>
+</body>
+</html>
