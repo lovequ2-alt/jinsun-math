@@ -1,0 +1,2625 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>함수를 배우기 위한 준비운동 - 좌표란?</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #0b1120;
+      color: #f8fafc;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 12px;
+      overflow-x: hidden;
+    }
+
+    #app-container {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* 상단 타이틀 헤더 바 */
+    .top-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-icon {
+      font-size: 22px;
+    }
+
+    .header-main-title {
+      font-size: 18.5px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+
+    .header-main-title .highlight {
+      color: #2563eb;
+    }
+
+    .header-badge {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 2px solid #bfdbfe;
+      font-size: 14.5px;
+      font-weight: 800;
+      padding: 6px 18px;
+      border-radius: 22px;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+      white-space: nowrap;
+    }
+
+    /* 메인 캔버스 래퍼 */
+    .canvas-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 960 / 540;
+      cursor: pointer;
+    }
+
+    /* 하단 내비게이션 바 */
+    #ui-panel {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 9px 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+      border: 2px solid #cbd5e1;
+    }
+
+    .nav-btn {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 9px 24px;
+      font-size: 15px;
+      font-weight: 800;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .nav-btn:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+    .nav-btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none;
+    }
+    .nav-btn.home {
+      background: #475569;
+    }
+    .nav-btn.home:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  <!-- 상단 타이틀 헤더 바 -->
+  <div class="top-header">
+    <div class="header-left">
+      <span class="header-icon">🧭</span>
+      <span class="header-main-title"><span class="highlight">함수 준비운동</span> : 좌표란?</span>
+    </div>
+    <span class="header-badge" id="scene-badge">1. 천장에 파리다!</span>
+  </div>
+
+  <!-- 메인 캔버스 -->
+  <div class="canvas-card">
+    <canvas id="canvas" width="960" height="540"></canvas>
+  </div>
+
+  <!-- 하단 내비게이션 바 -->
+  <div id="ui-panel">
+    <a href="index.html" class="nav-btn home" id="btn-home">🏠 목차</a>
+    <button class="nav-btn" id="btn-prev" onclick="goPrev()">◀ 이전</button>
+    <button class="nav-btn" id="btn-retry-quiz" style="display: none; background: #f59e0b;" onclick="retryQuiz()">다시퀴즈 ↺</button>
+    <button class="nav-btn" id="btn-next" onclick="goNext()">다음 ▶</button>
+  </div>
+</div>
+
+<script>
+  // Web Audio 효과음
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = null;
+  function playSound(type) {
+    try {
+      if (!audioCtx) audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+
+      if (type === 'click') {
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(260, now + 0.07);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.07);
+        osc.start(now);
+        osc.stop(now + 0.07);
+      } else if (type === 'step') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.11);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.11);
+        osc.start(now);
+        osc.stop(now + 0.11);
+      } else if (type === 'pop') {
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.14);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.14);
+        osc.start(now);
+        osc.stop(now + 0.14);
+      } else if (type === 'success') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.09);
+        osc.frequency.setValueAtTime(783.99, now + 0.18);
+        osc.frequency.setValueAtTime(1046.50, now + 0.27);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.45);
+        osc.start(now);
+        osc.stop(now + 0.45);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.linearRampToValueAtTime(150, now + 0.22);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      }
+    } catch (e) {}
+  }
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const sceneBadge = document.getElementById('scene-badge');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnRetryQuiz = document.getElementById('btn-retry-quiz');
+  const btnNext = document.getElementById('btn-next');
+
+  // ==========================================================
+  // 총 8개 화면 구성 (한 화면에 한 가지 정보만, 버튼 누를 때마다 대화/진행 1개씩!)
+  // Scene 0 (화면 1): 천장에 파리다!
+  // Scene 1 (화면 2): 천정등을 기준으로!
+  // Scene 2 (화면 3): 좌표평면 탄생
+  // Scene 3 (화면 4): 5개의 좌표 하나씩 찍기
+  // Scene 4 (화면 5): 사사분면 (사분면? 그게 뭐야? -> 1~4사분면 색칠)
+  // Scene 5 (화면 6): 앞서 본 5개의 좌표가 몇 사분면인지 맞춰보기
+  // Scene 6 (화면 7): 대칭이동 (x축 대칭 -> y축 대칭 -> 원점 대칭)
+  // Scene 7 (화면 8): 직접 좌표평면에 찍는 좌표 & 대칭점 퀴즈 (10문제)
+  // Scene 8 (화면 9): 미지수 문자 (a, b) 부호 선택 & 사분면 응용 퀴즈 (5문제)
+  // ==========================================================
+  const totalScenes = 9;
+  let currentScene = 0;
+  let subStep = 0;
+  let animFrame = 0;
+
+  const subStepMaxMap = {
+    0: 1,
+    1: 3,
+    2: 3,
+    3: 4,
+    4: 6,
+    5: 9,
+    6: 6,
+    7: 9,
+    8: 4
+  };
+
+  const sceneTitles = [
+    "1. 천장에 파리다!",
+    "2. 천정등을 기준으로 위치 찾기",
+    "3. 좌표평면의 탄생",
+    "4. 좌표를 하나씩 찍어보자",
+    "5. 사사분면 (사분면? 그게 뭐야?)",
+    "6. 몇 사분면인지 맞춰보자!",
+    "7. 좌표평면의 대칭이동 (x축 · y축 · 원점)",
+    "8. 퀴즈 : 좌표 & 대칭점 직접 찍기 (10문제)",
+    "9. 퀴즈 : 문자 (a, b) 의 부호와 사분면 (5문제)"
+  ];
+
+  // Scene 7 (10문제 직접 찍기 퀴즈 데이터)
+  // resetTo: 틀렸을 때 돌아갈 원위치 문제 인덱스 (대칭 문제를 틀리면 원래 좌표를 찍는 원위치 문제로 복귀!)
+  const quizProblems = [
+    {
+      type: "plot", ansX: 2, ansY: 3, resetTo: 0,
+      qText: "여긴 좀 어려울걸?\n점 (2, 3) 은 어디일까? 직접 클릭해서 찍어 봐!",
+      aText: "딩동댕! 오른쪽 2칸, 위로 3칸인 (2, 3) 정답!\n[다음퀴즈 ▶] 또는 화면을 클릭해 다음 문제로 가자!"
+    },
+    {
+      type: "xSym", baseX: 2, baseY: 3, ansX: 2, ansY: -3, resetTo: 0,
+      qText: "점 (2, 3) 을 x축으로 접으면?\n[ x축 대칭점 ] 의 위치를 직접 찍어 봐!",
+      aText: "정답! x축으로 접으면 y좌표 부호만 바뀌어서\n(2, -3) 에 찍히지!"
+    },
+    {
+      type: "ySym", baseX: 2, baseY: 3, ansX: -2, ansY: 3, resetTo: 0,
+      qText: "점 (2, 3) 을 y축으로 접으면?\n[ y축 대칭점 ] 의 위치를 직접 찍어 봐!",
+      aText: "딩동댕! y축으로 접으면 x좌표 부호만 바뀌어서\n(-2, 3) 에 찍혀!"
+    },
+    {
+      type: "oSym", baseX: 2, baseY: 3, ansX: -2, ansY: -3, resetTo: 0,
+      qText: "점 (2, 3) 의 정반대!\n[ 원점 대칭점 ] 의 위치를 직접 찍어 봐!",
+      aText: "맞았어! 원점 대칭은 x, y 둘 다 부호가 바뀌어서\n(-2, -3) 에 찍히네!"
+    },
+    {
+      type: "plot", ansX: -4, ansY: 2, resetTo: 4,
+      qText: "이번엔 점 (-4, 2) 차례야!\n좌표평면 위에 직접 찍어 볼까?",
+      aText: "정답! 왼쪽 4칸, 위로 2칸인\n제2사분면의 점 (-4, 2) 정확해!"
+    },
+    {
+      type: "xSym", baseX: -4, baseY: 2, ansX: -4, ansY: -2, resetTo: 4,
+      qText: "점 (-4, 2) 를 x축으로 접으면?\n[ x축 대칭점 ] 을 찾아 직접 찍어 봐!",
+      aText: "딩동댕! 아래쪽 반대 영역인 제3사분면의\n(-4, -2) 에 콕 찍혔어!"
+    },
+    {
+      type: "oSym", baseX: -4, baseY: 2, ansX: 4, ansY: -2, resetTo: 4,
+      qText: "점 (-4, 2) 의 [ 원점 대칭점 ] 은?\n원점 O(0, 0) 반대편에 직접 찍어 봐!",
+      aText: "대단해! 둘 다 부호가 반대로 바뀌어서\n제4사분면의 (4, -2) 가 되지!"
+    },
+    {
+      type: "plot", ansX: -3, ansY: -4, resetTo: 7,
+      qText: "점 (-3, -4) 는 어디에 있을까?\n좌표평면 위에 직접 찍어 봐!",
+      aText: "딩동댕! 왼쪽 3칸, 아래로 4칸인\n제3사분면의 점 (-3, -4) 정답!"
+    },
+    {
+      type: "ySym", baseX: -3, baseY: -4, ansX: 3, ansY: -4, resetTo: 7,
+      qText: "점 (-3, -4) 를 y축으로 접으면?\n[ y축 대칭점 ] 을 직접 찍어 봐!",
+      aText: "정답! y축으로 접으면 오른쪽 반대 영역인\n(3, -4) 에 찍히지!"
+    },
+    {
+      type: "oSym", baseX: -3, baseY: -4, ansX: 3, ansY: 4, resetTo: 7,
+      qText: "마지막! 점 (-3, -4) 의\n[ 원점 대칭점 ] 을 찾아 직접 찍어 봐!",
+      aText: "10문제 모두 클리어! 🎉\n(-3, -4) 의 원점 대칭점은 (3, 4) 완벽해!"
+    }
+  ];
+
+  let quizSolved = new Array(10).fill(false);
+  let quizWrongPt = null;
+  let quizWrongTimer = null;
+  let hoverGrid = null;
+
+  // Scene 8 (5문제 문자 좌표 (a, b) 부호 & 사분면 퀴즈 데이터)
+  // 각 문제는 steps 배열로 구성되며, 각 step마다 학생이 버튼을 클릭해 부호/사분면을 순서대로 선택!
+  const letterQuizProblems = [
+    {
+      title: "점 (a, b) 가 [ 제3사분면 ] 위의 점일 때",
+      subtitle: "a 의 부호와 b 의 부호를 각각 선택해 보세요!",
+      givenQuad: 3,
+      steps: [
+        {
+          label: "① x좌표인 a 의 부호는?",
+          choices: ["a > 0  ( + )", "a < 0  ( - )"],
+          ansIdx: 1,
+          doneText: "a < 0 ( - )"
+        },
+        {
+          label: "② y좌표인 b 의 부호는?",
+          choices: ["b > 0  ( + )", "b < 0  ( - )"],
+          ansIdx: 1,
+          doneText: "b < 0 ( - )"
+        }
+      ],
+      qBubble: "여긴 좀 어려울걸?\n점 (a, b) 가 제3사분면이면 a, b 부호가 각각 어떻게 될까?",
+      aBubble: "딩동댕! 제3사분면은 왼쪽(-), 아래(-) 이므로\na < 0 (-), b < 0 (-) 정답이야!"
+    },
+    {
+      title: "점 (a, b) 가 [ 제2사분면 ] 위의 점일 때 ➔ 점 (-a, b) 는?",
+      subtitle: "먼저 a, b 의 부호를 찾고, 점 (-a, b) 의 사분면을 골라 보세요!",
+      givenQuad: 2,
+      steps: [
+        {
+          label: "① 제2사분면(-, +) 이므로 a 의 부호는?",
+          choices: ["a > 0  ( + )", "a < 0  ( - )"],
+          ansIdx: 1,
+          doneText: "a < 0 ( - )  ➔  -a 는 ( + )"
+        },
+        {
+          label: "② 제2사분면(-, +) 이므로 b 의 부호는?",
+          choices: ["b > 0  ( + )", "b < 0  ( - )"],
+          ansIdx: 0,
+          doneText: "b > 0 ( + )"
+        },
+        {
+          label: "🎯 질문 : 점 ( -a, b ) 는 제 몇 사분면일까요?",
+          choices: ["제 1 사분면", "제 2 사분면", "제 3 사분면", "제 4 사분면"],
+          ansIdx: 0,
+          doneText: "제 1 사분면 (+, +)"
+        }
+      ],
+      qBubble: "a 가 음수(-)일 때 앞에 마이너스가 붙은 -a 는\n부호가 어떻게 바뀔지 조심해서 골라 봐!",
+      aBubble: "정답! a < 0 이면 -a > 0 (+) 이 되니까\n점 (-a, b) 는 (+, +) 인 제1사분면이야!"
+    },
+    {
+      title: "점 (a, b) 가 [ 제4사분면 ] 위의 점일 때 ➔ 점 (b, -a) 는?",
+      subtitle: "x, y 자리가 바뀌고 부호도 바뀐 점 (b, -a) 를 찾아보세요!",
+      givenQuad: 4,
+      steps: [
+        {
+          label: "① 제4사분면(+, -) 이므로 a 의 부호는?",
+          choices: ["a > 0  ( + )", "a < 0  ( - )"],
+          ansIdx: 0,
+          doneText: "a > 0 ( + )  ➔  -a 는 ( - )"
+        },
+        {
+          label: "② 제4사분면(+, -) 이므로 b 의 부호는?",
+          choices: ["b > 0  ( + )", "b < 0  ( - )"],
+          ansIdx: 1,
+          doneText: "b < 0 ( - )"
+        },
+        {
+          label: "🎯 질문 : 자리가 바뀐 점 ( b, -a ) 는 제 몇 사분면일까요?",
+          choices: ["제 1 사분면", "제 2 사분면", "제 3 사분면", "제 4 사분면"],
+          ansIdx: 2,
+          doneText: "제 3 사분면 (-, -)"
+        }
+      ],
+      qBubble: "자리가 바뀐 점 (b, -a) 야!\nx좌표 자리엔 b, y좌표 자리엔 -a 가 들어갔어!",
+      aBubble: "딩동댕! b 는 (-), -a 도 (-) 이므로\n점 (b, -a) 는 (-, -) 인 제3사분면이야!"
+    },
+    {
+      title: "점 (-a, b) 가 [ 제3사분면 ] 위의 점일 때 ➔ 점 (a, -b) 는?",
+      subtitle: "점 (-a, b) 의 부호(-, -)를 보고 원래 a, b 의 부호를 먼저 찾아보세요!",
+      givenQuad: 3,
+      steps: [
+        {
+          label: "① -a 가 음수(-) 라면, 원래 a 의 부호는?",
+          choices: ["a > 0  ( + )", "a < 0  ( - )"],
+          ansIdx: 0,
+          doneText: "a > 0 ( + )"
+        },
+        {
+          label: "② b 가 음수(-) 라면, -b 의 부호는?",
+          choices: ["-b > 0  ( + )", "-b < 0  ( - )"],
+          ansIdx: 0,
+          doneText: "b < 0 이므로  -b > 0 ( + )"
+        },
+        {
+          label: "🎯 질문 : 따라서 점 ( a, -b ) 는 제 몇 사분면일까요?",
+          choices: ["제 1 사분면", "제 2 사분면", "제 3 사분면", "제 4 사분면"],
+          ansIdx: 0,
+          doneText: "제 1 사분면 (+, +)"
+        }
+      ],
+      qBubble: "점 (-a, b) 가 제3사분면(-, -) 이래!\n그럼 -a < 0 이고 b < 0 이겠지?",
+      aBubble: "대단해! a > 0 (+), -b > 0 (+) 이므로\n점 (a, -b) 는 제1사분면 위의 점이야!"
+    },
+    {
+      title: "점 (a, b) 가 [ 제2사분면 ] 일 때 ➔ 점 (a × b, a - b) 는?",
+      subtitle: "제2사분면이므로 a < 0 (-), b > 0 (+) 입니다!",
+      givenQuad: 2,
+      steps: [
+        {
+          label: "① x좌표인 (a × b) = (-) × (+) 의 부호는?",
+          choices: ["a × b > 0  ( + )", "a × b < 0  ( - )"],
+          ansIdx: 1,
+          doneText: "a × b < 0 ( - )"
+        },
+        {
+          label: "② y좌표인 (a - b) = (-) - (+) 의 부호는?",
+          choices: ["a - b > 0  ( + )", "a - b < 0  ( - )"],
+          ansIdx: 1,
+          doneText: "a - b < 0 ( - )"
+        },
+        {
+          label: "🎯 질문 : 점 ( a × b, a - b ) 는 제 몇 사분면일까요?",
+          choices: ["제 1 사분면", "제 2 사분면", "제 3 사분면", "제 4 사분면"],
+          ansIdx: 2,
+          doneText: "제 3 사분면 (-, -)"
+        }
+      ],
+      qBubble: "마지막 심화 문제! 음수(a)와 양수(b)를 곱한 ab 와\n음수에서 양수를 뺀 a - b 의 부호를 골라 봐!",
+      aBubble: "5문제 모두 클리어! 🎉\nab < 0 (-), a - b < 0 (-) 이므로 제3사분면 완벽해!"
+    }
+  ];
+
+  let letterQuizStage = new Array(5).fill(0); // 각 문제의 현재 선택 단계 (steps.length 에 도달하면 완료)
+  let letterQuizWrong = false;
+  let letterQuizWrongTimer = null;
+  let letterClickBoxes = []; // 캔버스 내 선택 버튼 히트박스 목록
+
+  const coordPoints = [
+    {
+      name: "A", x: 3, y: 2, color: "#2563eb", bubbleSide: "left",
+      msg: "오른쪽 3칸, 위로 2칸!\n좌표는 A(3, 2) 야!",
+      quadIdx: 1,
+      badgeAns: "제1사분면",
+      qText: "먼저 점 A(3, 2)!\n몇 사분면에 있을까?",
+      aText: "딩동댕! 둘 다 양수(+, +)니까\n제1사분면이야!",
+      aBg: "#f0fdf4", aBorder: "#16a34a"
+    },
+    {
+      name: "B", x: -3, y: 3, color: "#7c3aed", bubbleSide: "right",
+      msg: "왼쪽 3칸, 위로 3칸!\n좌표는 B(-3, 3) 이네!",
+      quadIdx: 2,
+      badgeAns: "제2사분면",
+      qText: "그럼 점 B(-3, 3) 은\n몇 사분면에 있을까?",
+      aText: "정답! 왼쪽(-), 위(+) 니까\n제2사분면이지!",
+      aBg: "#eef2ff", aBorder: "#4f46e5"
+    },
+    {
+      name: "C", x: -4, y: -2, color: "#ea580c", bubbleSide: "left",
+      msg: "왼쪽 4칸, 아래로 2칸!\n좌표는 C(-4, -2) 야!",
+      quadIdx: 3,
+      badgeAns: "제3사분면",
+      qText: "이번엔 점 C(-4, -2)!\n몇 사분면일까?",
+      aText: "맞았어! 둘 다 음수(-, -)니까\n제3사분면이야!",
+      aBg: "#fffbeb", aBorder: "#d97706"
+    },
+    {
+      name: "D", x: 2, y: -4, color: "#db2777", bubbleSide: "right",
+      msg: "오른쪽 2칸, 아래로 4칸!\n좌표는 D(2, -4) 구나!",
+      quadIdx: 4,
+      badgeAns: "제4사분면",
+      qText: "점 D(2, -4) 는\n몇 사분면에 있을까?",
+      aText: "딩동댕! 오른쪽(+), 아래(-) 니까\n제4사분면이야!",
+      aBg: "#fdf2f8", aBorder: "#db2777"
+    },
+    {
+      name: "E", x: 4, y: 0, color: "#059669", bubbleSide: "left",
+      msg: "오른쪽 4칸, 위아래는 0칸!\nx축 위의 점 E(4, 0) 이야!",
+      quadIdx: 0,
+      badgeAns: "어느 사분면도 아님(x축)",
+      qText: "마지막! 점 E(4, 0) 은\n몇 사분면일까?",
+      aText: "함정 조심! x축 위의 점이라\n어느 사분면에도 속하지 않아!",
+      aBg: "#fef2f2", aBorder: "#dc2626"
+    }
+  ];
+
+  function isCurrentQuizProblemSolved() {
+    if (currentScene === 7) {
+      return Boolean(quizSolved[subStep]);
+    }
+    if (currentScene === 8) {
+      return letterQuizStage[subStep] >= letterQuizProblems[subStep].steps.length;
+    }
+    return true;
+  }
+
+  function updateUI() {
+    sceneBadge.innerText = sceneTitles[currentScene];
+    btnPrev.disabled = (currentScene === 0 && subStep === 0);
+
+    const maxS = subStepMaxMap[currentScene] || 0;
+    const solved = isCurrentQuizProblemSolved();
+    const isQuizEnd = (
+      (currentScene === 7 && subStep >= maxS && solved) ||
+      (currentScene === 8 && subStep >= maxS && solved)
+    );
+    btnRetryQuiz.style.display = isQuizEnd ? "inline-flex" : "none";
+
+    // 퀴즈 화면에서는 현재 문제를 풀어야만 다음 퀴즈로 넘어갈 수 있도록 버튼 비활성화!
+    btnNext.disabled = !solved;
+
+    if (currentScene === totalScenes - 1 && subStep >= maxS) {
+      btnNext.innerText = "처음으로 ↺";
+      btnNext.style.background = "#10b981";
+    } else if (currentScene === 6 && subStep >= maxS) {
+      btnNext.innerText = "퀴즈 ▶";
+      btnNext.style.background = "#ea580c";
+    } else if (currentScene >= 7) {
+      btnNext.innerText = "다음퀴즈 ▶";
+      btnNext.style.background = "#ea580c";
+    } else {
+      btnNext.innerText = "다음 ▶";
+      btnNext.style.background = "#2563eb";
+    }
+  }
+
+  function retryQuiz() {
+    playSound('step');
+    loadScene(currentScene, 0);
+  }
+
+  function clearWrongTimers() {
+    if (quizWrongTimer) { clearTimeout(quizWrongTimer); quizWrongTimer = null; }
+    if (letterQuizWrongTimer) { clearTimeout(letterQuizWrongTimer); letterQuizWrongTimer = null; }
+    quizWrongPt = null;
+    letterQuizWrong = false;
+  }
+
+  function loadScene(idx, step = 0) {
+    clearWrongTimers();
+    currentScene = Math.max(0, Math.min(totalScenes - 1, idx));
+    const maxS = subStepMaxMap[currentScene] || 0;
+    subStep = Math.max(0, Math.min(maxS, step));
+    if (currentScene === 7 && step === 0) {
+      quizSolved = new Array(10).fill(false);
+    }
+    if (currentScene === 8 && step === 0) {
+      letterQuizStage = new Array(5).fill(0);
+    }
+    updateUI();
+  }
+
+  function goNext() {
+    if (!isCurrentQuizProblemSolved()) return;
+    clearWrongTimers();
+    const maxS = subStepMaxMap[currentScene] || 0;
+    if (subStep < maxS) {
+      subStep++;
+      if (currentScene === 5 && subStep % 2 === 1) {
+        playSound('success');
+      } else {
+        playSound('pop');
+      }
+      updateUI();
+    } else {
+      if (currentScene < totalScenes - 1) {
+        playSound('step');
+        loadScene(currentScene + 1, 0);
+      } else {
+        playSound('success');
+        loadScene(0, 0);
+      }
+    }
+  }
+
+  function goPrev() {
+    clearWrongTimers();
+    playSound('click');
+    if (subStep > 0) {
+      subStep--;
+      updateUI();
+    } else {
+      if (currentScene > 0) {
+        const prevScene = currentScene - 1;
+        const prevMax = subStepMaxMap[prevScene] || 0;
+        loadScene(prevScene, prevMax);
+      }
+    }
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      goNext();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goPrev();
+    }
+  });
+
+  // 마우스 좌표를 캔버스 내부 좌표(960x540) 및 격자 좌표(gx, gy)로 변환
+  function getCanvasMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      mx: (e.clientX - rect.left) * (canvas.width / rect.width),
+      my: (e.clientY - rect.top) * (canvas.height / rect.height)
+    };
+  }
+
+  function getGridFromEvent(e) {
+    const { mx, my } = getCanvasMousePos(e);
+    const ox = 480, oy = 235, unit = 35;
+    const gx = Math.round((mx - ox) / unit);
+    const gy = Math.round((oy - my) / unit);
+    if (gx >= -5 && gx <= 5 && gy >= -5 && gy <= 5) {
+      const px = ox + gx * unit;
+      const py = oy - gy * unit;
+      const dist = Math.hypot(mx - px, my - py);
+      if (dist <= 22) {
+        return { x: gx, y: gy };
+      }
+    }
+    return null;
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (currentScene === 7) {
+      hoverGrid = getGridFromEvent(e);
+    } else {
+      hoverGrid = null;
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    hoverGrid = null;
+  });
+
+  canvas.addEventListener('click', (e) => {
+    // Scene 7: 10문제 좌표 & 대칭점 직접 찍기 퀴즈
+    if (currentScene === 7) {
+      if (quizWrongPt) {
+        // 오답 안내 중에 클릭하면 즉시 해당 틀린 문제를 다시 질문!
+        clearWrongTimers();
+        return;
+      }
+      if (!quizSolved[subStep]) {
+        const pt = getGridFromEvent(e);
+        if (pt) {
+          const q = quizProblems[subStep];
+          if (pt.x === q.ansX && pt.y === q.ansY) {
+            quizSolved[subStep] = true;
+            quizWrongPt = null;
+            playSound('success');
+            updateUI();
+          } else {
+            // 틀리면 오답 표시 후 다시 현재 틀린 문제를 질문하도록 복귀!
+            quizWrongPt = { x: pt.x, y: pt.y };
+            playSound('wrong');
+            if (quizWrongTimer) clearTimeout(quizWrongTimer);
+            quizWrongTimer = setTimeout(() => {
+              quizWrongPt = null;
+            }, 950);
+          }
+        }
+        return;
+      }
+      goNext();
+      return;
+    }
+
+    // Scene 8: 5문제 문자 (a, b) 부호 & 사분면 선택 퀴즈
+    if (currentScene === 8) {
+      const lq = letterQuizProblems[subStep];
+      const curStage = letterQuizStage[subStep];
+      const isComplete = (curStage >= lq.steps.length);
+
+      if (letterQuizWrong) {
+        // 오답 안내 중 클릭하면 즉시 해당 틀린 질문을 다시 질문!
+        clearWrongTimers();
+        return;
+      }
+
+      if (!isComplete) {
+        const { mx, my } = getCanvasMousePos(e);
+        for (const box of letterClickBoxes) {
+          if (mx >= box.x && mx <= box.x + box.w && my >= box.y && my <= box.y + box.h) {
+            const stepObj = lq.steps[curStage];
+            if (box.choiceIdx === stepObj.ansIdx) {
+              letterQuizStage[subStep]++;
+              if (letterQuizStage[subStep] >= lq.steps.length) {
+                playSound('success');
+              } else {
+                playSound('pop');
+              }
+              updateUI();
+            } else {
+              // 틀리면 오답 표시 후 다시 해당 질문을 물어보도록 복귀!
+              letterQuizWrong = true;
+              playSound('wrong');
+              if (letterQuizWrongTimer) clearTimeout(letterQuizWrongTimer);
+              letterQuizWrongTimer = setTimeout(() => {
+                letterQuizWrong = false;
+              }, 950);
+            }
+            return;
+          }
+        }
+        return;
+      }
+      goNext();
+      return;
+    }
+
+    goNext();
+  });
+
+  function animate() {
+    animFrame++;
+    render();
+    requestAnimationFrame(animate);
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (currentScene === 0) {
+      renderScene0();
+    } else if (currentScene === 1) {
+      renderScene1();
+    } else if (currentScene === 2) {
+      renderScene2();
+    } else if (currentScene === 3) {
+      renderScene3();
+    } else if (currentScene === 4) {
+      renderScene4();
+    } else if (currentScene === 5) {
+      renderScene5();
+    } else if (currentScene === 6) {
+      renderScene6();
+    } else if (currentScene === 7) {
+      renderScene7();
+    } else if (currentScene === 8) {
+      renderScene8();
+    }
+  }
+
+  // ==========================================================
+  // 공통 드로잉 헬퍼: 천장 격자, 천정등, 파리, 빼꼼 얼굴 캐릭터, 말풍선
+  // ==========================================================
+
+  // 천장 큰 격자 그리기 (화면 1, 2 공통)
+  // 세로줄 5개 (x: 180, 330, 480, 630, 780)
+  // 가로줄 4개 (y: 80, 175, 270, 365)
+  // 기준 천정등: (330, 270) -> 오른쪽 3칸: 330 + 3*150 = 780은 너무 오른쪽이므로
+  // 세로줄 6개 (x: 160, 290, 420, 550, 680, 810) -> 간격 130
+  // 가로줄 4개 (y: 75, 170, 265, 360) -> 간격 95
+  // 천정등 기준: (290, 265)
+  // 파리 위치 (오른쪽 3칸, 위로 2칸): x = 290 + 3*130 = 680, y = 265 - 2*95 = 75!
+  // 또는 가로줄을 (y: 70, 160, 250, 340), 천정등: (290, 340), 파리(오른쪽 3칸, 위로 2칸): (680, 160)!
+  // (680, 160)이면 천장 한가운데 위쪽이라 스케치와 완벽히 똑같음!
+  const CEIL_X = [160, 290, 420, 550, 680, 810]; // 간격 130
+  const CEIL_Y = [70, 160, 250, 340];             // 간격 90
+
+  function drawCeilingGrid(showLightHighlight = false) {
+    ctx.save();
+    // 천장 외곽 테두리 박스 (스케치처럼 큰 사각형 천장)
+    ctx.fillStyle = "#fcfbf7";
+    ctx.strokeStyle = "#334155";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.rect(100, 30, 760, 370);
+    ctx.fill();
+    ctx.stroke();
+
+    // 천장 격자선
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 2;
+
+    // 세로줄
+    for (let i = 0; i < CEIL_X.length; i++) {
+      ctx.beginPath();
+      ctx.moveTo(CEIL_X[i], 45);
+      ctx.lineTo(CEIL_X[i], 385);
+      ctx.stroke();
+    }
+
+    // 가로줄
+    for (let j = 0; j < CEIL_Y.length; j++) {
+      ctx.beginPath();
+      ctx.moveTo(115, CEIL_Y[j]);
+      ctx.lineTo(845, CEIL_Y[j]);
+      ctx.stroke();
+    }
+
+    // 천정등 (기준점: CEIL_X[1]=290, CEIL_Y[3]=340)
+    const lx = CEIL_X[1];
+    const ly = CEIL_Y[3];
+
+    if (showLightHighlight) {
+      // 노란 후광 애니메이션
+      const pulse = 32 + Math.sin(animFrame * 0.12) * 4;
+      ctx.fillStyle = "rgba(250, 204, 21, 0.35)";
+      ctx.beginPath();
+      ctx.arc(lx, ly, pulse, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 스케치처럼 둥근 이중 원 천정등
+    ctx.fillStyle = showLightHighlight ? "#fef08a" : "#ffffff";
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(lx, ly, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = showLightHighlight ? "#eab308" : "#cbd5e1";
+    ctx.beginPath();
+    ctx.arc(lx, ly, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    if (showLightHighlight) {
+      ctx.fillStyle = "#b45309";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText("💡 천정등 (기준)", lx - 26, ly - 18);
+    }
+
+    ctx.restore();
+  }
+
+  // 하단 좌/우 빼꼼 얼굴 캐릭터 (스케치 100% 반영: 얼굴만 빼꼼!)
+  function drawPeekingFaces(activeSpeaker = "none") {
+    // 1) 왼쪽 친구 얼굴 (둥근 머리 + 큰 눈 두 개가 위를 바라봄)
+    ctx.save();
+    const lx = 135;
+    const ly = 540;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = activeSpeaker === "left" ? "#2563eb" : "#1e293b";
+    ctx.lineWidth = activeSpeaker === "left" ? 3.5 : 2.5;
+
+    // 둥근 돔 형태 얼굴
+    ctx.beginPath();
+    ctx.arc(lx, ly, 52, Math.PI, 0, false);
+    ctx.fill();
+    ctx.stroke();
+
+    // 왕눈이 두 개 (위를 올려다보는 눈)
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(lx - 15, ly - 24, 14, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(lx + 15, ly - 24, 14, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // 눈동자 (위쪽을 향함)
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(lx - 13, ly - 28, 4.5, 0, Math.PI * 2);
+    ctx.arc(lx + 17, ly - 28, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 2) 오른쪽 친구 얼굴 (둥근 머리 + 귀여운 고깔모자 + 왕눈이 두 개)
+    ctx.save();
+    const rx = 825;
+    const ry = 540;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = activeSpeaker === "right" ? "#2563eb" : "#1e293b";
+    ctx.lineWidth = activeSpeaker === "right" ? 3.5 : 2.5;
+
+    // 둥근 돔 형태 얼굴
+    ctx.beginPath();
+    ctx.arc(rx, ry, 52, Math.PI, 0, false);
+    ctx.fill();
+    ctx.stroke();
+
+    // 머리 위 삼각형 고깔모자 (스케치 포인트!)
+    ctx.fillStyle = "#fef08a";
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(rx - 22, ry - 47);
+    ctx.lineTo(rx + 2, ry - 76);
+    ctx.lineTo(rx + 22, ry - 47);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 왕눈이 두 개
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(rx - 15, ry - 24, 13, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(rx + 15, ry - 24, 13, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // 눈동자 (위쪽을 향함)
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(rx - 15, ry - 28, 4.5, 0, Math.PI * 2);
+    ctx.arc(rx + 15, ry - 28, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // 코믹 파리 그리기 (스케치처럼 네 날개 + 눈 두 개)
+  function drawComicFly(x, y, t) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    const wingWave = Math.sin(t * 0.35) * 0.18;
+
+    // 날개 4개 (왼쪽 위/아래, 오른쪽 위/아래)
+    ctx.fillStyle = "rgba(186, 230, 253, 0.85)";
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2;
+
+    // 왼쪽 위 날개
+    ctx.save();
+    ctx.rotate(-0.25 - wingWave);
+    ctx.beginPath();
+    ctx.ellipse(-20, -4, 16, 7, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    // 왼쪽 아래 날개
+    ctx.save();
+    ctx.rotate(0.2 + wingWave);
+    ctx.beginPath();
+    ctx.ellipse(-18, 5, 14, 6, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    // 오른쪽 위 날개
+    ctx.save();
+    ctx.rotate(0.25 + wingWave);
+    ctx.beginPath();
+    ctx.ellipse(20, -4, 16, 7, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    // 오른쪽 아래 날개
+    ctx.save();
+    ctx.rotate(-0.2 - wingWave);
+    ctx.beginPath();
+    ctx.ellipse(18, 5, 14, 6, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    // 몸통
+    ctx.fillStyle = "#334155";
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, 2, 11, 14, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    // 귀여운 눈 2개
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.arc(-5, -12, 4.5, 0, Math.PI * 2);
+    ctx.arc(5, -12, 4.5, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // 큼직하고 읽기 쉬운 만화 말풍선 (한 번에 하나씩 시선 집중!)
+  function drawBigComicBubble(side, text, bgColor = "#ffffff", borderColor = "#1e293b", textColor = "#0f172a") {
+    ctx.save();
+    ctx.font = "bold 18px 'Pretendard', sans-serif";
+    const lines = text.split('\n');
+    let maxW = 0;
+    lines.forEach(l => {
+      const w = ctx.measureText(l).width;
+      if (w > maxW) maxW = w;
+    });
+
+    const padX = 22;
+    const padY = 16;
+    const lineH = 26;
+    const boxW = Math.max(150, maxW + padX * 2);
+    const boxH = lines.length * lineH + padY * 1.4;
+
+    let bx, by, tailBaseX, tailTipX, tailTipY;
+    if (side === "left") {
+      bx = 32;
+      by = 460 - boxH;
+      tailBaseX = 135;
+      tailTipX = 135;
+      tailTipY = 482;
+    } else {
+      bx = 928 - boxW;
+      by = 445 - boxH;
+      tailBaseX = 825;
+      tailTipX = 825;
+      tailTipY = 462;
+    }
+
+    // 그림자
+    ctx.fillStyle = "rgba(15, 23, 42, 0.1)";
+    ctx.beginPath();
+    ctx.roundRect(bx + 4, by + 4, boxW, boxH, 24);
+    ctx.fill();
+
+    // 말풍선 본체
+    ctx.fillStyle = bgColor;
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, boxW, boxH, 24);
+    ctx.fill();
+    ctx.stroke();
+
+    // 말풍선 꼬리
+    ctx.fillStyle = bgColor;
+    ctx.beginPath();
+    ctx.moveTo(tailBaseX - 14, by + boxH - 2);
+    ctx.lineTo(tailTipX, tailTipY);
+    ctx.lineTo(tailBaseX + 14, by + boxH - 2);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(tailBaseX - 14, by + boxH);
+    ctx.lineTo(tailTipX, tailTipY);
+    ctx.lineTo(tailBaseX + 14, by + boxH);
+    ctx.stroke();
+
+    // 텍스트
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    lines.forEach((line, idx) => {
+      const ty = by + padY + idx * lineH + 4;
+      ctx.fillText(line, bx + boxW / 2, ty);
+    });
+
+    ctx.restore();
+  }
+
+  // ==========================================================
+  // Scene 0 (화면 1): 천장에 파리다! (스케치 1번)
+  // ==========================================================
+  function renderScene0() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 천장 격자 & 천정등
+    drawCeilingGrid(false);
+
+    // 파리 (오른쪽 3칸, 위로 2칸 위치인 CEIL_X[4]=680, CEIL_Y[1]=160 또는 중앙 CEIL_X[2]=420, CEIL_Y[1]=160)
+    // 화면 1, 2 연결성을 위해 파리는 (CEIL_X[4]=680, CEIL_Y[1]=160)에 위치!
+    drawComicFly(CEIL_X[4], CEIL_Y[1], animFrame);
+
+    // 하단 빼꼼 캐릭터 얼굴
+    const speaker = (subStep === 0) ? "left" : "right";
+    drawPeekingFaces(speaker);
+
+    // 버튼을 누를 때마다 말풍선이 하나씩만 깔끔하게 등장!
+    if (subStep === 0) {
+      drawBigComicBubble("left", "천장에 파리다!", "#ffffff", "#1e293b", "#0f172a");
+    } else if (subStep === 1) {
+      drawBigComicBubble("right", "어디?", "#fef9c3", "#ca8a04", "#0f172a");
+    }
+  }
+
+  // ==========================================================
+  // Scene 1 (화면 2): 저 천정등을 기준! 오른쪽 3칸, 위로 2칸 (스케치 2번)
+  // ==========================================================
+  function renderScene1() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 천장 격자 & 천정등 노란 하이라이트
+    drawCeilingGrid(true);
+
+    const startX = CEIL_X[1]; // 290
+    const startY = CEIL_Y[3]; // 340
+    const flyX = CEIL_X[4];   // 680 (오른쪽 3칸)
+    const flyY = CEIL_Y[1];   // 160 (위로 2칸)
+
+    // [subStep >= 1]: 오른쪽으로 3칸 통통 튀는 호(아치) 그리기 (스케치 2번 그대로!)
+    if (subStep >= 1) {
+      ctx.save();
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 4;
+      for (let i = 0; i < 3; i++) {
+        const x1 = CEIL_X[1 + i];
+        const x2 = CEIL_X[2 + i];
+        const xm = (x1 + x2) / 2;
+        ctx.beginPath();
+        ctx.moveTo(x1, startY);
+        ctx.quadraticCurveTo(xm, startY - 42, x2, startY);
+        ctx.stroke();
+
+        // 칸수 라벨
+        ctx.fillStyle = "#1d4ed8";
+        ctx.font = "bold 16px 'Pretendard', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(`${i + 1}칸`, xm, startY + 26);
+      }
+      // 도착 점 표시
+      ctx.fillStyle = "#2563eb";
+      ctx.beginPath();
+      ctx.arc(flyX, startY, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // [subStep >= 2]: 위로 2칸 통통 튀는 호(아치) 그리기 (스케치 2번 그대로!)
+    if (subStep >= 2) {
+      ctx.save();
+      ctx.strokeStyle = "#ea580c";
+      ctx.lineWidth = 4;
+      for (let j = 0; j < 2; j++) {
+        const y1 = CEIL_Y[3 - j];
+        const y2 = CEIL_Y[2 - j];
+        const ym = (y1 + y2) / 2;
+        ctx.beginPath();
+        ctx.moveTo(flyX, y1);
+        ctx.quadraticCurveTo(flyX + 42, ym, flyX, y2);
+        ctx.stroke();
+
+        // 칸수 라벨
+        ctx.fillStyle = "#c2410c";
+        ctx.font = "bold 16px 'Pretendard', sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(`위로 ${j + 1}칸`, flyX + 28, ym + 5);
+      }
+      ctx.restore();
+    }
+
+    // [subStep === 3]: 파리 찾았다! 조준 원 표시
+    if (subStep >= 3) {
+      ctx.save();
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.arc(flyX, flyY, 34, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 파리
+    drawComicFly(flyX, flyY, animFrame);
+
+    // 빼꼼 얼굴 및 단계별 단일 말풍선
+    const speaker = (subStep === 3) ? "right" : "left";
+    drawPeekingFaces(speaker);
+
+    if (subStep === 0) {
+      drawBigComicBubble("left", "저 천정등을 기준!\n오른쪽 3칸, 위로 2칸!", "#eff6ff", "#2563eb", "#1e3a8a");
+    } else if (subStep === 1) {
+      drawBigComicBubble("left", "천정등에서\n오른쪽으로 1칸, 2칸, 3칸!", "#eff6ff", "#2563eb", "#1e3a8a");
+    } else if (subStep === 2) {
+      drawBigComicBubble("left", "거기서 다시\n위로 1칸, 2칸!", "#fff7ed", "#ea580c", "#9a3412");
+    } else if (subStep === 3) {
+      drawBigComicBubble("right", "오 찾았다!", "#fef9c3", "#ca8a04", "#0f172a");
+    }
+  }
+
+  // ==========================================================
+  // Scene 2 (화면 3): 좌표평면 탄생 (스케치 3번: x축 그어지고 -> y축 그어지고 -> 기준! -> 원점!)
+  // ==========================================================
+  function renderScene2() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 상단 큰 제목: 좌표평면 탄생
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 30px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("좌표평면 탄생", canvas.width / 2, 55);
+
+    const ox = 480;
+    const oy = 260;
+
+    // [subStep >= 0]: 가로 x축 그어지기
+    if (subStep >= 0) {
+      ctx.save();
+      ctx.strokeStyle = "#2563eb";
+      ctx.fillStyle = "#2563eb";
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(180, oy);
+      ctx.lineTo(780, oy);
+      ctx.stroke();
+
+      // 화살표 촉
+      ctx.beginPath();
+      ctx.moveTo(790, oy);
+      ctx.lineTo(774, oy - 8);
+      ctx.lineTo(774, oy + 8);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.font = "900 24px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("x축", 800, oy);
+      ctx.restore();
+    }
+
+    // [subStep >= 1]: 세로 y축 그어지기
+    if (subStep >= 1) {
+      ctx.save();
+      ctx.strokeStyle = "#ea580c";
+      ctx.fillStyle = "#ea580c";
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(ox, 430);
+      ctx.lineTo(ox, 95);
+      ctx.stroke();
+
+      // 화살표 촉
+      ctx.beginPath();
+      ctx.moveTo(ox, 85);
+      ctx.lineTo(ox - 8, 101);
+      ctx.lineTo(ox + 8, 101);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.font = "900 24px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("y축", ox + 16, 95);
+      ctx.restore();
+    }
+
+    // [subStep >= 2]: 원점(기준!) 콕 찍히기
+    if (subStep >= 2) {
+      ctx.save();
+      const pulse = 18 + Math.sin(animFrame * 0.15) * 4;
+      ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
+      ctx.beginPath();
+      ctx.arc(ox, oy, pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#ef4444";
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(ox, oy, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#dc2626";
+      ctx.font = "900 22px 'Pretendard', sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText("O (0, 0)", ox - 14, oy + 32);
+      ctx.restore();
+    }
+
+    // 빼꼼 얼굴 & 하나씩 나오는 말풍선
+    const speaker = (subStep === 1 || subStep === 3) ? "right" : "left";
+    drawPeekingFaces(speaker);
+
+    if (subStep === 0) {
+      drawBigComicBubble("left", "가로로 x축이 그어지고!", "#eff6ff", "#2563eb", "#1e3a8a");
+    } else if (subStep === 1) {
+      drawBigComicBubble("right", "세로로 y축이 그어지고!", "#fff7ed", "#ea580c", "#9a3412");
+    } else if (subStep === 2) {
+      drawBigComicBubble("left", "기준!", "#fef2f2", "#ef4444", "#991b1b");
+    } else if (subStep === 3) {
+      drawBigComicBubble("right", "원점! 여기가 (0, 0) 기준이야!", "#fef9c3", "#ca8a04", "#0f172a");
+    }
+  }
+
+  // ==========================================================
+  // 좌표평면 기본 격자 및 축 그리기 헬퍼 (화면 4, 5 공용 - 화면 중앙에 큼직하게!)
+  // ==========================================================
+  function drawCenteredPlane(ox, oy, unit) {
+    ctx.save();
+    // 연한 모눈 격자 (-5 ~ +5)
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 1.2;
+    for (let i = -5; i <= 5; i++) {
+      const gx = ox + i * unit;
+      ctx.beginPath();
+      ctx.moveTo(gx, oy - 5 * unit);
+      ctx.lineTo(gx, oy + 5 * unit);
+      ctx.stroke();
+    }
+    for (let j = -5; j <= 5; j++) {
+      const gy = oy - j * unit;
+      ctx.beginPath();
+      ctx.moveTo(ox - 5 * unit, gy);
+      ctx.lineTo(ox + 5 * unit, gy);
+      ctx.stroke();
+    }
+
+    // X축
+    ctx.strokeStyle = "#0f172a";
+    ctx.fillStyle = "#0f172a";
+    ctx.lineWidth = 2.8;
+    ctx.beginPath();
+    ctx.moveTo(ox - 5.4 * unit, oy);
+    ctx.lineTo(ox + 5.4 * unit, oy);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(ox + 5.6 * unit, oy);
+    ctx.lineTo(ox + 5.3 * unit, oy - 6);
+    ctx.lineTo(ox + 5.3 * unit, oy + 6);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.font = "bold 18px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("x", ox + 5.7 * unit, oy);
+
+    // Y축
+    ctx.beginPath();
+    ctx.moveTo(ox, oy + 5.4 * unit);
+    ctx.lineTo(ox, oy - 5.4 * unit);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(ox, oy - 5.6 * unit);
+    ctx.lineTo(ox - 6, oy - 5.3 * unit);
+    ctx.lineTo(ox + 6, oy - 5.3 * unit);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("y", ox, oy - 5.7 * unit);
+
+    // 눈금 숫자
+    ctx.font = "bold 12px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#475569";
+    ctx.textBaseline = "top";
+    for (let i = -5; i <= 5; i++) {
+      if (i === 0) continue;
+      const tx = ox + i * unit;
+      ctx.beginPath();
+      ctx.moveTo(tx, oy - 4);
+      ctx.lineTo(tx, oy + 4);
+      ctx.stroke();
+      ctx.textAlign = "center";
+      ctx.fillText(i, tx, oy + 7);
+    }
+
+    ctx.textBaseline = "middle";
+    for (let j = -5; j <= 5; j++) {
+      if (j === 0) continue;
+      const ty = oy - j * unit;
+      ctx.beginPath();
+      ctx.moveTo(ox - 4, ty);
+      ctx.lineTo(ox + 4, ty);
+      ctx.stroke();
+      ctx.textAlign = "right";
+      ctx.fillText(j, ox - 7, ty);
+    }
+
+    // 원점 O
+    ctx.font = "bold 15px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+    ctx.fillText("O", ox - 6, oy + 6);
+    ctx.restore();
+  }
+
+  // ==========================================================
+  // Scene 3 (화면 4): 5개의 좌표를 버튼 누를 때마다 하나씩 보여주기
+  // ==========================================================
+  function renderScene3() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const ox = 480;
+    const oy = 235;
+    const unit = 35;
+
+    drawCenteredPlane(ox, oy, unit);
+
+    // 0 ~ subStep까지의 점 표시 (현재 점은 더욱 강조!)
+    for (let i = 0; i <= subStep; i++) {
+      const p = coordPoints[i];
+      const px = ox + p.x * unit;
+      const py = oy - p.y * unit;
+      const isCurrent = (i === subStep);
+
+      ctx.save();
+      // 점선 가이드
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = isCurrent ? 2.5 : 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(px, oy);
+      ctx.lineTo(px, py);
+      ctx.moveTo(ox, py);
+      ctx.lineTo(px, py);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 현재 순서인 점은 반짝이는 원 효과
+      if (isCurrent) {
+        const rPulse = 14 + Math.sin(animFrame * 0.15) * 3;
+        ctx.fillStyle = p.color + "33";
+        ctx.beginPath();
+        ctx.arc(px, py, rPulse, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 점 마커
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(px, py, isCurrent ? 7.5 : 5.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 라벨
+      ctx.fillStyle = p.color;
+      ctx.font = isCurrent ? "900 16px 'Pretendard', sans-serif" : "bold 13.5px 'Pretendard', sans-serif";
+      let lx = px + 10;
+      let ly = py - 10;
+      if (p.x < 0) lx = px - 72;
+      if (p.y < 0) ly = py + 22;
+      if (p.y === 0) ly = py - 12;
+      ctx.textAlign = "left";
+      ctx.fillText(`${p.name}(${p.x}, ${p.y})`, lx, ly);
+      ctx.restore();
+    }
+
+    // 현재 점의 캐릭터 말풍선 하나만 깔끔하게 표시
+    const curP = coordPoints[subStep];
+    drawPeekingFaces(curP.bubbleSide);
+    drawBigComicBubble(curP.bubbleSide, curP.msg, "#ffffff", curP.color, "#0f172a");
+  }
+
+  // ==========================================================
+  // Scene 4 (화면 5): 왜 사분면이라 할까? + 제1~4사분면 순으로 색칠
+  //   - subStep 0: 왼쪽 캐릭터 "왜 사분면이라 해?"
+  //   - subStep 1: 오른쪽 친구 "네 개로 나누었다! 누구를? 좌표평면을! 그래서 사·분·면이라고 하는 거야."
+  //   - subStep 2: 제1사분면 (+, +)
+  //   - subStep 3: 제2사분면 (-, +)
+  //   - subStep 4: 제3사분면 (-, -)
+  //   - subStep 5: 제4사분면 (+, -)
+  //   - subStep 6: 축 위의 점 주의!
+  // ==========================================================
+  function renderScene4() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const ox = 480;
+    const oy = 235;
+    const unit = 35;
+    const halfSpan = 5 * unit; // 175
+
+    // subStep 1일 때: 4개로 나누어진 영역을 살짝 점선 테두리 & 숫자 1,2,3,4로 보여주기
+    if (subStep === 1) {
+      ctx.save();
+      ctx.fillStyle = "rgba(241, 245, 249, 0.7)";
+      ctx.fillRect(ox - halfSpan, oy - halfSpan, halfSpan * 2, halfSpan * 2);
+      ctx.restore();
+    }
+
+    // 사분면 순서대로 하나씩 색칠 (subStep 2: 1사분면, 3: 2사분면, 4: 3사분면, 5: 4사분면, 6: 전체+축 주의)
+    // 1) 제1사분면 (우상단)
+    if (subStep >= 2) {
+      ctx.fillStyle = "rgba(187, 247, 208, 0.55)";
+      ctx.fillRect(ox, oy - halfSpan, halfSpan, halfSpan);
+    }
+    // 2) 제2사분면 (좌상단)
+    if (subStep >= 3) {
+      ctx.fillStyle = "rgba(199, 210, 254, 0.55)";
+      ctx.fillRect(ox - halfSpan, oy - halfSpan, halfSpan, halfSpan);
+    }
+    // 3) 제3사분면 (좌하단)
+    if (subStep >= 4) {
+      ctx.fillStyle = "rgba(253, 230, 138, 0.55)";
+      ctx.fillRect(ox - halfSpan, oy, halfSpan, halfSpan);
+    }
+    // 4) 제4사분면 (우하단)
+    if (subStep >= 5) {
+      ctx.fillStyle = "rgba(251, 207, 232, 0.55)";
+      ctx.fillRect(ox, oy, halfSpan, halfSpan);
+    }
+
+    // 좌표평면 그리드 및 축
+    drawCenteredPlane(ox, oy, unit);
+
+    // subStep 1일 때 "사(4개) · 분(나누다) · 면(좌표평면)" 시각적 표시
+    if (subStep === 1) {
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 22px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("①번 면", ox + 90, oy - 90);
+      ctx.fillText("②번 면", ox - 90, oy - 90);
+      ctx.fillText("③번 면", ox - 90, oy + 90);
+      ctx.fillText("④번 면", ox + 90, oy + 90);
+
+      // 상단 뜻풀이 배지
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(ox - 190, 14, 380, 34, 17);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#1d4ed8";
+      ctx.font = "900 16px 'Pretendard', sans-serif";
+      ctx.fillText("사(四: 네 개) · 분(分: 나누다) · 면(面: 좌표평면)", ox, 31);
+      ctx.restore();
+    }
+
+    // 사분면 텍스트 라벨 표시
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (subStep >= 2) {
+      ctx.fillStyle = "#15803d";
+      ctx.font = "900 20px 'Pretendard', sans-serif";
+      ctx.fillText("제 1 사분면", ox + 95, oy - 110);
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillText("( +, + )", ox + 95, oy - 82);
+    }
+    if (subStep >= 3) {
+      ctx.fillStyle = "#4338ca";
+      ctx.font = "900 20px 'Pretendard', sans-serif";
+      ctx.fillText("제 2 사분면", ox - 95, oy - 110);
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillText("( -, + )", ox - 95, oy - 82);
+    }
+    if (subStep >= 4) {
+      ctx.fillStyle = "#b45309";
+      ctx.font = "900 20px 'Pretendard', sans-serif";
+      ctx.fillText("제 3 사분면", ox - 95, oy + 85);
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillText("( -, - )", ox - 95, oy + 113);
+    }
+    if (subStep >= 5) {
+      ctx.fillStyle = "#be185d";
+      ctx.font = "900 20px 'Pretendard', sans-serif";
+      ctx.fillText("제 4 사분면", ox + 95, oy + 85);
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillText("( +, - )", ox + 95, oy + 113);
+    }
+    ctx.restore();
+
+    // 빼꼼 얼굴 & 단계별 말풍선 하나씩
+    const bubbles = [
+      { side: "left",  text: "사분면? 그게 뭐야?", bg: "#ffffff", border: "#2563eb" },
+      { side: "right", text: "네 개로 나누었다! 누구를? 좌표평면을!\n그래서 '사 · 분 · 면'이라고 하는 거야!", bg: "#eff6ff", border: "#2563eb" },
+      { side: "right", text: "오른쪽(+), 위(+) 영역은\n제1사분면 (+, +)!", bg: "#f0fdf4", border: "#16a34a" },
+      { side: "left",  text: "왼쪽(-), 위(+) 영역은\n제2사분면 (-, +)!", bg: "#eef2ff", border: "#4f46e5" },
+      { side: "left",  text: "왼쪽(-), 아래(-) 영역은\n제3사분면 (-, -)!", bg: "#fffbeb", border: "#d97706" },
+      { side: "right", text: "오른쪽(+), 아래(-) 영역은\n제4사분면 (+, -)!", bg: "#fdf2f8", border: "#db2777" },
+      { side: "left",  text: "주의! x축, y축 위의 점과 원점은\n어느 사분면에도 속하지 않아!", bg: "#fef2f2", border: "#dc2626" }
+    ];
+
+    const b = bubbles[subStep];
+    drawPeekingFaces(b.side);
+    drawBigComicBubble(b.side, b.text, b.bg, b.border, "#0f172a");
+  }
+
+  // ==========================================================
+  // Scene 5 (화면 6): 앞서 본 5개 좌표를 띄워주고 몇 사분면인지 맞추기
+  // subStep 0,1: A(3,2) 질문/정답
+  // subStep 2,3: B(-3,3) 질문/정답
+  // subStep 4,5: C(-4,-2) 질문/정답
+  // subStep 6,7: D(2,-4) 질문/정답
+  // subStep 8,9: E(4,0) 질문/정답
+  // ==========================================================
+  function renderScene5() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const ox = 480;
+    const oy = 235;
+    const unit = 35;
+    const halfSpan = 5 * unit; // 175
+
+    const curPointIdx = Math.floor(subStep / 2);
+    const isAnswered = (subStep % 2 === 1);
+    const curP = coordPoints[curPointIdx];
+
+    // 4개 사분면 기본 파스텔 배경 (정답 단계일 때 해당 사분면 더 선명하게 강조!)
+    const q1Active = isAnswered && curP.quadIdx === 1;
+    const q2Active = isAnswered && curP.quadIdx === 2;
+    const q3Active = isAnswered && curP.quadIdx === 3;
+    const q4Active = isAnswered && curP.quadIdx === 4;
+
+    ctx.fillStyle = q1Active ? "rgba(134, 239, 172, 0.75)" : "rgba(187, 247, 208, 0.35)";
+    ctx.fillRect(ox, oy - halfSpan, halfSpan, halfSpan);
+
+    ctx.fillStyle = q2Active ? "rgba(165, 180, 252, 0.75)" : "rgba(199, 210, 254, 0.35)";
+    ctx.fillRect(ox - halfSpan, oy - halfSpan, halfSpan, halfSpan);
+
+    ctx.fillStyle = q3Active ? "rgba(252, 211, 77, 0.75)" : "rgba(253, 230, 138, 0.35)";
+    ctx.fillRect(ox - halfSpan, oy, halfSpan, halfSpan);
+
+    ctx.fillStyle = q4Active ? "rgba(249, 168, 212, 0.75)" : "rgba(251, 207, 232, 0.35)";
+    ctx.fillRect(ox, oy, halfSpan, halfSpan);
+
+    // 정답 단계일 때 해당 사분면 테두리 반짝임 강조
+    if (isAnswered && curP.quadIdx > 0) {
+      ctx.save();
+      ctx.strokeStyle = curP.aBorder;
+      ctx.lineWidth = 4;
+      let rx = ox, ry = oy - halfSpan;
+      if (curP.quadIdx === 2) { rx = ox - halfSpan; ry = oy - halfSpan; }
+      else if (curP.quadIdx === 3) { rx = ox - halfSpan; ry = oy; }
+      else if (curP.quadIdx === 4) { rx = ox; ry = oy; }
+      ctx.strokeRect(rx + 2, ry + 2, halfSpan - 4, halfSpan - 4);
+      ctx.restore();
+    }
+
+    // 사분면 워터마크 라벨 (점들과 겹치지 않는 모서리 쪽에 은은하게 배치)
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "900 15px 'Pretendard', sans-serif";
+
+    ctx.fillStyle = q1Active ? "#15803d" : "rgba(21, 128, 61, 0.55)";
+    ctx.fillText("제1사분면 (+,+)", ox + 110, oy - 148);
+
+    ctx.fillStyle = q2Active ? "#4338ca" : "rgba(67, 56, 202, 0.55)";
+    ctx.fillText("제2사분면 (-,+)", ox - 110, oy - 148);
+
+    ctx.fillStyle = q3Active ? "#b45309" : "rgba(180, 83, 9, 0.55)";
+    ctx.fillText("제3사분면 (-,-)", ox - 110, oy + 148);
+
+    ctx.fillStyle = q4Active ? "#be185d" : "rgba(190, 24, 93, 0.55)";
+    ctx.fillText("제4사분면 (+,-)", ox + 110, oy + 75);
+    ctx.restore();
+
+    // 좌표평면 그리드 및 축
+    drawCenteredPlane(ox, oy, unit);
+
+    // E(4, 0) 정답 단계일 때 x축 강조
+    if (isAnswered && curP.quadIdx === 0) {
+      ctx.save();
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(ox - halfSpan, oy);
+      ctx.lineTo(ox + halfSpan, oy);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 앞서 보여준 5개의 좌표를 화면에 모두 띄워두고, 현재 문제인 점을 하이라이트!
+    for (let i = 0; i < coordPoints.length; i++) {
+      const p = coordPoints[i];
+      const px = ox + p.x * unit;
+      const py = oy - p.y * unit;
+      const isCurrent = (i === curPointIdx);
+      const isDone = (i < curPointIdx) || (i === curPointIdx && isAnswered);
+
+      ctx.save();
+      // 현재 질문 중인 점 또는 완료된 점은 점선 가이드 표시
+      if (isCurrent) {
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 2.2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(px, oy);
+        ctx.lineTo(px, py);
+        ctx.moveTo(ox, py);
+        ctx.lineTo(px, py);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const rPulse = 15 + Math.sin(animFrame * 0.16) * 3.5;
+        ctx.fillStyle = p.color + "38";
+        ctx.beginPath();
+        ctx.arc(px, py, rPulse, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 점 원형 마커
+      ctx.fillStyle = isCurrent ? p.color : (isDone ? p.color : "#94a3b8");
+      ctx.beginPath();
+      ctx.arc(px, py, isCurrent ? 8 : 5.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 좌표 이름 + 상태 배지
+      let labelText = `${p.name}(${p.x}, ${p.y})`;
+      if (isCurrent && !isAnswered) {
+        labelText += " ➔ [ ? ]";
+      } else if (isDone) {
+        labelText += ` ➔ ${p.badgeAns}`;
+      }
+
+      ctx.font = isCurrent ? "900 14.5px 'Pretendard', sans-serif" : "bold 12.5px 'Pretendard', sans-serif";
+      const tw = ctx.measureText(labelText).width;
+      let bx = px + 10;
+      let by = py - 24;
+      if (p.name === "A") { bx = px - tw / 2; by = py - 32; }
+      else if (p.name === "B") { bx = px - tw / 2; by = py + 12; }
+      else if (p.name === "C") { bx = px - tw / 2 + 15; by = py + 10; }
+      else if (p.name === "D") { bx = px - tw / 2; by = py - 32; }
+      else if (p.name === "E") { bx = px - tw + 15; by = py + 12; }
+
+      // 배지 배경
+      ctx.fillStyle = isCurrent
+        ? (isAnswered ? p.aBg : "#fef9c3")
+        : (isDone ? "rgba(255,255,255,0.9)" : "rgba(248,250,252,0.8)");
+      ctx.strokeStyle = isCurrent
+        ? (isAnswered ? p.aBorder : "#eab308")
+        : (isDone ? p.color : "#cbd5e1");
+      ctx.lineWidth = isCurrent ? 2.2 : 1.2;
+      ctx.beginPath();
+      ctx.roundRect(bx - 7, by, tw + 14, 22, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = isCurrent ? "#0f172a" : (isDone ? p.color : "#64748b");
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(labelText, bx, by + 11);
+      ctx.restore();
+    }
+
+    // 빼꼼 얼굴 & 질문/정답 말풍선 하나씩
+    if (!isAnswered) {
+      drawPeekingFaces("left");
+      drawBigComicBubble("left", curP.qText, "#ffffff", curP.color, "#0f172a");
+    } else {
+      drawPeekingFaces("right");
+      drawBigComicBubble("right", curP.aText, curP.aBg, curP.aBorder, "#0f172a");
+    }
+  }
+
+  // ==========================================================
+  // Scene 6 (화면 7): 같은 좌표평면에서 대칭이동 설명 (x축 ➔ y축 ➔ 원점 대칭)
+  //   - subStep 0: 제1사분면에 점 P(3, 2) 등장
+  //   - subStep 1: x축 대칭 설명 + x축 선의 색을 빨갛게 변경
+  //   - subStep 2: x축으로 접어서 반대 영역(제4사분면)에 (3, -2) 찍힘
+  //   - subStep 3: y축 대칭 설명 + y축 선의 색을 보라색으로 변경
+  //   - subStep 4: y축으로 접어서 반대 영역(제2사분면)에 (-3, 2) 찍힘
+  //   - subStep 5: 원점 대칭 설명 + 원점 O(0, 0) 색 강조
+  //   - subStep 6: 원점 지나 반대 영역(제3사분면)에 (-3, -2) 찍힘
+  // ==========================================================
+  function renderScene6() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const ox = 480;
+    const oy = 235;
+    const unit = 35;
+    const halfSpan = 5 * unit; // 175
+
+    // 은은한 4개 사분면 배경
+    ctx.fillStyle = "rgba(187, 247, 208, 0.25)";
+    ctx.fillRect(ox, oy - halfSpan, halfSpan, halfSpan);
+    ctx.fillStyle = "rgba(199, 210, 254, 0.25)";
+    ctx.fillRect(ox - halfSpan, oy - halfSpan, halfSpan, halfSpan);
+    ctx.fillStyle = "rgba(253, 230, 138, 0.25)";
+    ctx.fillRect(ox - halfSpan, oy, halfSpan, halfSpan);
+    ctx.fillStyle = "rgba(251, 207, 232, 0.25)";
+    ctx.fillRect(ox, oy, halfSpan, halfSpan);
+
+    // 기본 좌표평면 그리드 및 축
+    drawCenteredPlane(ox, oy, unit);
+
+    // 1) x축 대칭 단계(subStep 1, 2)일 때: x축 선의 색을 빨간색(#ef4444)으로 눈에 띄게 변경!
+    if (subStep === 1 || subStep === 2) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(239, 68, 68, 0.28)";
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.moveTo(ox - halfSpan - 12, oy);
+      ctx.lineTo(ox + halfSpan + 12, oy);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(ox - halfSpan - 12, oy);
+      ctx.lineTo(ox + halfSpan + 12, oy);
+      ctx.stroke();
+
+      // x축 접는 선 배지
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(ox - 105, oy - 30, 145, 22, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#dc2626";
+      ctx.font = "900 13px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("◀ x축으로 접기 ▶", ox - 32, oy - 19);
+      ctx.restore();
+    }
+
+    // 2) y축 대칭 단계(subStep 3, 4)일 때: y축 선의 색을 보라색(#7c3aed)으로 눈에 띄게 변경!
+    if (subStep === 3 || subStep === 4) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(124, 58, 237, 0.28)";
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.moveTo(ox, oy - halfSpan - 12);
+      ctx.lineTo(ox, oy + halfSpan + 12);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#7c3aed";
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(ox, oy - halfSpan - 12);
+      ctx.lineTo(ox, oy + halfSpan + 12);
+      ctx.stroke();
+
+      // y축 접는 선 배지
+      ctx.fillStyle = "#f5f3ff";
+      ctx.strokeStyle = "#7c3aed";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(ox - 68, oy + 50, 136, 22, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#6d28d9";
+      ctx.font = "900 13px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("▲ y축으로 접기 ▼", ox, oy + 61);
+      ctx.restore();
+    }
+
+    // 3) 원점 대칭 단계(subStep 5, 6)일 때: 원점 O(0, 0)의 색을 주황색(#ea580c)으로 강조!
+    if (subStep === 5 || subStep === 6) {
+      ctx.save();
+      const rPulse = 15 + Math.sin(animFrame * 0.18) * 3.5;
+      ctx.fillStyle = "rgba(234, 88, 12, 0.28)";
+      ctx.beginPath();
+      ctx.arc(ox, oy, rPulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#ea580c";
+      ctx.beginPath();
+      ctx.arc(ox, oy, 7.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 기준점 P(3, 2) 좌표 및 대칭점 좌표 계산
+    const px = ox + 3 * unit;  // 585
+    const py = oy - 2 * unit;  // 165
+    const xSymX = ox + 3 * unit;  // 585
+    const xSymY = oy + 2 * unit;  // 305 (3, -2)
+    const ySymX = ox - 3 * unit;  // 375
+    const ySymY = oy - 2 * unit;  // 165 (-3, 2)
+    const oSymX = ox - 3 * unit;  // 375
+    const oSymY = oy + 2 * unit;  // 305 (-3, -2)
+
+    // 대칭 점선 가이드 & 접는 화살표 그리기 헬퍼
+    function drawSymPoint(x, y, color, label, badgeSub, isActive, labelAbove = true) {
+      ctx.save();
+      // 축까지 점선
+      ctx.strokeStyle = color;
+      ctx.lineWidth = isActive ? 2.2 : 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(x, oy);
+      ctx.lineTo(x, y);
+      ctx.moveTo(ox, y);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (isActive) {
+        const rp = 15 + Math.sin(animFrame * 0.16) * 3.5;
+        ctx.fillStyle = color + "33";
+        ctx.beginPath();
+        ctx.arc(x, y, rp, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 점 본체
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, isActive ? 8 : 6.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 라벨 배지
+      const fullText = badgeSub ? `${label} [${badgeSub}]` : label;
+      ctx.font = isActive ? "900 14px 'Pretendard', sans-serif" : "bold 13px 'Pretendard', sans-serif";
+      const tw = ctx.measureText(fullText).width;
+      const bx = x - tw / 2;
+      const by = labelAbove ? (y - 34) : (y + 12);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = color;
+      ctx.lineWidth = isActive ? 2.2 : 1.5;
+      ctx.beginPath();
+      ctx.roundRect(bx - 7, by, tw + 14, 22, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = color;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(fullText, bx, by + 11);
+      ctx.restore();
+    }
+
+    // 1) 항상 제1사분면에 기준점 P(3, 2) 표시
+    drawSymPoint(px, py, "#2563eb", "P(3, 2)", "기준점", subStep === 0, true);
+
+    // 2) subStep >= 2: x축으로 접는 곡선 화살표 & (3, -2) 찍힘
+    if (subStep >= 2) {
+      ctx.save();
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = (subStep === 2) ? 3 : 2;
+      ctx.setLineDash([5, 3]);
+      ctx.beginPath();
+      ctx.moveTo(px + 8, py + 6);
+      ctx.quadraticCurveTo(px + 46, oy, xSymX + 8, xSymY - 8);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // 화살촉
+      ctx.fillStyle = "#ef4444";
+      ctx.beginPath();
+      ctx.moveTo(xSymX + 8, xSymY - 6);
+      ctx.lineTo(xSymX + 16, xSymY - 14);
+      ctx.lineTo(xSymX + 5, xSymY - 16);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      drawSymPoint(xSymX, xSymY, "#dc2626", "(3, -2)", "x축 대칭", subStep === 2, false);
+    }
+
+    // 3) subStep >= 4: y축으로 접는 곡선 화살표 & (-3, 2) 찍힘
+    if (subStep >= 4) {
+      ctx.save();
+      ctx.strokeStyle = "#7c3aed";
+      ctx.lineWidth = (subStep === 4) ? 3 : 2;
+      ctx.setLineDash([5, 3]);
+      ctx.beginPath();
+      ctx.moveTo(px - 8, py - 6);
+      ctx.quadraticCurveTo(ox, py - 45, ySymX + 8, ySymY - 6);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // 화살촉
+      ctx.fillStyle = "#7c3aed";
+      ctx.beginPath();
+      ctx.moveTo(ySymX + 6, ySymY - 6);
+      ctx.lineTo(ySymX + 16, ySymY - 13);
+      ctx.lineTo(ySymX + 15, ySymY - 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      drawSymPoint(ySymX, ySymY, "#7c3aed", "(-3, 2)", "y축 대칭", subStep === 4, true);
+    }
+
+    // 4) subStep >= 5: 원점 통과 대각선 가이드, subStep === 6일 때 (-3, -2) 찍힘
+    if (subStep === 5) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(234, 88, 12, 0.5)";
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(oSymX, oSymY);
+      ctx.stroke();
+      ctx.restore();
+    }
+    if (subStep >= 6) {
+      ctx.save();
+      ctx.strokeStyle = "#ea580c";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(oSymX + 6, oSymY - 4);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // 화살촉
+      ctx.fillStyle = "#ea580c";
+      ctx.beginPath();
+      ctx.moveTo(oSymX + 4, oSymY - 3);
+      ctx.lineTo(oSymX + 16, oSymY - 4);
+      ctx.lineTo(oSymX + 10, oSymY - 14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      drawSymPoint(oSymX, oSymY, "#ea580c", "(-3, -2)", "원점 대칭", subStep === 6, false);
+    }
+
+    // 빼꼼 얼굴 & 단계별 말풍선 하나씩
+    const symBubbles = [
+      {
+        side: "left",
+        text: "제1사분면에 점 P(3, 2) 가 있어!\n이 점을 대칭이동 시켜 볼까?",
+        bg: "#ffffff", border: "#2563eb"
+      },
+      {
+        side: "right",
+        text: "먼저 x축 대칭!\nx축으로 접으면 반대 영역 어디에 찍힐까?",
+        bg: "#fef2f2", border: "#ef4444"
+      },
+      {
+        side: "left",
+        text: "x축으로 접으니까 아래쪽 반대 영역에 찍혔어!\n(3, 2) ➔ (3, -2) 로 y좌표 부호만 바뀌네!",
+        bg: "#fef2f2", border: "#dc2626"
+      },
+      {
+        side: "right",
+        text: "이어서 y축 대칭!\ny축으로 접으면 왼쪽 반대 영역 어디에 찍힐까?",
+        bg: "#f5f3ff", border: "#7c3aed"
+      },
+      {
+        side: "left",
+        text: "y축으로 접으니까 왼쪽 반대 영역에 찍혔어!\n(3, 2) ➔ (-3, 2) 로 x좌표 부호만 바뀌었네!",
+        bg: "#f5f3ff", border: "#7c3aed"
+      },
+      {
+        side: "right",
+        text: "마지막은 원점 대칭! x축으로 접고 y축으로 또 접어서\n원점 O(0, 0)의 정반대 영역으로 보내는 거야!",
+        bg: "#fff7ed", border: "#ea580c"
+      },
+      {
+        side: "left",
+        text: "원점 반대편 영역에 (-3, -2) 로 찍혔어!\nx좌표, y좌표 둘 다 부호가 반대로 바뀌었네!",
+        bg: "#fff7ed", border: "#ea580c"
+      }
+    ];
+
+    const sb = symBubbles[subStep];
+    drawPeekingFaces(sb.side);
+    drawBigComicBubble(sb.side, sb.text, sb.bg, sb.border, "#0f172a");
+  }
+
+  // ==========================================================
+  // 퀴즈 화면 공통 상단 헤더: 왼쪽에 크게 "퀴즈", 오른쪽에 크게 "1 / 10" (또는 "1 / 5")
+  // ==========================================================
+  function drawQuizTopBar(curNum, totalNum) {
+    ctx.save();
+    // 왼쪽 상단: "퀴즈" 크게 표시
+    ctx.fillStyle = "#fff7ed";
+    ctx.strokeStyle = "#ea580c";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(32, 16, 110, 46, 14);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#ea580c";
+    ctx.font = "900 26px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("퀴즈", 87, 40);
+
+    // 오른쪽 상단: "1 / 10" 진행도 간단하고 크게 표시
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#334155";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(808, 16, 120, 46, 14);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 25px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`${curNum} / ${totalNum}`, 868, 40);
+    ctx.restore();
+  }
+
+  // ==========================================================
+  // Scene 7 (화면 8): 직접 좌표평면에 찍는 좌표 & 대칭점 퀴즈 (10문제)
+  // ==========================================================
+  function renderScene7() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const ox = 480;
+    const oy = 235;
+    const unit = 35;
+    const halfSpan = 5 * unit; // 175
+
+    const q = quizProblems[subStep];
+    const isSolved = quizSolved[subStep];
+
+    // 왼쪽에 "퀴즈", 오른쪽에 "1 / 10" 크게 표시
+    drawQuizTopBar(subStep + 1, 10);
+
+    // 은은한 4개 사분면 파스텔 배경
+    ctx.fillStyle = "rgba(187, 247, 208, 0.22)";
+    ctx.fillRect(ox, oy - halfSpan, halfSpan, halfSpan);
+    ctx.fillStyle = "rgba(199, 210, 254, 0.22)";
+    ctx.fillRect(ox - halfSpan, oy - halfSpan, halfSpan, halfSpan);
+    ctx.fillStyle = "rgba(253, 230, 138, 0.22)";
+    ctx.fillRect(ox - halfSpan, oy, halfSpan, halfSpan);
+    ctx.fillStyle = "rgba(251, 207, 232, 0.22)";
+    ctx.fillRect(ox, oy, halfSpan, halfSpan);
+
+    // 기본 좌표평면 그리드 및 축
+    drawCenteredPlane(ox, oy, unit);
+
+    // 대칭 문제일 경우 대칭축(x축, y축) 또는 원점 강조!
+    if (q.type === "xSym") {
+      ctx.save();
+      ctx.strokeStyle = "rgba(239, 68, 68, 0.25)";
+      ctx.lineWidth = 12;
+      ctx.beginPath();
+      ctx.moveTo(ox - halfSpan - 10, oy);
+      ctx.lineTo(ox + halfSpan + 10, oy);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(ox - halfSpan - 10, oy);
+      ctx.lineTo(ox + halfSpan + 10, oy);
+      ctx.stroke();
+      ctx.restore();
+    } else if (q.type === "ySym") {
+      ctx.save();
+      ctx.strokeStyle = "rgba(124, 58, 237, 0.25)";
+      ctx.lineWidth = 12;
+      ctx.beginPath();
+      ctx.moveTo(ox, oy - halfSpan - 10);
+      ctx.lineTo(ox, oy + halfSpan + 10);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#7c3aed";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(ox, oy - halfSpan - 10);
+      ctx.lineTo(ox, oy + halfSpan + 10);
+      ctx.stroke();
+      ctx.restore();
+    } else if (q.type === "oSym") {
+      ctx.save();
+      const rp = 14 + Math.sin(animFrame * 0.18) * 3;
+      ctx.fillStyle = "rgba(234, 88, 12, 0.28)";
+      ctx.beginPath();
+      ctx.arc(ox, oy, rp, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ea580c";
+      ctx.beginPath();
+      ctx.arc(ox, oy, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 대칭 문제일 경우 기준점 (baseX, baseY) 표시
+    if (q.type !== "plot") {
+      const bx = ox + q.baseX * unit;
+      const by = oy - q.baseY * unit;
+      ctx.save();
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(bx, oy);
+      ctx.lineTo(bx, by);
+      ctx.moveTo(ox, by);
+      ctx.lineTo(bx, by);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "#2563eb";
+      ctx.beginPath();
+      ctx.arc(bx, by, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      const bLabel = `기준 (${q.baseX}, ${q.baseY})`;
+      ctx.font = "900 13px 'Pretendard', sans-serif";
+      const tw = ctx.measureText(bLabel).width;
+      const lx = bx - tw / 2;
+      const ly = (q.baseY >= 0) ? (by - 30) : (by + 10);
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.roundRect(lx - 6, ly, tw + 12, 20, 6);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#1d4ed8";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(bLabel, lx, ly + 10);
+      ctx.restore();
+    }
+
+    // 마우스 호버 가이드 (아직 안 푼 상태일 때 마우스 근처 격자점 미리보기)
+    if (!isSolved && hoverGrid) {
+      const hx = ox + hoverGrid.x * unit;
+      const hy = oy - hoverGrid.y * unit;
+      ctx.save();
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.arc(hx, hy, 11, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "rgba(37, 99, 235, 0.25)";
+      ctx.beginPath();
+      ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 마우스 위치 좌표 툴팁
+      const hText = `(${hoverGrid.x}, ${hoverGrid.y}) 찍기`;
+      ctx.font = "bold 12.5px 'Pretendard', sans-serif";
+      const htw = ctx.measureText(hText).width;
+      ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+      ctx.beginPath();
+      ctx.roundRect(hx - htw / 2 - 7, hy - 32, htw + 14, 20, 6);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(hText, hx, hy - 22);
+      ctx.restore();
+    }
+
+    // 오답 위치 클릭 시 빨간색 X 표시
+    if (!isSolved && quizWrongPt) {
+      const wx = ox + quizWrongPt.x * unit;
+      const wy = oy - quizWrongPt.y * unit;
+      ctx.save();
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(wx - 8, wy - 8);
+      ctx.lineTo(wx + 8, wy + 8);
+      ctx.moveTo(wx + 8, wy - 8);
+      ctx.lineTo(wx - 8, wy + 8);
+      ctx.stroke();
+
+      const wText = `(${quizWrongPt.x}, ${quizWrongPt.y}) 땡!`;
+      ctx.font = "900 13px 'Pretendard', sans-serif";
+      const wtw = ctx.measureText(wText).width;
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(wx - wtw / 2 - 6, wy + 10, wtw + 12, 20, 6);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#dc2626";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(wText, wx, wy + 20);
+      ctx.restore();
+    }
+
+    // 정답을 맞췄을 때: 대칭 연결선 + 정답 점 반짝임 표시!
+    if (isSolved) {
+      const ax = ox + q.ansX * unit;
+      const ay = oy - q.ansY * unit;
+
+      ctx.save();
+      // 대칭 문제라면 기준점에서 정답점까지 연결 화살표
+      if (q.type !== "plot") {
+        const bx = ox + q.baseX * unit;
+        const by = oy - q.baseY * unit;
+        ctx.strokeStyle = "#16a34a";
+        ctx.lineWidth = 2.8;
+        ctx.setLineDash([5, 3]);
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(ax, ay);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // 정답 점 축 가이드 점선
+      ctx.strokeStyle = "#16a34a";
+      ctx.lineWidth = 2.2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(ax, oy);
+      ctx.lineTo(ax, ay);
+      ctx.moveTo(ox, ay);
+      ctx.lineTo(ax, ay);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const rp = 16 + Math.sin(animFrame * 0.18) * 3.5;
+      ctx.fillStyle = "rgba(22, 163, 74, 0.28)";
+      ctx.beginPath();
+      ctx.arc(ax, ay, rp, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#16a34a";
+      ctx.beginPath();
+      ctx.arc(ax, ay, 8.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+
+      const aLabel = `정답 (${q.ansX}, ${q.ansY})!`;
+      ctx.font = "900 14.5px 'Pretendard', sans-serif";
+      const atw = ctx.measureText(aLabel).width;
+      const ly = (q.ansY >= 0) ? (ay - 34) : (ay + 12);
+      ctx.fillStyle = "#dcfce7";
+      ctx.strokeStyle = "#16a34a";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.roundRect(ax - atw / 2 - 8, ly, atw + 16, 22, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#15803d";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(aLabel, ax, ly + 11);
+      ctx.restore();
+    }
+
+    // 빼꼼 얼굴 & 말풍선 표시 (문제 출제 -> 오답 시 다시 같은 문제 질문 -> 정답 축하)
+    if (isSolved) {
+      drawPeekingFaces("right");
+      drawBigComicBubble("right", q.aText, "#f0fdf4", "#16a34a", "#0f172a");
+    } else if (quizWrongPt) {
+      drawPeekingFaces("right");
+      drawBigComicBubble(
+        "right",
+        `앗! (${quizWrongPt.x}, ${quizWrongPt.y}) 은 아니야!\n다시 문제를 잘 보고 찍어 봐!`,
+        "#fef2f2", "#dc2626", "#0f172a"
+      );
+    } else {
+      drawPeekingFaces("left");
+      drawBigComicBubble("left", q.qText, "#ffffff", "#2563eb", "#0f172a");
+    }
+  }
+
+  // ==========================================================
+  // Scene 8 (화면 9): 미지수 문자 (a, b) 의 부호 선택 & 사분면 퀴즈 (5문제)
+  // ==========================================================
+  function renderScene8() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 왼쪽 상단 "퀴즈", 오른쪽 상단 "1 / 5" 크게 표시
+    drawQuizTopBar(subStep + 1, 5);
+
+    const lq = letterQuizProblems[subStep];
+    const curStage = letterQuizStage[subStep];
+    const isComplete = (curStage >= lq.steps.length);
+
+    letterClickBoxes = [];
+
+    // 1) 상단 중앙: 문제 제목 카드
+    ctx.save();
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#334155";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect(160, 16, 630, 62, 16);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 19px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(lq.title, 475, 36);
+
+    ctx.fillStyle = "#475569";
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.fillText(lq.subtitle, 475, 61);
+    ctx.restore();
+
+    // 2) 왼쪽 영역: 사분면 부호 참고용 미니 좌표평면 (중심 185, 225)
+    const mox = 185, moy = 225, mSpan = 105;
+    ctx.save();
+    ctx.fillStyle = (lq.givenQuad === 1) ? "rgba(134, 239, 172, 0.7)" : "rgba(187, 247, 208, 0.3)";
+    ctx.fillRect(mox, moy - mSpan, mSpan, mSpan);
+    ctx.fillStyle = (lq.givenQuad === 2) ? "rgba(165, 180, 252, 0.7)" : "rgba(199, 210, 254, 0.3)";
+    ctx.fillRect(mox - mSpan, moy - mSpan, mSpan, mSpan);
+    ctx.fillStyle = (lq.givenQuad === 3) ? "rgba(252, 211, 77, 0.7)" : "rgba(253, 230, 138, 0.3)";
+    ctx.fillRect(mox - mSpan, moy, mSpan, mSpan);
+    ctx.fillStyle = (lq.givenQuad === 4) ? "rgba(249, 168, 212, 0.7)" : "rgba(251, 207, 232, 0.3)";
+    ctx.fillRect(mox, moy, mSpan, mSpan);
+
+    ctx.strokeStyle = "#334155";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(mox - mSpan, moy - mSpan, mSpan * 2, mSpan * 2);
+
+    ctx.beginPath();
+    ctx.moveTo(mox - mSpan - 8, moy);
+    ctx.lineTo(mox + mSpan + 8, moy);
+    ctx.moveTo(mox, moy - mSpan - 8);
+    ctx.lineTo(mox, moy + mSpan + 8);
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "900 13.5px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#15803d";
+    ctx.fillText("제1사분면", mox + 52, moy - 62);
+    ctx.fillText("( +, + )", mox + 52, moy - 42);
+
+    ctx.fillStyle = "#4338ca";
+    ctx.fillText("제2사분면", mox - 52, moy - 62);
+    ctx.fillText("( -, + )", mox - 52, moy - 42);
+
+    ctx.fillStyle = "#b45309";
+    ctx.fillText("제3사분면", mox - 52, moy + 42);
+    ctx.fillText("( -, - )", mox - 52, moy + 62);
+
+    ctx.fillStyle = "#be185d";
+    ctx.fillText("제4사분면", mox + 52, moy + 42);
+    ctx.fillText("( +, - )", mox + 52, moy + 62);
+    ctx.restore();
+
+    // 3) 오른쪽 영역: 단계별 부호 & 사분면 선택 카드 (x: 330 ~ 910)
+    const panelX = 330;
+    const panelW = 580;
+    let curY = 86;
+
+    for (let s = 0; s < lq.steps.length; s++) {
+      const st = lq.steps[s];
+      const isStepDone = (s < curStage);
+      const isStepCurrent = (s === curStage && !isComplete);
+      // 2번째 문제(subStep >= 1)부터 마지막 칸은 훨씬 크게 만들어서 질문 가독성 대폭 강화!
+      const isBigFinalCard = (subStep >= 1 && s === lq.steps.length - 1);
+
+      ctx.save();
+      const cardH = isBigFinalCard ? 104 : (subStep >= 1 ? 66 : 82);
+      ctx.fillStyle = isStepDone
+        ? "#f0fdf4"
+        : (isStepCurrent ? (isBigFinalCard ? "#fffbeb" : "#eff6ff") : (isBigFinalCard ? "#fefce8" : "#f8fafc"));
+      ctx.strokeStyle = isStepDone
+        ? "#16a34a"
+        : (isStepCurrent ? (isBigFinalCard ? "#d97706" : "#2563eb") : (isBigFinalCard ? "#f59e0b" : "#cbd5e1"));
+      ctx.lineWidth = isBigFinalCard ? 3.2 : (isStepCurrent ? 2.6 : 1.8);
+      ctx.beginPath();
+      ctx.roundRect(panelX, curY, panelW, cardH, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      // 단계 질문 텍스트 (마지막 칸은 처음부터 진하고 크게 표시!)
+      ctx.fillStyle = isStepDone
+        ? "#15803d"
+        : (isBigFinalCard ? "#92400e" : (isStepCurrent ? "#1e3a8a" : "#64748b"));
+      ctx.font = isBigFinalCard
+        ? "900 19.5px 'Pretendard', sans-serif"
+        : "900 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(st.label, panelX + 18, curY + (isBigFinalCard ? 26 : 20));
+
+      if (isStepDone) {
+        // 완료된 단계는 선택된 정답 배지 표시
+        const doneH = isBigFinalCard ? 44 : 28;
+        const doneY = curY + (isBigFinalCard ? 48 : 32);
+        ctx.fillStyle = "#dcfce7";
+        ctx.strokeStyle = "#16a34a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(panelX + 18, doneY, panelW - 36, doneH, 9);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "#15803d";
+        ctx.font = isBigFinalCard ? "900 18px 'Pretendard', sans-serif" : "900 14.5px 'Pretendard', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(`✔ 정답 : ${st.doneText}`, panelX + panelW / 2, doneY + doneH / 2);
+      } else if (isStepCurrent) {
+        // 현재 선택해야 하는 단계: 클릭 가능한 선택 버튼들 렌더링!
+        const numC = st.choices.length;
+        const gap = 12;
+        const totalGap = gap * (numC - 1);
+        const btnW = (panelW - 36 - totalGap) / numC;
+        const btnH = isBigFinalCard ? 44 : 30;
+        const btnY = curY + (isBigFinalCard ? 48 : 31);
+
+        for (let c = 0; c < numC; c++) {
+          const btnX = panelX + 18 + c * (btnW + gap);
+          ctx.fillStyle = "#ffffff";
+          ctx.strokeStyle = isBigFinalCard ? "#d97706" : "#2563eb";
+          ctx.lineWidth = isBigFinalCard ? 2.6 : 2.2;
+          ctx.beginPath();
+          ctx.roundRect(btnX, btnY, btnW, btnH, 10);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = isBigFinalCard ? "#b45309" : "#1d4ed8";
+          ctx.font = isBigFinalCard ? "900 16.5px 'Pretendard', sans-serif" : "900 14.5px 'Pretendard', sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(st.choices[c], btnX + btnW / 2, btnY + btnH / 2);
+
+          // 클릭 히트박스 등록
+          letterClickBoxes.push({
+            x: btnX, y: btnY, w: btnW, h: btnH, choiceIdx: c
+          });
+        }
+      } else {
+        // 아직 차례가 안 된 단계 (마지막 칸은 큰 안내 문구로 가독성 유지!)
+        ctx.fillStyle = isBigFinalCard ? "#b45309" : "#94a3b8";
+        ctx.font = isBigFinalCard ? "bold 15.5px 'Pretendard', sans-serif" : "bold 13.5px 'Pretendard', sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(
+          isBigFinalCard ? "⬆ 위에서 ①, ②번 부호를 먼저 찾으면 여기서 사분면을 고릅니다!" : "위의 부호를 먼저 선택하면 열립니다.",
+          panelX + 18,
+          curY + (isBigFinalCard ? 70 : 46)
+        );
+      }
+
+      ctx.restore();
+      curY += cardH + 8;
+    }
+
+    // 4) 빼꼼 얼굴 & 말풍선 표시
+    if (isComplete) {
+      drawPeekingFaces("right");
+      drawBigComicBubble("right", lq.aBubble, "#f0fdf4", "#16a34a", "#0f172a");
+    } else if (letterQuizWrong) {
+      drawPeekingFaces("right");
+      drawBigComicBubble(
+        "right",
+        "앗! 틀렸어!\n다시 질문을 잘 보고 골라 봐!",
+        "#fef2f2", "#dc2626", "#0f172a"
+      );
+    } else {
+      drawPeekingFaces("left");
+      drawBigComicBubble("left", lq.qBubble, "#ffffff", "#2563eb", "#0f172a");
+    }
+  }
+
+  // URL 해시 및 쿼리 파라미터 지원 (#scene=N&step=M)
+  let sParam = NaN, stepParam = NaN;
+  if (window.location.hash) {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    sParam = parseInt(hashParams.get('scene'), 10);
+    stepParam = parseInt(hashParams.get('step'), 10);
+  }
+  if (isNaN(sParam) && window.location.search) {
+    const urlParams = new URLSearchParams(window.location.search);
+    sParam = parseInt(urlParams.get('scene'), 10);
+    stepParam = parseInt(urlParams.get('step'), 10);
+  }
+  loadScene(!isNaN(sParam) ? sParam : 0, !isNaN(stepParam) ? stepParam : 0);
+  animate();
+</script>
+</body>
+</html>
