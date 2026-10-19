@@ -261,107 +261,137 @@
     7: 0
   };
 
-  // 🎯 실전 스피드 퀴즈 10문제 (사용자 요청: 소수 자릿수, 최소공배수 골고루, 괄호 처리 등 전면 보강!)
+  // 🎯 실전 스피드 퀴즈 10문제 (개념 진단용 메타데이터: concept, knowDesc, weakDesc 탑재)
   const quizData = [
     {
       badge: "함정 1. 양변 동시 이항 부호 실수",
+      concept: "등호다리 건널 때 부호 반전 (+ ↔ -)",
+      knowDesc: "등호다리를 건널 때 부호(+ ↔ -)를 빠뜨리지 않고 정확하게 반전시킴!",
+      weakDesc: "이항할 때 부호를 바꾸지 않는 실수를 조심하세요! (+는 -, -는 +)",
+      tip: "등호다리 건너면 부호 바꿔! (+ ➔ -, - ➔ +)",
       eq: "3x - 5 = 5x + 3",
       question: "우변의 5x를 좌변으로, 좌변의 -5를 우변으로\n올바르게 이항한 식은?",
       options: [
         { text: "3x + 5x = 3 - 5", isCorrect: false, desc: "앗! 등호다리 건너갈 때 부호를 바꾸지 않았어! 💣" },
         { text: "3x - 5x = 3 + 5", isCorrect: true, desc: "정답! 등호다리 건너면 부호 바꿔! (+5x ➔ -5x, -5 ➔ +5) 🎯" }
-      ],
-      tip: "등호다리 건너면 부호 바꿔! (+ ➔ -, - ➔ +)"
+      ]
     },
     {
       badge: "함정 2. 비례식 괄호 묶기 누락",
+      concept: "비례식 내·외항 곱할 때 괄호 묶기",
+      knowDesc: "내항곱 = 외항곱 전개 시 항이 2개인 다항식을 괄호로 완벽하게 묶음!",
+      weakDesc: "비례식 풀 때 항이 2개 이상이면 반드시 괄호로 묶어야 분배법칙이 돼요!",
+      tip: "비례식은 내항곱 = 외항곱! 항이 2개면 반드시 괄호로~",
       eq: "(x + 2) : 4 = (2x - 1) : 3",
       question: "내항곱 = 외항곱 으로 바꿀 때\n올바른 식은?",
       options: [
         { text: "3(x + 2) = 4(2x - 1)", isCorrect: true, desc: "정답! 내항곱 = 외항곱! 항이 2개면 반드시 괄호로 묶어야 해! 🎯" },
         { text: "3x + 2 = 4 × 2x - 1", isCorrect: false, desc: "앗! 괄호로 묶지 않으면 상수항 곱하기가 누락돼 💣" }
-      ],
-      tip: "비례식은 내항곱 = 외항곱! 항이 2개면 반드시 괄호로~"
+      ]
     },
     {
       badge: "함정 3. 소수 자릿수가 다를 때 곱할 수",
+      concept: "가장 자릿수 큰 소수에 맞춰 100 곱하기",
+      knowDesc: "소수 자릿수가 다를 때 가장 큰 자릿수(0.25)에 맞춰 100을 정확히 선택함!",
+      weakDesc: "소수 자릿수가 섞여 있을 땐 가장 긴 소수에 맞춰 100을 곱해야 모두 정수가 돼요!",
+      tip: "소수 자릿수가 다를 땐 가장 자릿수가 큰 소수에 맞춰 100을 곱한다!",
       eq: "0.25x - 0.3 = 1.2",
       question: "소수를 모두 정수로 만들기 위해\n양변에 곱해야 하는 가장 알맞은 수는?",
       options: [
         { text: "양변에 100을 곱한다", isCorrect: true, desc: "정답! 0.25가 소수 둘째 자리이므로 100을 곱해야 모두 정수가 돼! 🎯" },
         { text: "양변에 10을 곱한다", isCorrect: false, desc: "앗! 10만 곱하면 0.25는 정수가 못 된다 ㅜㅜ 💣" }
-      ],
-      tip: "소수 자릿수가 다를 땐 가장 자릿수가 큰 소수에 맞춰 100을 곱한다!"
+      ]
     },
     {
       badge: "함정 4. 소수 괄호 밖 대표에만 곱하기",
+      concept: "소수 괄호 전개 시 괄호 밖 대표에만 곱하기",
+      knowDesc: "괄호 밖 대표(0.1)에만 곱하고 괄호 속은 보존하는 핵심 원칙 마스터!",
+      weakDesc: "괄호 밖 대표 수에 이미 10을 곱했으면 괄호 안은 절대 또 곱하면 안 돼요!",
+      tip: "양변에 100이나 10을 곱할 땐 괄호 밖 대표에만 곱한다!",
       eq: "0.1(x + 6) = 2",
       question: "양변에 10을 곱하여 소수를 없앨 때\n좌변의 올바른 모습은?",
       options: [
         { text: "1(10x + 60)", isCorrect: false, desc: "앗! 괄호 밖 0.1에 곱했으면 괄호 속까지 또 곱하면 안 돼! 💣" },
         { text: "1(x + 6)", isCorrect: true, desc: "정답! 괄호 밖 대표 0.1에만 10을 곱하고 괄호는 그대로 둔다! 🎯" }
-      ],
-      tip: "양변에 100이나 10을 곱할 땐 괄호 밖 대표에만 곱한다!"
+      ]
     },
     {
       badge: "함정 5. 괄호를 풀어야 이항 자격 생김!",
+      concept: "괄호 분배법칙 먼저 전개 후 이항하기",
+      knowDesc: "괄호 속에 갇힌 항은 먼저 분배법칙으로 풀어야 이항할 수 있음을 정확히 앎!",
+      weakDesc: "괄호 속에 갇힌 항은 탈출(분배법칙)하기 전까지 절대 밖으로 이항할 수 없어요!",
+      tip: "원칙 ①: 괄호를 풀어야 이항 자격 생김!",
       eq: "2(x - 3) = 4x",
       question: "괄호 속의 x를 이항하기 위해\n가장 먼저 해야 할 일은?",
       options: [
         { text: "분배법칙으로 괄호를 먼저 푼다", isCorrect: true, desc: "정답! 2x - 6 = 4x 로 괄호를 먼저 풀어야 비로소 이항 자격이 생겨! 🎯" },
         { text: "괄호 속 -3을 우변으로 바로 넘긴다", isCorrect: false, desc: "앗! 괄호 속에 갇힌 x와 수는 밖으로 바로 이항할 수 없어! 💣" }
-      ],
-      tip: "원칙 ①: 괄호를 풀어야 이항 자격 생김!"
+      ]
     },
     {
       badge: "함정 6. 항마다 다 곱해! (상수항 주의)",
+      concept: "분모 없앨 때 홀로 있는 상수항도 곱하기",
+      knowDesc: "분모를 없앨 때 홀로 있는 상수항(+1)에도 빠짐없이 6을 곱하는 규칙 완벽 통달!",
+      weakDesc: "분모를 없앨 때 분수가 아닌 홀로 있는 상수항에도 반드시 똑같이 곱해야 해요!",
+      tip: "원칙 ④: 항마다 다 곱해! (숫자 홀로 있는 상수항도 꼭꼭!)",
       eq: "x / 3 = (x - 2) / 2 + 1",
       question: "분모를 없애기 위해 양변에 6을 곱할 때\n우변의 올바른 모습은?",
       options: [
         { text: "3(x - 2) + 1", isCorrect: false, desc: "앗! 분수만 6 곱하면 땡! 뒤의 상수항 +1에도 6을 곱해야 해! 💣" },
         { text: "3(x - 2) + 6", isCorrect: true, desc: "정답! 항마다 다 곱해! 숫자 홀로 있는 상수항도 꼭꼭! 🎯" }
-      ],
-      tip: "원칙 ④: 항마다 다 곱해! (숫자 홀로 있는 상수항도 꼭꼭!)"
+      ]
     },
     {
       badge: "함정 7. 소수와 분수가 섞였을 때 통일",
+      concept: "소수·분수 혼합식 분수로 통일하기",
+      knowDesc: "소수(0.5)를 분수(1/2)로 통일하여 최소공배수 전략을 완벽하게 구사함!",
+      weakDesc: "소수와 분수가 섞이면 순환소수를 피해 '분수'로 통일하는 것이 가장 안전해요!",
+      tip: "소수와 분수가 섞이면 분수로 만들어 한 가지로 통일!",
       eq: "0.5x - 1 = (1/3)x",
       question: "소수와 분수가 섞여 있을 때\n가장 좋은 해결 전략은?",
       options: [
         { text: "0.5를 분수 1/2로 통일한다", isCorrect: true, desc: "정답! 분수로 통일하면 분모 2와 3의 공배수 6을 한눈에 곱할 수 있어! 🎯" },
         { text: "1/3을 소수 0.333... 으로 바꾼다", isCorrect: false, desc: "앗! 순환소수가 되어 계산이 훨씬 엉켜버려요 💣" }
-      ],
-      tip: "소수와 분수가 섞이면 분수로 만들어 한 가지로 통일!"
+      ]
     },
     {
       badge: "함정 8. 최소공배수 양변에 골고루 곱하기",
+      concept: "좌변뿐만 아니라 우변 상수항도 곱하기",
+      knowDesc: "좌변의 분모를 없앨 때 우변의 상수항(3)에도 공평하게 4를 곱하는 균형감각!",
+      weakDesc: "좌변의 분모를 없앨 때 우변의 수에도 최소공배수를 빼먹지 않고 곱해야 해요!",
+      tip: "최소공배수는 좌변과 우변의 모든 항에 공평하게 곱한다!",
       eq: "(x - 1) / 2 - (x + 1) / 4 = 3",
       question: "분모 2와 4의 최소공배수인 4를 곱할 때\n우변의 올바른 값은?",
       options: [
         { text: "우변은 12 (3 × 4)", isCorrect: true, desc: "정답! 좌변뿐만 아니라 우변의 상수항 3에도 4를 꼭 곱해야 해! 🎯" },
         { text: "우변은 그대로 3", isCorrect: false, desc: "앗! 우변에 4 곱하기를 빼먹으면 등식이 깨져요 💣" }
-      ],
-      tip: "최소공배수는 좌변과 우변의 모든 항에 공평하게 곱한다!"
+      ]
     },
     {
       badge: "함정 9. 괄호 앞 마이너스 분배 부호 폭탄",
+      concept: "괄호 앞 마이너스(-) 전 부호 반전",
+      knowDesc: "괄호 앞 마이너스 분배 시 -(-3) = +3 부호 반전을 정확히 처리함!",
+      weakDesc: "괄호 앞의 '-'는 괄호 속 모든 항의 부호를 정반대로 뒤집는 폭탄이에요!",
+      tip: "괄호 앞 마이너스는 괄호 속 모든 항의 부호를 반대로 뒤집는다!",
       eq: "5 - (2x - 3) = x + 2",
       question: "좌변의 괄호 앞 마이너스(-)를 분배할 때\n올바른 좌변의 모습은?",
       options: [
         { text: "5 - 2x + 3", isCorrect: true, desc: "정답! -(-3) = +3 이 되므로 부호가 반전되어 5 - 2x + 3 이 맞아! 🎯" },
         { text: "5 - 2x - 3", isCorrect: false, desc: "앗! 괄호 속 -3의 부호를 바꾸지 않아 틀렸어 💣" }
-      ],
-      tip: "괄호 앞 마이너스는 괄호 속 모든 항의 부호를 반대로 뒤집는다!"
+      ]
     },
     {
       badge: "함정 10. 마지막 음수 x 계수 부호 처리",
+      concept: "-x = a 에서 양변에 -1 곱하기",
+      knowDesc: "-x = 5 에서 양변에 -1을 곱해 최종해 x = -5를 깔끔하게 도출함!",
+      weakDesc: "마지막 줄에 -x가 남으면 양변에 -1을 곱해 반드시 순수한 x의 값을 구해야 해요!",
+      tip: "-x는 (-1)×x 이므로 양변에 -1을 곱하면 x = -5 가 된다!",
       eq: "-x = 5",
       question: "마지막 줄에 -x = 5 가 나왔을 때\n최종 미지수 x의 값은?",
       options: [
         { text: "x = 5", isCorrect: false, desc: "앗! -x 앞의 마이너스(-) 부호를 반전시키지 않았어! 💣" },
         { text: "x = -5", isCorrect: true, desc: "정답! 양변에 -1을 곱해 x = -5 로 부호 반전! 🎯" }
-      ],
-      tip: "-x는 (-1)×x 이므로 양변에 -1을 곱하면 x = -5 가 된다!"
+      ]
     }
   ];
 
@@ -369,6 +399,10 @@
   let quizSelectedOption = null;
   let quizFeedback = null;
   let quizCompleted = false;
+  let quizActiveIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  let quizStats = quizData.map(() => ({ firstTry: null, attempts: 0 }));
+  let resultTab = 0; // 0: 종합 진단, 1: 내가 아는 개념, 2: 헷갈린 함정·처방전
+  let isWrongRetryMode = false;
 
   function updateUI() {
     if (sceneBadge) {
@@ -379,13 +413,27 @@
 
     if (currentScene === 7) {
       if (quizCompleted) {
+        if (sceneBadge) {
+          sceneBadge.innerText = "8. 📊 10대 함정 퀴즈 정밀 진단 리포트 (결과 분석)";
+        }
+        btnPrev.disabled = false;
+        btnPrev.innerText = "5대 원칙 복습 ◀";
         btnNext.disabled = false;
         btnNext.innerText = "처음으로 ↺";
         btnNext.style.background = "#10b981";
       } else {
+        if (sceneBadge) {
+          const totalQ = quizActiveIndices.length;
+          sceneBadge.innerText = isWrongRetryMode
+            ? `8. 🎯 [오답 집중 복습] 10대 함정 탈출 (${quizQuestionIdx + 1}/${totalQ})`
+            : `8. 🎯 [도전] 10대 함정 탈출 3초 스피드 퀴즈! (${quizQuestionIdx + 1}/${totalQ})`;
+        }
+        btnPrev.disabled = (quizQuestionIdx === 0 && !isWrongRetryMode);
+        btnPrev.innerText = (quizQuestionIdx > 0) ? "이전 문제 ◀" : "5대 원칙 복습 ◀";
+
         if (quizFeedback && quizFeedback.isCorrect) {
           btnNext.disabled = false;
-          btnNext.innerText = (quizQuestionIdx < quizData.length - 1) ? `다음 퀴즈 (Q${quizQuestionIdx + 2}) ▶` : "최종 결과 확인 🏆";
+          btnNext.innerText = (quizQuestionIdx < quizActiveIndices.length - 1) ? `다음 퀴즈 (${quizQuestionIdx + 2}/${quizActiveIndices.length}) ▶` : "최종 진단 결과 확인 🏆";
           btnNext.style.background = "#7c3aed";
         } else {
           btnNext.disabled = true;
@@ -437,20 +485,25 @@
       if (quizCompleted) {
         currentScene = 0;
         subStep = 0;
+        quizActiveIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
         quizQuestionIdx = 0;
         quizSelectedOption = null;
         quizFeedback = null;
         quizCompleted = false;
+        isWrongRetryMode = false;
+        resultTab = 0;
+        quizStats = quizData.map(() => ({ firstTry: null, attempts: 0 }));
         updateUI();
         return;
       }
       if (quizFeedback && quizFeedback.isCorrect) {
-        if (quizQuestionIdx < quizData.length - 1) {
+        if (quizQuestionIdx < quizActiveIndices.length - 1) {
           quizQuestionIdx++;
           quizSelectedOption = null;
           quizFeedback = null;
         } else {
           quizCompleted = true;
+          resultTab = 0;
           playSound('success');
         }
       }
@@ -472,7 +525,13 @@
   function goPrev() {
     playSound('pop');
     if (currentScene === 7) {
-      if (quizQuestionIdx > 0 && !quizCompleted) {
+      if (quizCompleted) {
+        currentScene = 6;
+        subStep = subStepMaxMap[6];
+        updateUI();
+        return;
+      }
+      if (quizQuestionIdx > 0) {
         quizQuestionIdx--;
         quizSelectedOption = null;
         quizFeedback = null;
@@ -1757,46 +1816,400 @@
   }
 
   // ==========================================
-  // Scene 7: 실전 스피드 퀴즈 (10문제 전면 확장)
+  // Scene 7: 실전 스피드 퀴즈 & 퀴즈 결과 진단 리포트 (결과 분석 화면)
   // ==========================================
   function renderSceneQuiz() {
     const cx = canvas.width / 2;
 
+    // ------------------------------------------
+    // [퀴즈 종료 후] 무엇을 알고 모르는지 알려주는 결과 진단 리포트 화면
+    // ------------------------------------------
     if (quizCompleted) {
+      const correctIndices = quizData.map((_, i) => i).filter(i => quizStats[i].firstTry === true);
+      const wrongIndices = quizData.map((_, i) => i).filter(i => quizStats[i].firstTry === false);
+      const correctCount = correctIndices.length;
+      const wrongCount = wrongIndices.length;
+      const score = correctCount * 10;
+
+      // 1. 상단 타이틀 & 스코어 헤더 바
       ctx.fillStyle = "#0f172a";
-      ctx.font = "bold 26px 'Pretendard', sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("🎉 축하합니다! 10대 함정 완벽 정복! 🎉", cx, 110);
+      ctx.font = "900 20px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("📊 10대 함정 퀴즈 정밀 진단 리포트", 40, 36);
 
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("내가 확실히 아는 개념 vs 다시 복습해야 할 함정 원포인트 처방전", 40, 54);
+
+      // 점수 배지
+      ctx.beginPath();
+      ctx.roundRect(640, 18, 160, 34, 17);
       ctx.fillStyle = "#7c3aed";
-      ctx.font = "bold 18px 'Pretendard', sans-serif";
-      ctx.fillText("양변에 x가 있는 복잡한 방정식 마스터 완료!", cx, 155);
+      ctx.fill();
 
-      ctx.fillStyle = "#475569";
-      ctx.font = "15px 'Pretendard', sans-serif";
-      ctx.fillText("등호다리 건너면 부호 바꿔, 괄호를 풀어야 이항 자격 생김, 항마다 다 곱하기까지 100점입니다.", cx, 195);
-      ctx.fillText("이제 학교 시험이나 응용문제에서도 절대 부호 실수를 하지 않을 거예요!", cx, 225);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`🎯 점수: ${score}점 (${correctCount}/10)`, 720, 40);
 
-      drawComicFace(ctx, 80, 360, false, 'smile');
-      drawCompactBubble(ctx, 80, 360, "대박 ㅋㅋㅋ 퀴즈 10개 전부 완벽 정답!\n방정식 풀기 이제 껌이네!", false);
+      // 등급/칭호 배지
+      let gradeColor = "#10b981";
+      let gradeText = "🌟 마스터";
+      if (score === 100) {
+        gradeColor = "#10b981";
+        gradeText = "🌟 만점 마스터!";
+      } else if (score >= 80) {
+        gradeColor = "#2563eb";
+        gradeText = "⚡ 우수 실력자";
+      } else if (score >= 60) {
+        gradeColor = "#f59e0b";
+        gradeText = "🌱 성장형 도전자";
+      } else {
+        gradeColor = "#ef4444";
+        gradeText = "💪 기초 다지기";
+      }
 
-      drawComicFace(ctx, 880, 360, true, 'smile');
-      drawCompactBubble(ctx, 880, 360, "너 진짜 실력 미쳤다!\n친구들한테도 이 비법 알려주자! 🚀", true);
+      ctx.beginPath();
+      ctx.roundRect(810, 18, 110, 34, 17);
+      ctx.fillStyle = gradeColor;
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.fillText(gradeText, 865, 40);
+
+      // 2. 탭 버튼 3개 (x: 40~920, y: 64~98)
+      const tabs = [
+        { label: `📋 종합 진단 (한눈에 비교)`, x: 40, w: 260 },
+        { label: `🟢 내가 아는 개념 (${correctCount})`, x: 310, w: 295 },
+        { label: `🔴 헷갈린 함정·처방전 (${wrongCount})`, x: 615, w: 305 }
+      ];
+
+      tabs.forEach((tab, tIdx) => {
+        const isSelected = (resultTab === tIdx);
+        ctx.beginPath();
+        ctx.roundRect(tab.x, 64, tab.w, 34, 8);
+
+        if (isSelected) {
+          ctx.fillStyle = (tIdx === 0) ? "#7c3aed" : (tIdx === 1 ? "#16a34a" : "#dc2626");
+          ctx.fill();
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+        } else {
+          ctx.fillStyle = "#f1f5f9";
+          ctx.strokeStyle = "#cbd5e1";
+          ctx.lineWidth = 1.5;
+          ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "#475569";
+          ctx.font = "bold 13px 'Pretendard', sans-serif";
+        }
+        ctx.textAlign = "center";
+        ctx.fillText(tab.label, tab.x + tab.w / 2, 86);
+      });
+
+      // 3. 중앙 카드 영역 (y: 108 ~ 410, h: 302)
+      if (resultTab === 0) {
+        // [Tab 0: 종합 진단 좌우 비교]
+        // 좌측 카드: 내가 확실히 아는 것
+        const leftX = 40, leftY = 108, cardW = 430, cardH = 302;
+        ctx.fillStyle = "#f0fdf4";
+        ctx.strokeStyle = "#86efac";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(leftX, leftY, cardW, cardH, 14);
+        ctx.fill(); ctx.stroke();
+
+        // 좌측 카드 헤더 밴드
+        ctx.fillStyle = "#dcfce7";
+        ctx.beginPath();
+        ctx.roundRect(leftX, leftY, cardW, 36, [14, 14, 0, 0]);
+        ctx.fill();
+
+        ctx.fillStyle = "#166534";
+        ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(`🟢 내가 확실하게 알고 있는 개념 (${correctCount}/10)`, leftX + 16, leftY + 23);
+
+        if (correctCount === 0) {
+          ctx.fillStyle = "#475569";
+          ctx.font = "14px 'Pretendard', sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("아직 첫 시도에 완벽 통과한 항목이 없습니다.", leftX + cardW / 2, leftY + 120);
+          ctx.fillText("오답을 통해 배우는 것이 진짜 수학 실력입니다!", leftX + cardW / 2, leftY + 150);
+          ctx.fillText("우측 처방전을 확인하고 다시 도전해 보세요! 💪", leftX + cardW / 2, leftY + 180);
+        } else if (correctCount === 10) {
+          ctx.fillStyle = "#15803d";
+          ctx.font = "bold 15px 'Pretendard', sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("🏆 10대 함정 퍼펙트 올클리어! 🏆", leftX + cardW / 2, leftY + 68);
+
+          ctx.font = "12.5px 'Pretendard', sans-serif";
+          ctx.fillStyle = "#166534";
+          const col1 = [
+            "✅ 등호다리 이항 부호 반전",
+            "✅ 비례식 괄호 묶기",
+            "✅ 소수 자릿수 최대(100) 곱",
+            "✅ 소수 괄호 대표에만 곱",
+            "✅ 분배법칙 풀고 이항"
+          ];
+          const col2 = [
+            "✅ 분모 없앨 때 상수항 곱",
+            "✅ 소수·분수 분수로 통일",
+            "✅ 양변 전체 최소공배수 곱",
+            "✅ 괄호 앞 마이너스 반전",
+            "✅ -x = a 음수 계수 처리"
+          ];
+          ctx.textAlign = "left";
+          col1.forEach((t, i) => ctx.fillText(t, leftX + 22, leftY + 105 + i * 36));
+          col2.forEach((t, i) => ctx.fillText(t, leftX + 225, leftY + 105 + i * 36));
+        } else {
+          // 일부 맞힌 경우
+          ctx.textAlign = "left";
+          if (correctCount <= 5) {
+            correctIndices.forEach((idx, i) => {
+              const q = quizData[idx];
+              const cy = leftY + 54 + i * 48;
+              ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+              ctx.fillStyle = "#15803d";
+              ctx.fillText(`✅ [Q${idx + 1}] ${q.concept}`, leftX + 16, cy);
+
+              ctx.font = "12px 'Pretendard', sans-serif";
+              ctx.fillStyle = "#475569";
+              ctx.fillText(q.knowDesc, leftX + 28, cy + 18);
+            });
+          } else {
+            // 6~9개 맞힌 경우: 컴팩트 2열 배치
+            correctIndices.forEach((idx, i) => {
+              const q = quizData[idx];
+              const col = (i < 5) ? 0 : 1;
+              const row = (i < 5) ? i : i - 5;
+              const cx = leftX + 16 + col * 205;
+              const cy = leftY + 58 + row * 46;
+
+              ctx.font = "bold 12.5px 'Pretendard', sans-serif";
+              ctx.fillStyle = "#15803d";
+              ctx.fillText(`✅ Q${idx + 1}. ${q.concept.split(' ')[0]} ${q.concept.split(' ')[1] || ''}`, cx, cy);
+
+              ctx.font = "11px 'Pretendard', sans-serif";
+              ctx.fillStyle = "#64748b";
+              ctx.fillText(q.concept, cx + 18, cy + 16);
+            });
+          }
+        }
+
+        // 우측 카드: 내가 헷갈렸거나 몰랐던 것 (약점 & 처방전)
+        const rightX = 490, rightY = 108;
+        ctx.fillStyle = "#fef2f2";
+        ctx.strokeStyle = "#fca5a5";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(rightX, rightY, cardW, cardH, 14);
+        ctx.fill(); ctx.stroke();
+
+        // 우측 카드 헤더 밴드
+        ctx.fillStyle = "#fee2e2";
+        ctx.beginPath();
+        ctx.roundRect(rightX, rightY, cardW, 36, [14, 14, 0, 0]);
+        ctx.fill();
+
+        ctx.fillStyle = "#991b1b";
+        ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(`🔴 헷갈리거나 몰랐던 함정 & 처방전 (${wrongCount}/10)`, rightX + 16, rightY + 23);
+
+        if (wrongCount === 0) {
+          ctx.fillStyle = "#991b1b";
+          ctx.font = "bold 15px 'Pretendard', sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("🎉 헷갈린 함정 0개! 무결점 완벽 정복! 🎉", rightX + cardW / 2, rightY + 95);
+
+          ctx.font = "13.5px 'Pretendard', sans-serif";
+          ctx.fillStyle = "#475569";
+          ctx.fillText("등호다리 부호 반전, 괄호 분배, 분수·상수항 곱하기까지", rightX + cardW / 2, rightY + 135);
+          ctx.fillText("모든 함정을 단 한 번의 실수도 없이 간파했습니다!", rightX + cardW / 2, rightY + 165);
+          ctx.fillText("학교 시험이나 서술형 평가에서도 100점 확정입니다! 💯", rightX + cardW / 2, rightY + 195);
+        } else {
+          // 틀렸던 항목들 처방전 리스트
+          ctx.textAlign = "left";
+          const maxShow = Math.min(wrongIndices.length, 5);
+          for (let i = 0; i < maxShow; i++) {
+            const idx = wrongIndices[i];
+            const q = quizData[idx];
+            const cy = rightY + 52 + i * 48;
+
+            ctx.font = "bold 13px 'Pretendard', sans-serif";
+            ctx.fillStyle = "#b91c1c";
+            ctx.fillText(`⚠️ [Q${idx + 1}] ${q.badge}`, rightX + 16, cy);
+
+            ctx.font = "12px 'Pretendard', sans-serif";
+            ctx.fillStyle = "#334155";
+            ctx.fillText(`👉 ${q.weakDesc}`, rightX + 26, cy + 18);
+          }
+          if (wrongIndices.length > 5) {
+            ctx.font = "11.5px 'Pretendard', sans-serif";
+            ctx.fillStyle = "#991b1b";
+            ctx.textAlign = "right";
+            ctx.fillText(`외 ${wrongIndices.length - 5}개 문제 처방은 상단 [🔴 헷갈린 함정] 탭을 눌러보세요!`, rightX + cardW - 16, rightY + cardH - 12);
+          }
+        }
+      } else if (resultTab === 1) {
+        // [Tab 1: 내가 아는 개념 상세 - 나의 수학 강점 분석]
+        const cardX = 40, cardY = 108, cardW = 880, cardH = 302;
+        ctx.fillStyle = "#f0fdf4";
+        ctx.strokeStyle = "#86efac";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY, cardW, cardH, 14);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#dcfce7";
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY, cardW, 36, [14, 14, 0, 0]);
+        ctx.fill();
+
+        ctx.fillStyle = "#166534";
+        ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(`🟢 내가 확실하게 알고 있는 개념 (${correctCount}개) - 나의 수학 강점 분석`, cardX + 16, cardY + 23);
+
+        if (correctCount === 0) {
+          ctx.fillStyle = "#475569";
+          ctx.font = "14px 'Pretendard', sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("첫 시도에 맞힌 개념이 아직 없습니다. 앞선 5대 원칙을 차근차근 복습해 보세요!", cardX + cardW / 2, cardY + 150);
+        } else {
+          ctx.textAlign = "left";
+          const half = Math.ceil(correctIndices.length / 2);
+          correctIndices.forEach((idx, i) => {
+            const q = quizData[idx];
+            const col = (i < half) ? 0 : 1;
+            const row = (i < half) ? i : i - half;
+            const itemX = cardX + 20 + col * 435;
+            const itemY = cardY + 54 + row * 46;
+
+            ctx.font = "bold 13px 'Pretendard', sans-serif";
+            ctx.fillStyle = "#15803d";
+            ctx.fillText(`✅ Q${idx + 1}. ${q.concept}`, itemX, itemY);
+
+            ctx.font = "11.5px 'Pretendard', sans-serif";
+            ctx.fillStyle = "#475569";
+            ctx.fillText(`식: ${q.eq}  |  ${q.knowDesc}`, itemX + 16, itemY + 17);
+          });
+        }
+      } else if (resultTab === 2) {
+        // [Tab 2: 헷갈린 함정·처방전 상세 - 나의 약점 완벽 보완]
+        const cardX = 40, cardY = 108, cardW = 880, cardH = 302;
+        ctx.fillStyle = "#fef2f2";
+        ctx.strokeStyle = "#fca5a5";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY, cardW, cardH, 14);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#fee2e2";
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY, cardW, 36, [14, 14, 0, 0]);
+        ctx.fill();
+
+        ctx.fillStyle = "#991b1b";
+        ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(`🔴 내가 헷갈렸던 함정 & 골든 처방전 (${wrongCount}개) - 나의 약점 완벽 보완`, cardX + 16, cardY + 23);
+
+        if (wrongCount === 0) {
+          ctx.fillStyle = "#15803d";
+          ctx.font = "bold 16px 'Pretendard', sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("🎉 보완할 약점이 없습니다! 10대 함정을 완벽하게 통달했습니다! 🎉", cardX + cardW / 2, cardY + 150);
+        } else {
+          ctx.textAlign = "left";
+          const half = Math.ceil(wrongIndices.length / 2);
+          wrongIndices.forEach((idx, i) => {
+            const q = quizData[idx];
+            const col = (i < half) ? 0 : 1;
+            const row = (i < half) ? i : i - half;
+            const itemX = cardX + 20 + col * 435;
+            const itemY = cardY + 54 + row * 48;
+
+            ctx.font = "bold 13px 'Pretendard', sans-serif";
+            ctx.fillStyle = "#b91c1c";
+            ctx.fillText(`⚠️ [Q${idx + 1}] ${q.badge}`, itemX, itemY);
+
+            ctx.font = "11.5px 'Pretendard', sans-serif";
+            ctx.fillStyle = "#475569";
+            ctx.fillText(`식: ${q.eq}`, itemX + 16, itemY + 16);
+
+            ctx.font = "bold 11px 'Pretendard', sans-serif";
+            ctx.fillStyle = "#b91c1c";
+            ctx.fillText(`💡 팁: ${q.tip}`, itemX + 16, itemY + 31);
+          });
+        }
+      }
+
+      // 4. 하단 캐릭터 & 맞춤형 총평 말풍선 & 액션 버튼 (y: 420 ~ 530)
+      const faceMood = (score === 100) ? 'smile' : (score >= 60 ? 'smile' : 'shock');
+      drawComicFace(ctx, 65, 474, false, faceMood);
+
+      // 맞춤 종합 피드백 텍스트 구성
+      let feedbackText = "";
+      if (score === 100) {
+        feedbackText = "대박 ㅋㅋㅋ 10개 함정 전부 첫 시도에 완벽 정답!\n이항, 분수, 소수, 비례식까지 너 진짜 방정식의 신이다! 🚀";
+      } else if (wrongIndices.some(i => [0, 8, 9].includes(i))) {
+        feedbackText = "계산 실력은 아주 훌륭해요! 등호다리를 넘거나 괄호 앞 '-'\n부호 반전(+ ↔ -)만 한 번 더 꼼꼼히 확인하면 만점이에요! 🎯";
+      } else if (wrongIndices.some(i => [5, 7].includes(i))) {
+        feedbackText = "이항은 잘하는데, 분모를 없앨 때 '홀로 있는 상수항'에도\n공평하게 곱해주는 규칙을 기억하면 절대 안 틀려요! ✨";
+      } else if (wrongIndices.some(i => [2, 3, 6].includes(i))) {
+        feedbackText = "괄호 밖 대표에만 10을 곱하고, 분수로 통일하는 전략을\n확실히 다져두면 시험 때 엄청 든든할 거예요! 💪";
+      } else {
+        feedbackText = "실수한 문제들이 바로 시험에 꼭 나오는 핵심 함정들이에요!\n처방전을 확인하고 다시 풀어보면 완벽하게 정복할 수 있어요! 🌟";
+      }
+      drawCompactBubble(ctx, 65, 474, feedbackText, false);
+
+      // 우측 액션 버튼들
+      // 버튼 1: [🔄 10문제 전체 다시 풀기]
+      const btn1X = 675, btn1Y = 432, btn1W = 245, btn1H = 40;
+      ctx.beginPath();
+      ctx.roundRect(btn1X, btn1Y, btn1W, btn1H, 10);
+      ctx.fillStyle = "#7c3aed";
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🔄 10문제 전체 다시 풀기", btn1X + btn1W / 2, btn1Y + 25);
+
+      // 버튼 2: [🎯 틀린 문제만 복습하기] (오답이 있을 때만 표시)
+      if (wrongCount > 0) {
+        const btn2X = 675, btn2Y = 480, btn2W = 245, btn2H = 40;
+        ctx.beginPath();
+        ctx.roundRect(btn2X, btn2Y, btn2W, btn2H, 10);
+        ctx.fillStyle = "#ea580c";
+        ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(`🎯 틀린 ${wrongCount}문제만 집중 복습`, btn2X + btn2W / 2, btn2Y + 25);
+      }
+
       return;
     }
 
-    const q = quizData[quizQuestionIdx];
+    // ------------------------------------------
+    // [퀴즈 진행 중] 문제 화면
+    // ------------------------------------------
+    const realQIdx = quizActiveIndices[quizQuestionIdx];
+    const q = quizData[realQIdx];
 
     // 상단 퀴즈 진행 바
     ctx.fillStyle = "#7c3aed";
     ctx.font = "bold 15px 'Pretendard', sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(`Q${quizQuestionIdx + 1}. [${q.badge}]`, 60, 42);
+    const badgePrefix = isWrongRetryMode ? "🎯 [오답 복습] " : "";
+    ctx.fillText(`${badgePrefix}Q${quizQuestionIdx + 1}. [${q.badge}]`, 60, 42);
 
     ctx.fillStyle = "#64748b";
     ctx.font = "14px 'Pretendard', sans-serif";
     ctx.textAlign = "right";
-    ctx.fillText(`진행: ${quizQuestionIdx + 1} / ${quizData.length}`, 900, 42);
+    ctx.fillText(`진행: ${quizQuestionIdx + 1} / ${quizActiveIndices.length}`, 900, 42);
 
     // 문제 박스
     ctx.fillStyle = "#ffffff";
@@ -1911,9 +2324,9 @@
     }
   }
 
-  // 캔버스 클릭 이벤트 (퀴즈 선택지)
+  // 캔버스 클릭 이벤트 (퀴즈 선택지 및 진단 결과 화면 인터랙션)
   canvas.addEventListener('click', function(e) {
-    if (currentScene !== 7 || quizCompleted) return;
+    if (currentScene !== 7) return;
 
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -1921,6 +2334,63 @@
     const clickX = (e.clientX - rect.left) * scaleX;
     const clickY = (e.clientY - rect.top) * scaleY;
 
+    // 1. 퀴즈 완료 리포트 화면 클릭 처리
+    if (quizCompleted) {
+      // 탭 1 (종합 진단)
+      if (clickX >= 40 && clickX <= 300 && clickY >= 64 && clickY <= 98) {
+        resultTab = 0;
+        playSound('pop');
+        return;
+      }
+      // 탭 2 (내가 아는 개념)
+      if (clickX >= 310 && clickX <= 605 && clickY >= 64 && clickY <= 98) {
+        resultTab = 1;
+        playSound('pop');
+        return;
+      }
+      // 탭 3 (헷갈린 함정·처방전)
+      if (clickX >= 615 && clickX <= 920 && clickY >= 64 && clickY <= 98) {
+        resultTab = 2;
+        playSound('pop');
+        return;
+      }
+
+      // 버튼 1: [🔄 10문제 전체 다시 풀기]
+      if (clickX >= 675 && clickX <= 920 && clickY >= 432 && clickY <= 472) {
+        quizActiveIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+        quizQuestionIdx = 0;
+        quizSelectedOption = null;
+        quizFeedback = null;
+        quizCompleted = false;
+        isWrongRetryMode = false;
+        resultTab = 0;
+        quizStats = quizData.map(() => ({ firstTry: null, attempts: 0 }));
+        playSound('step');
+        updateUI();
+        return;
+      }
+
+      // 버튼 2: [🎯 틀린 문제만 집중 복습]
+      const wrongList = quizData.map((_, i) => i).filter(i => quizStats[i].firstTry === false);
+      if (wrongList.length > 0 && clickX >= 675 && clickX <= 920 && clickY >= 480 && clickY <= 520) {
+        quizActiveIndices = [...wrongList];
+        quizQuestionIdx = 0;
+        quizSelectedOption = null;
+        quizFeedback = null;
+        quizCompleted = false;
+        isWrongRetryMode = true;
+        wrongList.forEach(idx => {
+          quizStats[idx].firstTry = null;
+          quizStats[idx].attempts = 0;
+        });
+        playSound('step');
+        updateUI();
+        return;
+      }
+      return;
+    }
+
+    // 2. 퀴즈 문제 선택지 클릭 처리
     const optY = 210;
     const optW = 415;
     const optH = 75;
@@ -1935,10 +2405,44 @@
     }
   });
 
+  // 마우스 이동 시 커서 변경 지원
+  canvas.addEventListener('mousemove', function(e) {
+    if (currentScene !== 7) {
+      canvas.style.cursor = 'default';
+      return;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+
+    if (quizCompleted) {
+      const isTab = (my >= 64 && my <= 98 && mx >= 40 && mx <= 920);
+      const isBtn1 = (mx >= 675 && mx <= 920 && my >= 432 && my <= 472);
+      const wrongCount = quizData.filter((_, i) => quizStats[i].firstTry === false).length;
+      const isBtn2 = (wrongCount > 0 && mx >= 675 && mx <= 920 && my >= 480 && my <= 520);
+
+      canvas.style.cursor = (isTab || isBtn1 || isBtn2) ? 'pointer' : 'default';
+    } else {
+      const isOpt1 = (mx >= 55 && mx <= 470 && my >= 210 && my <= 285);
+      const isOpt2 = (mx >= 490 && mx <= 905 && my >= 210 && my <= 285);
+      canvas.style.cursor = (isOpt1 || isOpt2) ? 'pointer' : 'default';
+    }
+  });
+
   function selectQuizOption(optIdx) {
     quizSelectedOption = optIdx;
-    const q = quizData[quizQuestionIdx];
+    const realQIdx = quizActiveIndices[quizQuestionIdx];
+    const q = quizData[realQIdx];
     const opt = q.options[optIdx];
+
+    // 첫 시도 여부 기록 (진단 리포트용)
+    if (quizStats[realQIdx].firstTry === null) {
+      quizStats[realQIdx].firstTry = opt.isCorrect;
+    }
+    quizStats[realQIdx].attempts++;
 
     if (opt.isCorrect) {
       playSound('success');
