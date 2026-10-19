@@ -1,0 +1,4848 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>함수 ! 너 잘 만났다</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #0b1120;
+      color: #f8fafc;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 10px;
+      overflow-x: hidden;
+    }
+
+    #app-container {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 상단 헤더: 왼쪽 "일차함수" 배지 + 눈에 띄는 그림 + "함수 ! 너 잘 만났다" */
+    .top-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 10px 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .main-topic-badge {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 2px solid #3b82f6;
+      font-size: 15px;
+      font-weight: 900;
+      padding: 5px 14px;
+      border-radius: 12px;
+      letter-spacing: -0.2px;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-icon-svg {
+      width: 32px;
+      height: 32px;
+      display: block;
+      filter: drop-shadow(0 2px 5px rgba(37, 99, 235, 0.25));
+    }
+
+    .header-main-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.4px;
+    }
+
+    .header-right-badge {
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 7px 18px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+      letter-spacing: -0.2px;
+    }
+
+    /* 캔버스 카드 */
+    .canvas-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 960 / 540;
+      cursor: default;
+    }
+
+    /* 하단 조작 패널 */
+    #ui-panel {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 8px 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+      border: 2px solid #cbd5e1;
+    }
+
+    .nav-btn {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 10px 24px;
+      font-size: 15.5px;
+      font-weight: 800;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      white-space: nowrap;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .nav-btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .nav-btn:disabled {
+      background: #cbd5e1;
+      color: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .nav-btn.home {
+      background: #475569;
+      box-shadow: 0 4px 10px rgba(71, 85, 105, 0.25);
+    }
+    .nav-btn.home:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  <!-- 상단 헤더: 왼쪽 "일차함수" 배지 + 눈에 띄는 그림 + "함수 ! 너 잘 만났다" -->
+  <div class="top-header">
+    <div class="header-left">
+      <span class="main-topic-badge">일차함수</span>
+      <div class="title-group">
+        <svg class="title-icon-svg" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="9" fill="url(#titleGrad)" />
+          <path d="M5 21H27M10 27V5" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+          <path d="M25 19L27 21L25 23M8 7L10 5L12 7" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6 25L25 6" stroke="#fde047" stroke-width="3.2" stroke-linecap="round"/>
+          <circle cx="10" cy="21" r="3" fill="#ef4444" stroke="#ffffff" stroke-width="1.2"/>
+          <defs>
+            <linearGradient id="titleGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#1e40af"/>
+              <stop offset="1" stop-color="#2563eb"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="header-main-title">함수 ! 너 잘 만났다</span>
+      </div>
+    </div>
+    <div class="header-right-badge" id="header-badge">
+      내가 누구게?
+    </div>
+  </div>
+
+  <!-- 메인 캔버스 카드 -->
+  <div class="canvas-card">
+    <canvas id="canvas" width="960" height="540"></canvas>
+  </div>
+
+  <!-- 하단 조작 패널 -->
+  <div id="ui-panel">
+    <a href="index.html" class="nav-btn home" id="btn-home">🏠 목차</a>
+    <button class="nav-btn" id="btn-prev" onclick="goPrev()">◀ 이전</button>
+    <button class="nav-btn" id="btn-next" onclick="goNext()">보러가자 ▶</button>
+  </div>
+</div>
+
+<script>
+  // ==========================================
+  // Web Audio 효과음 신디사이저
+  // ==========================================
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = null;
+
+  function playSound(type) {
+    try {
+      if (!audioCtx) audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'click') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(260, now + 0.06);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.06);
+        osc.start(now);
+        osc.stop(now + 0.06);
+      } else if (type === 'step') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(680, now + 0.1);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } else if (type === 'pop') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(560, now);
+        osc.frequency.exponentialRampToValueAtTime(840, now + 0.1);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } else if (type === 'tok') {
+        // "톡!" 하고 떨어지는 전용 고음 팝 사운드
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1020, now);
+        osc.frequency.exponentialRampToValueAtTime(320, now + 0.11);
+        gain.gain.setValueAtTime(0.26, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.11);
+        osc.start(now);
+        osc.stop(now + 0.11);
+      } else if (type === 'fanfare') {
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, idx) => {
+          const subOsc = audioCtx.createOscillator();
+          const subGain = audioCtx.createGain();
+          subOsc.connect(subGain);
+          subGain.connect(audioCtx.destination);
+          subOsc.type = 'triangle';
+          subOsc.frequency.value = freq;
+          subGain.gain.setValueAtTime(0.18, now + idx * 0.08);
+          subGain.gain.linearRampToValueAtTime(0.01, now + idx * 0.08 + 0.22);
+          subOsc.start(now + idx * 0.08);
+          subOsc.stop(now + idx * 0.08 + 0.22);
+        });
+      }
+    } catch (e) {}
+  }
+
+  // ==========================================
+  // 앱 상태 관리 (총 8개 화면)
+  // ==========================================
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  // 1: 내가 누구게?
+  // 2: 넌 어떻게 생겼지?
+  // 3: 기울기란?
+  // 4: a 값으로 그래프 그리기 (a 값을 선택해 그래프가 그려짐)
+  // 5: 좌표로 a 정하기 (좌표를 선택해 a가 정해짐)
+  // 6: 함수가 뭐야? (관계식 선택 -> 색깔 다른 x=1,2,3 투입 -> 같은 색 y 변화 -> 함수란?)
+  // 7: 정비례와 반비례 (그래프 + 아래 한 줄 핵심 설명)
+  // 8: 정비례와 반비례 예시 (표 -> 이걸 관계식으로? -> 다른 예시 보기? 단계별 공개)
+  let currentScene = 1;
+
+  // 1화면 상태:
+  let hintUnlocked = [false, false, false];
+  let scene1Revealed = false;
+
+  // 2화면 회전 애니메이션 상태
+  let isSpinningScene2 = false;
+  let stickAngle2 = -Math.PI / 4;
+  let spinSpeed = 0.032;
+  let animReqId = null;
+
+  // 3화면 상태: 0: 양수 (+1.5), 1: 음수 (-1.5)
+  let stepScene3 = 0;
+
+  // 4화면 상태: a의 값을 선택해서 그래프가 그려지는 화면
+  let scene4SelectedA = -1; // -1: 회전중, 0~3: 선택된 a 인덱스
+  let stickAngle4A = -Math.PI / 5;
+  let isSpinningScene4A = true;
+
+  const scene4AChoices = [
+    { a: 2, aText: "2", label: "a = 2", desc: "오른쪽 위 (가파름) ↗", color: "#2563eb" },
+    { a: 0.5, aText: "0.5", label: "a = 0.5", desc: "오른쪽 위 (완만함) ↗", color: "#059669" },
+    { a: -1, aText: "-1", label: "a = -1", desc: "오른쪽 아래 ↘", color: "#dc2626" },
+    { a: -2, aText: "-2", label: "a = -2", desc: "오른쪽 아래 (가파름) ↘", color: "#7c3aed" }
+  ];
+
+  // 5화면 상태: 좌표를 선택해서 a가 정해지는 화면
+  let scene5LockedPoint = -1; // -1: 회전중, 0~3: 선택된 좌표 인덱스
+  let stickAngle5 = -Math.PI / 6;
+  let isSpinningScene5 = true;
+
+  const scene5Points = [
+    { x: 1, y: 2, label: "(1, 2)", a: 2, aText: "2", desc: "오른쪽 위 ↗", color: "#2563eb" },
+    { x: 2, y: 1, label: "(2, 1)", a: 0.5, aText: "0.5", desc: "완만한 오른쪽 위 ↗", color: "#059669" },
+    { x: 2, y: -2, label: "(2, -2)", a: -1, aText: "-1", desc: "오른쪽 아래 ↘", color: "#dc2626" },
+    { x: -1, y: 2, label: "(-1, 2)", a: -2, aText: "-2", desc: "가파른 오른쪽 아래 ↘", color: "#7c3aed" }
+  ];
+
+  // 6화면 자판기 상태 (초기값 -1: 관계식 선택 전)
+  let scene6MachineType = -1; // -1: 미선택, 0: 600x, 1: -2x, 2: 1000x
+  let scene6SelectedX = 0;    // 0: 미선택, 1: 파란색(x=1), 2: 초록색(x=2), 3: 보라색(x=3)
+  let scene6ShowDef = false;  // [함수란?] 버튼 클릭 여부
+
+  // x 값 1, 2, 3 고유 색상 (x와 같은 색으로 y도 표시)
+  const xColorMap = {
+    1: { main: "#2563eb", bg: "#dbeafe", name: "파랑" },
+    2: { main: "#059669", bg: "#d1fae5", name: "초록" },
+    3: { main: "#7c3aed", bg: "#ede9fe", name: "보라" }
+  };
+
+  const machineConfigs = [
+    {
+      type: 0,
+      title: "✏️ 1. y = 600 · x (연필값)",
+      formula: "y = 600 · x",
+      unitIn: "자루",
+      unitOut: "원",
+      rate: 600,
+      color: "#2563eb",
+      bg: "#eff6ff"
+    },
+    {
+      type: 1,
+      title: "🌡️ 2. y = -2 · x (기온 변화)",
+      formula: "y = -2 · x",
+      unitIn: "시간",
+      unitOut: "℃",
+      rate: -2,
+      color: "#dc2626",
+      bg: "#fef2f2"
+    },
+    {
+      type: 2,
+      title: "🥤 3. y = 1000 · x (음료수값)",
+      formula: "y = 1000 · x",
+      unitIn: "캔",
+      unitOut: "원",
+      rate: 1000,
+      color: "#059669",
+      bg: "#f0fdf4"
+    }
+  ];
+
+  // 7화면 상태: 0: 정비례, 1: 반비례
+  let scene7Mode = 0;
+
+  // 8화면 상태: 0: 정비례 예시, 1: 반비례 예시 / step: 0(표), 1(관계식), 2(다른 예시)
+  let scene8Mode = 0;
+  let scene8Step = 0;
+
+  // 9화면 상태: 정비례/반비례에 따라 지나는 사분면 (mode: 0 정비례, 1 반비례 / sign: -1 미선택, 0 양수(a>0), 1 음수(a<0))
+  let scene9Mode = 0;
+  let scene9Sign = -1;
+
+  // 10화면 상태: 반비례 좀 더 살펴보기 (1) - 두 좌표를 곱하면 a가 됨 (사례 3개)
+  let scene10SelectedCase = -1; // -1: 미선택, 0~2: 사례 1~3
+  const scene10Cases = [
+    { x: 2, y: 3, a: 6, label: "사례 1 : 점 (2, 3)", ptText: "(2, 3)", calcText: "2 × 3 = 6", formula: "y = 6 / x", color: "#2563eb", bg: "#eff6ff", border: "#93c5fd" },
+    { x: 1, y: 4, a: 4, label: "사례 2 : 점 (1, 4)", ptText: "(1, 4)", calcText: "1 × 4 = 4", formula: "y = 4 / x", color: "#059669", bg: "#f0fdf4", border: "#6ee7b7" },
+    { x: -2, y: 3, a: -6, label: "사례 3 : 점 (-2, 3)", ptText: "(-2, 3)", calcText: "(-2) × 3 = -6", formula: "y = -6 / x", color: "#dc2626", bg: "#fef2f2", border: "#fca5a5" }
+  ];
+
+  // 11화면 상태: 반비례 좀 더 살펴보기 (2) - 원점에서부터의 직사각형 넓이 일정 (y = 6 / x)
+  let scene11SelectedRect = -1; // -1: 미선택, 0: (1,6), 1: (2,3), 2: (3,2), 3: 모두 겹쳐 보기
+  const scene11Rects = [
+    { x: 1, y: 6, area: 6, label: "점 (1, 6) 의 직사각형", desc: "가로 1 × 세로 6 = 넓이 6", color: "#2563eb", fill: "rgba(37, 99, 235, 0.22)", bg: "#eff6ff", border: "#93c5fd" },
+    { x: 2, y: 3, area: 6, label: "점 (2, 3) 의 직사각형", desc: "가로 2 × 세로 3 = 넓이 6", color: "#059669", fill: "rgba(5, 150, 105, 0.22)", bg: "#f0fdf4", border: "#6ee7b7" },
+    { x: 3, y: 2, area: 6, label: "점 (3, 2) 의 직사각형", desc: "가로 3 × 세로 2 = 넓이 6", color: "#7c3aed", fill: "rgba(124, 58, 237, 0.22)", bg: "#f5f3ff", border: "#c4b5fd" }
+  ];
+
+  // 12화면 상태: 정비례와 반비례 비교 퀴즈 5개
+  let scene12QIdx = 0;
+  let scene12Selected = [-1, -1, -1, -1, -1];
+  let scene12Solved = [false, false, false, false, false];
+  let scene12FirstTry = [null, null, null, null, null];
+
+  const scene12Quizzes = [
+    {
+      qLines: [
+        "Q1. x와 y의 관계식 중에서 '정비례'와 '반비례'의 관계식이",
+        "바르게 짝지어진 것은 무엇일까요? (단, a는 0이 아닌 수)"
+      ],
+      choices: [
+        "①  정비례 :  y = a · x     /     반비례 :  y = a / x",
+        "②  정비례 :  y = a / x     /     반비례 :  y = a · x",
+        "③  정비례 :  y = x + a     /     반비례 :  y = x - a"
+      ],
+      ans: 0,
+      explain: "정비례는 y = a · x, 반비례는 x가 분모에 있는 y = a / x (x · y = a) 모양입니다!"
+    },
+    {
+      qLines: [
+        "Q2. x의 값이 2배, 3배, 4배로 커질 때,",
+        "y의 값도 2배, 3배, 4배로 같은 비로 커지는 관계는?"
+      ],
+      choices: [
+        "①  반비례 관계 (y = a / x)",
+        "②  정비례 관계 (y = a · x)",
+        "③  일정한 수가 더해지는 관계"
+      ],
+      ans: 1,
+      explain: "x가 2배, 3배 될 때 y도 2배, 3배가 되면 '정비례', 1/2배, 1/3배가 되면 '반비례'입니다!"
+    },
+    {
+      qLines: [
+        "Q3. 그래프 위의 어느 점 (x, y)를 골라도 두 좌표의 곱(x · y)과",
+        "원점에서부터의 직사각형 넓이가 항상 일정한 관계는?"
+      ],
+      choices: [
+        "①  정비례 관계 (y = a · x)",
+        "②  반비례 관계 (y = a / x)",
+        "③  둘 다 곱이 항상 일정하다"
+      ],
+      ans: 1,
+      explain: "반비례(y = a / x)는 두 좌표의 곱(x · y = a)과 직사각형 넓이가 항상 일정합니다!"
+    },
+    {
+      qLines: [
+        "Q4. 좌표평면에서 '정비례'와 '반비례' 그래프의 특징을",
+        "가장 바르게 비교한 것은 어느 것일까요?"
+      ],
+      choices: [
+        "①  둘 다 원점 (0, 0)을 지나는 곧은 직선이다.",
+        "②  정비례는 원점을 지나는 직선, 반비례는 원점을 지나지 않는 한 쌍의 매끄러운 곡선이다.",
+        "③  a > 0이면 정비례는 제1·3사분면, 반비례는 제2·4사분면을 지난다."
+      ],
+      ans: 1,
+      explain: "정비례는 원점을 지나는 직선, 반비례는 원점을 지나지 않는 한 쌍의 매끄러운 곡선입니다!"
+    },
+    {
+      qLines: [
+        "Q5. [실생활 비교] '1개에 800원인 빵 x개의 값 y원'과",
+        "'피자 12조각을 x명이 똑같이 나눌 때 1명당 먹는 조각 수 y개'의 관계는?"
+      ],
+      choices: [
+        "①  빵 가격 : 정비례 (y = 800 · x)   /   피자 나누기 : 반비례 (y = 12 / x)",
+        "②  빵 가격 : 반비례 (y = 800 / x)   /   피자 나누기 : 정비례 (y = 12 · x)",
+        "③  두 상황 모두 정비례 관계이다."
+      ],
+      ans: 0,
+      explain: "빵 가격은 정비례(y = 800·x), 12조각을 나눠 먹는 피자는 반비례(y = 12/x)입니다!"
+    }
+  ];
+
+  // 13화면 상태: 함수의 개념을 알려주는 퀴즈 5개
+  let scene13QIdx = 0;
+  let scene13Selected = [-1, -1, -1, -1, -1];
+  let scene13Solved = [false, false, false, false, false];
+  let scene13FirstTry = [null, null, null, null, null];
+
+  const scene13Quizzes = [
+    {
+      qLines: [
+        "Q1. [함수의 뜻] 자판기에 버튼(x)을 하나 누르면 음료수(y)가 딱 하나 나옵니다.",
+        "이처럼 두 변수 x, y 사이에서 'y가 x의 함수'가 되려면 어떤 조건이어야 할까요?"
+      ],
+      choices: [
+        "①  x의 값이 하나 정해질 때, y의 값도 오직 하나씩만 정해져야 한다.",
+        "②  x의 값 하나에 y의 값이 2개, 3개씩 여러 개 나와도 함수이다.",
+        "③  x의 값이 변해도 y의 값은 아예 정해지지 않아야 함수이다."
+      ],
+      ans: 0,
+      explain: "x의 값이 하나 정해질 때, y의 값이 '오직 하나'씩만 정해지는 관계가 함수입니다!"
+    },
+    {
+      qLines: [
+        "Q2. [함숫값과 좌표] 관계식이 y = 600 · x 인 연필 자판기에",
+        "x = 2를 넣었을 때 나오는 y의 값과, 이를 쌍으로 묶은 좌표 (x, y)는?"
+      ],
+      choices: [
+        "①  y = 600   ➔   좌표 (2, 600)",
+        "②  y = 1200  ➔   좌표 (2, 1200)",
+        "③  y = 1200  ➔   좌표 (1200, 2)"
+      ],
+      ans: 1,
+      explain: "x = 2를 넣으면 y = 1200이며, 순서쌍 좌표는 (x, y) 순서로 (2, 1200)입니다!"
+    },
+    {
+      qLines: [
+        "Q3. [함수 찾기] 다음 세 가지 상황 중에서 x의 값이 하나 정해질 때",
+        "y의 값이 딱 하나로 정해지는 '함수'는 어느 것일까요?"
+      ],
+      choices: [
+        "①  자연수 x의 약수 y   (예: x = 6이면 y는 1, 2, 3, 6으로 4개!)",
+        "②  자연수 x보다 작은 자연수 y   (예: x = 4이면 y는 1, 2, 3으로 3개!)",
+        "③  한 변의 길이가 x cm인 정사각형의 둘레 y cm   (y = 4 · x 로 오직 1개!)"
+      ],
+      ans: 2,
+      explain: "약수는 y가 여러 개라 탈락! 정사각형 둘레(y = 4x)처럼 y가 하나만 나와야 함수입니다!"
+    },
+    {
+      qLines: [
+        "Q4. [정비례·반비례와 함수] 우리가 배운 '정비례(y = a · x)'와",
+        "'반비례(y = a / x, 단 x ≠ 0)'는 모두 함수라고 부를 수 있을까요?"
+      ],
+      choices: [
+        "①  정비례만 직선이라서 함수이고, 반비례는 곡선이라서 함수가 아니다.",
+        "②  둘 다 x의 값이 하나 정해지면 y의 값이 하나씩 정해지므로 모두 함수이다!",
+        "③  반비례만 함수이고, 정비례는 함수가 아니다."
+      ],
+      ans: 1,
+      explain: "직선이든 곡선이든 x 하나에 y가 딱 하나씩 정해지면 정비례·반비례 모두 함수입니다!"
+    },
+    {
+      qLines: [
+        "Q5. [함수 개념 완성] 하루 24시간 중 낮의 길이가 x시간이면 밤의 길이는 y시간(y = 24 - x)입니다.",
+        "이 관계가 '함수'인 이유로 가장 알맞은 설명은 무엇일까요?"
+      ],
+      choices: [
+        "①  낮의 길이(x)가 하나로 정해지면 밤의 길이(y)도 딱 하나로 정해지기 때문이다.",
+        "②  x가 커질 때 y도 무조건 같이 커지기 때문이다.",
+        "③  낮의 길이(x)가 10시간일 때 밤의 길이(y)가 여러 개 나오기 때문이다."
+      ],
+      ans: 0,
+      explain: "낮(x)이 정해지면 밤(y = 24 - x)도 딱 하나 결정되므로 확실한 함수입니다!"
+    }
+  ];
+
+  // 14·15화면 진단 리포트용 10대 핵심 개념 메타데이터
+  const all10QuizInfo = [
+    {
+      scene: 12,
+      qNum: 1,
+      title: "Q1. 정비례 vs 반비례 관계식",
+      concept: "관계식 형태 (곱 y=ax vs 분모 y=a/x)",
+      knowDesc: "정비례는 곱(y=ax), 반비례는 x가 분모(y=a/x)임을 완벽 구분!",
+      wrongDesc: "반비례는 x가 분모에 있는 y = a / x (즉 x·y = a) 모양입니다!"
+    },
+    {
+      scene: 12,
+      qNum: 2,
+      title: "Q2. x 증가 시 y 배수 변화",
+      concept: "배수 비례 변화 (2배, 3배 ➔ 2배, 3배)",
+      knowDesc: "x가 커질 때 y도 같은 비로 커지는 것이 정비례임을 완벽 이해!",
+      wrongDesc: "정비례는 같은 비(2배, 3배)로 커지고, 반비례는 1/2배, 1/3배로 줄어듭니다!"
+    },
+    {
+      scene: 12,
+      qNum: 3,
+      title: "Q3. 두 좌표의 곱 & 넓이 불변",
+      concept: "x·y = a 일정 & 직사각형 넓이 불변",
+      knowDesc: "두 좌표의 곱(x·y=a)과 직사각형 넓이가 일정한 것은 반비례임을 통달!",
+      wrongDesc: "두 좌표의 곱(x·y = a)과 직사각형 넓이가 일정한 것은 '반비례'의 특징입니다!"
+    },
+    {
+      scene: 12,
+      qNum: 4,
+      title: "Q4. 그래프 모양 비교",
+      concept: "원점 지나는 직선 vs 한 쌍의 곡선",
+      knowDesc: "정비례는 원점을 지나는 직선, 반비례는 한 쌍의 곡선임을 정확히 비교!",
+      wrongDesc: "정비례는 원점을 지나는 직선, 반비례는 한 쌍의 매끄러운 곡선입니다!"
+    },
+    {
+      scene: 12,
+      qNum: 5,
+      title: "Q5. 실생활 비례 판별",
+      concept: "빵 가격(정비례) vs 피자 나누기(반비례)",
+      knowDesc: "개수당 가격은 정비례, 총량(12조각)을 나누는 상황은 반비례임을 구분!",
+      wrongDesc: "피자 12조각 나누기처럼 총량이 고정된 상황은 곱이 일정한 '반비례'입니다!"
+    },
+    {
+      scene: 13,
+      qNum: 6,
+      title: "Q6. 함수의 뜻과 대응 원리",
+      concept: "x 하나에 y가 오직 하나씩 대응",
+      knowDesc: "자판기처럼 x 하나에 y가 딱 하나만 나오는 것이 함수임을 정립!",
+      wrongDesc: "자판기처럼 x 하나에 y가 '오직 하나'씩만 정해져야 함수입니다!"
+    },
+    {
+      scene: 13,
+      qNum: 7,
+      title: "Q7. 함숫값과 순서쌍 좌표",
+      concept: "x 대입 함숫값 및 좌표 (x, y)",
+      knowDesc: "x=2 대입 시 y=1200이며 좌표는 (2, 1200)으로 표현함을 완벽 계산!",
+      wrongDesc: "좌표는 항상 (x, y) 순서이며, x=2 대입 시 y=1200이므로 (2, 1200)입니다!"
+    },
+    {
+      scene: 13,
+      qNum: 8,
+      title: "Q8. 함수인 것과 아닌 것",
+      concept: "약수(함수 X) vs 정사각형 둘레(함수 O)",
+      knowDesc: "약수는 여러 개라 함수 X, 둘레(y=4x)는 하나 나와 함수 O임을 구분!",
+      wrongDesc: "약수처럼 y가 여러 개 나오면 탈락! 둘레처럼 딱 하나만 나와야 함수입니다!"
+    },
+    {
+      scene: 13,
+      qNum: 9,
+      title: "Q9. 비례 관계와 함수의 관계",
+      concept: "정비례와 반비례는 모두 함수",
+      knowDesc: "직선이든 곡선이든 x 하나에 y가 하나씩 대응하므로 둘 다 함수임을 마스터!",
+      wrongDesc: "직선이든 곡선이든 x 하나에 y가 딱 하나씩 대응하면 모두 함수입니다!"
+    },
+    {
+      scene: 13,
+      qNum: 10,
+      title: "Q10. 실생활 속 함수 판별",
+      concept: "낮 길이 x와 밤 길이 y (y = 24 - x)",
+      knowDesc: "낮(x)이 정해지면 밤(y)이 오직 하나로 정해지므로 확실한 함수임을 설명!",
+      wrongDesc: "낮(x)이 정해지면 밤(y = 24 - x)도 딱 하나 결정되므로 확실한 함수입니다!"
+    }
+  ];
+
+  // 클릭 감지 영역들
+  let hintHitBoxes = [];
+  let revealHitBox = null;
+  let scene4AHitBoxes = [];
+  let scene5HitBoxes = [];
+  let scene6MachineTabs = [];
+  let scene6XButtons = [];
+  let scene6DefBtnBox = null;
+  let scene7HitBoxes = [];
+  let scene8HitBoxes = [];
+  let scene8StepBtnBox = null;
+  let scene9ModeTabs = [];
+  let scene9SignBtns = [];
+  let scene10HitBoxes = [];
+  let scene11HitBoxes = [];
+  let quizTabHitBoxes = [];
+  let quizChoiceHitBoxes = [];
+  let quizNextQBtnBox = null;
+
+  // ==========================================
+  // [졸라맨] 얼굴로만 심플하고 귀엽게!
+  // ==========================================
+  function drawStickmanFace(ctx, x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // 머리 원 (지름 38px)
+    const r = 19;
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    // 귀여운 삐죽 머리카락 2가닥
+    ctx.strokeStyle = "#ea580c";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(-4, -r); ctx.lineTo(-7, -r - 8);
+    ctx.moveTo(4, -r); ctx.lineTo(7, -r - 7);
+    ctx.stroke();
+
+    // 두 눈
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(-6, -2, 2.4, 0, Math.PI * 2);
+    ctx.arc(6, -2, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 발그레 볼터치
+    ctx.fillStyle = "rgba(249, 115, 22, 0.4)";
+    ctx.beginPath();
+    ctx.arc(-10, 4, 3.2, 0, Math.PI * 2);
+    ctx.arc(10, 4, 3.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 방긋 웃는 입
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 3, 5.5, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // 슬림 말풍선 (높이 52px로 상단 그래프 절대 안 가림)
+  function drawCompactBubble(ctx, bx, by, bw, bh, text, fontSize = 16) {
+    ctx.save();
+    ctx.font = `bold ${fontSize}px 'Pretendard', sans-serif`;
+
+    ctx.fillStyle = "#fffbeb";
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, 10);
+    ctx.fill(); ctx.stroke();
+
+    // 말풍선 꼬리 (왼쪽 졸라맨 얼굴을 향함)
+    ctx.beginPath();
+    ctx.moveTo(bx, by + bh / 2 - 5);
+    ctx.lineTo(bx - 9, by + bh / 2);
+    ctx.lineTo(bx, by + bh / 2 + 5);
+    ctx.fillStyle = "#fffbeb";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(bx, by + bh / 2 - 5);
+    ctx.lineTo(bx - 9, by + bh / 2);
+    ctx.lineTo(bx, by + bh / 2 + 5);
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    const lines = text.split("\n");
+    const lineH = Math.round(fontSize * 1.35);
+    const startY = by + (bh - (lines.length - 1) * lineH) / 2 + 1;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    lines.forEach((line, idx) => {
+      if (line.includes("오른쪽 위") || line.includes("양수") || line.includes("+1.5") || line.includes("↗") || line.includes("정비례")) {
+        ctx.fillStyle = "#1d4ed8";
+      } else if (line.includes("오른쪽 아래") || line.includes("음수") || line.includes("-1.5") || line.includes("↘") || line.includes("반비례")) {
+        ctx.fillStyle = "#dc2626";
+      } else if (line.includes("일차함수") || line.includes("기울기") || line.includes("관계식") || line.includes("함수") || line.includes("점")) {
+        ctx.fillStyle = "#b45309";
+      } else if (line === "뭘까?") {
+        ctx.fillStyle = "#d97706";
+        ctx.font = `900 ${fontSize + 6}px 'Pretendard', sans-serif`;
+      } else {
+        ctx.fillStyle = "#0f172a";
+      }
+      ctx.fillText(line, bx + bw / 2, startY + idx * lineH);
+    });
+
+    ctx.restore();
+  }
+
+  // 배지 칩 드로잉 헬퍼
+  function drawBadgeChip(ctx, text, x, y, textColor, bgColor, borderColor) {
+    ctx.save();
+    ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+    const textW = ctx.measureText(text).width;
+    const padX = 12;
+    const chipW = textW + padX * 2;
+    const chipH = 28;
+
+    ctx.fillStyle = bgColor;
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.roundRect(x - chipW / 2, y - chipH / 2, chipW, chipH, 8);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  // 화살표 드로잉 헬퍼
+  function drawArrow(ctx, x1, y1, x2, y2, color, width = 3.5, label = "", labelPos = "top") {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    const headlen = 10;
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
+    ctx.closePath();
+    ctx.fill();
+
+    if (label) {
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2;
+      if (labelPos === "top") ctx.fillText(label, mx, my - 13);
+      else if (labelPos === "bottom") ctx.fillText(label, mx, my + 13);
+      else if (labelPos === "right") {
+        ctx.textAlign = "left";
+        ctx.fillText(label, mx + 10, my);
+      } else if (labelPos === "left") {
+        ctx.textAlign = "right";
+        ctx.fillText(label, mx - 10, my);
+      }
+    }
+    ctx.restore();
+  }
+
+  // 좌표평면 격자 드로잉 헬퍼
+  function drawCoordinateGrid(ox, oy, unit, range = 5) {
+    ctx.save();
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 1.1;
+
+    for (let i = -range; i <= range; i++) {
+      ctx.beginPath();
+      ctx.moveTo(ox + i * unit, oy - range * unit);
+      ctx.lineTo(ox + i * unit, oy + range * unit);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(ox - range * unit, oy + i * unit);
+      ctx.lineTo(ox + range * unit, oy + i * unit);
+      ctx.stroke();
+    }
+
+    // 축 선
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 2.2;
+
+    // x축
+    ctx.beginPath();
+    ctx.moveTo(ox - range * unit - 16, oy);
+    ctx.lineTo(ox + range * unit + 16, oy);
+    ctx.stroke();
+
+    // y축
+    ctx.beginPath();
+    ctx.moveTo(ox, oy + range * unit + 16);
+    ctx.lineTo(ox, oy - range * unit - 16);
+    ctx.stroke();
+
+    // 화살표 머리
+    ctx.fillStyle = "#475569";
+    ctx.beginPath();
+    ctx.moveTo(ox + range * unit + 16, oy);
+    ctx.lineTo(ox + range * unit + 8, oy - 4.5);
+    ctx.lineTo(ox + range * unit + 8, oy + 4.5);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(ox, oy - range * unit - 16);
+    ctx.lineTo(ox - 4.5, oy - range * unit - 8);
+    ctx.lineTo(ox + 4.5, oy - range * unit - 8);
+    ctx.fill();
+
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.fillText("x", ox + range * unit + 22, oy + 4);
+    ctx.fillText("y", ox - 13, oy - range * unit - 13);
+
+    ctx.font = "bold 13px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText("O", ox - 7, oy + 15);
+
+    ctx.restore();
+  }
+
+  // ==========================================
+  // [1화면] 내가 누구게?
+  // ==========================================
+  function renderScene1() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardY = 20;
+    const cardH = 436;
+
+    // 좌측: 3가지 특징 클릭 상자 (width: 430)
+    const leftX = 40;
+    const leftW = 430;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(leftX, cardY, leftW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = "bold 17px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#1e40af";
+    ctx.textAlign = "left";
+    ctx.fillText("🔍 특징을 하나씩 눌러보세요!", leftX + 22, cardY + 36);
+
+    const slotTexts = [
+      "1. 난 직선이야",
+      "2. 원점을 지나",
+      "3. 식은 y = a · x"
+    ];
+    const slotColors = ["#2563eb", "#7c3aed", "#ea580c"];
+
+    const slotH = 90;
+    const slotGap = 20;
+    const startSlotY = cardY + 70;
+
+    for (let i = 0; i < 3; i++) {
+      const sy = startSlotY + i * (slotH + slotGap);
+      const isUnlocked = hintUnlocked[i];
+      const canClick = (i === 0 || hintUnlocked[i - 1]);
+
+      hintHitBoxes.push({
+        idx: i,
+        x: leftX + 18,
+        y: sy,
+        w: leftW - 36,
+        h: slotH,
+        canClick: canClick && !isUnlocked
+      });
+
+      ctx.beginPath();
+      ctx.roundRect(leftX + 18, sy, leftW - 36, slotH, 14);
+
+      if (isUnlocked) {
+        ctx.fillStyle = "#eff6ff";
+        ctx.strokeStyle = slotColors[i];
+        ctx.lineWidth = 2.4;
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "900 24px 'Pretendard', sans-serif";
+        ctx.fillStyle = slotColors[i];
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(slotTexts[i], leftX + leftW / 2, sy + slotH / 2);
+      } else {
+        if (canClick) {
+          ctx.fillStyle = "#fffbeb";
+          ctx.strokeStyle = "#f59e0b";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.fill(); ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.font = "bold 19px 'Pretendard', sans-serif";
+          ctx.fillStyle = "#d97706";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(`👉 ${i + 1}. 여기를 누르세요!`, leftX + leftW / 2, sy + slotH / 2);
+        } else {
+          ctx.fillStyle = "#f1f5f9";
+          ctx.strokeStyle = "#e2e8f0";
+          ctx.lineWidth = 1.5;
+          ctx.fill(); ctx.stroke();
+
+          ctx.font = "bold 16px 'Pretendard', sans-serif";
+          ctx.fillStyle = "#94a3b8";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(`🔒 ${i + 1}번 (앞의 특징을 먼저 눌러주세요)`, leftX + leftW / 2, sy + slotH / 2);
+        }
+      }
+    }
+
+    // 우측: 정체 및 관계식 카드 (width: 430)
+    const rightX = 490;
+    const rightW = 430;
+
+    const allHintsUnlocked = hintUnlocked[0] && hintUnlocked[1] && hintUnlocked[2];
+
+    ctx.fillStyle = allHintsUnlocked ? "#fefce8" : "#ffffff";
+    ctx.strokeStyle = allHintsUnlocked ? "#eab308" : "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(rightX, cardY, rightW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    if (!allHintsUnlocked) {
+      ctx.font = "bold 44px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#cbd5e1";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("❓", rightX + rightW / 2, cardY + 160);
+
+      ctx.font = "bold 22px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("내 정체는 과연 무엇일까?", rightX + rightW / 2, cardY + 230);
+
+      ctx.font = "15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("왼쪽의 특징 3개를 먼저 눌러보세요!", rightX + rightW / 2, cardY + 270);
+
+    } else if (allHintsUnlocked) {
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // 상단: 관계식 박스 (항상 같은 위치에 고정)
+      const boxY = cardY + 45;
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.roundRect(rightX + 24, boxY, rightW - 48, 140, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1d4ed8";
+      ctx.fillText("관계식", rightX + rightW / 2, boxY + 32);
+
+      ctx.font = "900 38px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e40af";
+      ctx.fillText("y = a · x", rightX + rightW / 2, boxY + 76);
+
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#ea580c";
+      ctx.fillText("• x의 계수 a는 0이 아닌 유리수", rightX + rightW / 2, boxY + 112);
+
+      // 하단: 정체는? 박스 (클릭하면 같은 자리에서 '난 일차함수야!' 정답 표시)
+      const qBoxY = cardY + 225;
+      if (!scene1Revealed) {
+        revealHitBox = { x: rightX + 24, y: qBoxY, w: rightW - 48, h: 140 };
+
+        ctx.fillStyle = "#fffbeb";
+        ctx.strokeStyle = "#f59e0b";
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.roundRect(rightX + 24, qBoxY, rightW - 48, 140, 14);
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "bold 18px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText("정체는?", rightX + rightW / 2, qBoxY + 42);
+
+        ctx.font = "900 25px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#d97706";
+        ctx.fillText("👉 [ 여기를 눌러 정체 확인! ]", rightX + rightW / 2, qBoxY + 92);
+      } else {
+        ctx.fillStyle = "#fef08a";
+        ctx.strokeStyle = "#eab308";
+        ctx.lineWidth = 2.8;
+        ctx.beginPath();
+        ctx.roundRect(rightX + 24, qBoxY, rightW - 48, 140, 14);
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "bold 18px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#854d0e";
+        ctx.fillText("정체는?", rightX + rightW / 2, qBoxY + 42);
+
+        ctx.font = "900 36px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#0f172a";
+        ctx.fillText("난 일차함수야!", rightX + rightW / 2, qBoxY + 92);
+      }
+    }
+
+    // 졸라맨 얼굴 & 슬림 말풍선
+    drawStickmanFace(ctx, 52, 498);
+
+    let bubbleMsg = "내가 누구게? 왼쪽 상자를 차례대로 눌러서 내 특징을 확인해 봐!";
+    if (hintUnlocked[0] && !hintUnlocked[1]) {
+      bubbleMsg = "첫 번째 특징 발견! 난 곧게 뻗은 직선이야.";
+    } else if (hintUnlocked[1] && !hintUnlocked[2]) {
+      bubbleMsg = "두 번째 특징 발견! 난 원점 (0, 0)을 지나.";
+    } else if (allHintsUnlocked && !scene1Revealed) {
+      bubbleMsg = "뭘까?";
+    } else if (scene1Revealed) {
+      bubbleMsg = "일차함수 어떻게 생겼을까?";
+    }
+
+    drawCompactBubble(ctx, 88, 472, 840, 52, bubbleMsg, 16.5);
+  }
+
+  // ==========================================
+  // [2화면] 넌 어떻게 생겼지?
+  // ==========================================
+  function renderScene2() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const ox = 480;
+    const oy = 255;
+    const unit = 26;
+    const range = 5;
+
+    // 중앙 카드 래퍼 (높이 436px)
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(140, 16, 680, 436, 16);
+    ctx.fill(); ctx.stroke();
+
+    // 상단 관계식 배너
+    ctx.fillStyle = "#eff6ff";
+    ctx.strokeStyle = "#3b82f6";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(330, 26, 300, 44, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = "900 22px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#1e40af";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("관계식 :  y = a · x", 480, 48);
+
+    drawCoordinateGrid(ox, oy, unit, range);
+
+    const stickLen = 135;
+
+    // 격자 영역 내부 클리핑
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(ox - range * unit, oy - range * unit, range * 2 * unit, range * 2 * unit);
+    ctx.clip();
+
+    // 방사형 바퀴살 잔상선
+    const spokes = [0, Math.PI / 6, Math.PI / 3, Math.PI / 2, 2 * Math.PI / 3, 5 * Math.PI / 6];
+    ctx.strokeStyle = "rgba(148, 163, 184, 0.45)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+
+    spokes.forEach(ang => {
+      const dx = Math.cos(ang) * stickLen;
+      const dy = Math.sin(ang) * stickLen;
+      ctx.beginPath();
+      ctx.moveTo(ox - dx, oy - dy);
+      ctx.lineTo(ox + dx, oy + dy);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // 회전 원호 표시
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.arc(ox, oy, 60, 0, Math.PI * 1.5);
+    ctx.stroke();
+
+    // 현재 회전 중인 막대기
+    const curDx = Math.cos(stickAngle2) * stickLen;
+    const curDy = Math.sin(stickAngle2) * stickLen;
+    ctx.strokeStyle = "#2563eb";
+    ctx.lineWidth = 6;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(ox - curDx, oy - curDy);
+    ctx.lineTo(ox + curDx, oy + curDy);
+    ctx.stroke();
+
+    ctx.restore();
+
+    // 오른쪽 위에 "오른쪽 위 ↗" 표시
+    drawBadgeChip(ctx, "오른쪽 위 ↗", ox + 185, oy - 90, "#1d4ed8", "#eff6ff", "#3b82f6");
+
+    // 오른쪽 아래에 "오른쪽 아래 ↘" 표시
+    drawBadgeChip(ctx, "오른쪽 아래 ↘", ox + 185, oy + 90, "#dc2626", "#fef2f2", "#ef4444");
+
+    // 원점 고정핀
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.arc(ox, oy, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+
+    ctx.font = "bold 12.5px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#dc2626";
+    ctx.textAlign = "center";
+    ctx.fillText("원점 O(0, 0)", ox, oy + 22);
+
+    // 하단 졸라맨 얼굴 & 슬림 말풍선
+    drawStickmanFace(ctx, 52, 498);
+    drawCompactBubble(ctx, 88, 472, 840, 52, "원점을 중심으로 빙글 빙글 돌아가지? 기울기를 알아야 멈출텐데\na에 따라 모양이 잡힌다.", 16);
+  }
+
+  // ==========================================
+  // [3화면] 기울기란? (배너와 그래프 완벽 분리!)
+  // ==========================================
+  function renderScene3() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 140;
+    const cardY = 16;
+    const cardW = 680;
+    const cardH = 436;
+
+    const ox = 480;
+    const oy = 260; // 배너와 62px 분리되어 절대 겹치지 않음!
+    const unit = 26;
+    const range = 5;
+
+    const isPos = (stepScene3 === 0);
+    const aVal = isPos ? 1.5 : -1.5;
+    const lineColor = isPos ? "#2563eb" : "#dc2626";
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    // 상단 부각된 관계식 배너 (y=24 ~ 68)
+    const bannerW = 480;
+    const bannerH = 44;
+    const bannerX = cardX + (cardW - bannerW) / 2;
+    const bannerY = cardY + 8;
+
+    ctx.fillStyle = isPos ? "#eff6ff" : "#fef2f2";
+    ctx.strokeStyle = isPos ? "#3b82f6" : "#ef4444";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 12);
+    ctx.fill(); ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (isPos) {
+      ctx.font = "900 23px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e40af";
+      ctx.fillText("관계식 :  y  =  +1.5 · x", bannerX + 165, bannerY + bannerH / 2);
+      drawBadgeChip(ctx, "기울기 a = +1.5 (양수)", bannerX + bannerW - 95, bannerY + bannerH / 2, "#1d4ed8", "#dbeafe", "#3b82f6");
+    } else {
+      ctx.font = "900 23px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#b91c1c";
+      ctx.fillText("관계식 :  y  =  -1.5 · x", bannerX + 165, bannerY + bannerH / 2);
+      drawBadgeChip(ctx, "기울기 a = -1.5 (음수)", bannerX + bannerW - 95, bannerY + bannerH / 2, "#b91c1c", "#fee2e2", "#ef4444");
+    }
+
+    drawCoordinateGrid(ox, oy, unit, range);
+
+    // 직선 그리기 (격자 내부만 클리핑하여 상단 배너 침범 원천 차단)
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(ox - range * unit, oy - range * unit, range * 2 * unit, range * 2 * unit);
+    ctx.clip();
+
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 6;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(ox - range * 3 * unit, oy - aVal * (-range * 3) * unit);
+    ctx.lineTo(ox + range * 3 * unit, oy - aVal * (range * 3) * unit);
+    ctx.stroke();
+
+    ctx.restore();
+
+    // 계단 화살표
+    const stepDx = 2;
+    const stepDy = aVal * stepDx;
+    const pStartX = ox;
+    const pStartY = oy;
+    const pMidX = ox + stepDx * unit;
+    const pMidY = oy;
+    const pEndX = ox + stepDx * unit;
+    const pEndY = oy - stepDy * unit;
+
+    drawArrow(ctx, pStartX, pStartY, pMidX, pMidY, "#059669", 4, "오른쪽으로 가면 (x 커짐)", isPos ? "bottom" : "top");
+
+    if (isPos) {
+      drawArrow(ctx, pMidX, pMidY, pEndX, pEndY, "#2563eb", 4, "위쪽으로 올라간다! (↑)", "right");
+      drawBadgeChip(ctx, "오른쪽 위 ↗", ox + 185, oy - 75, "#1d4ed8", "#eff6ff", "#3b82f6");
+    } else {
+      drawArrow(ctx, pMidX, pMidY, pEndX, pEndY, "#dc2626", 4, "아래쪽으로 내려간다! (↓)", "right");
+      drawBadgeChip(ctx, "오른쪽 아래 ↘", ox + 185, oy + 75, "#dc2626", "#fef2f2", "#ef4444");
+    }
+
+    // 점 A, B
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.arc(pStartX, pStartY, 6.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = lineColor;
+    ctx.beginPath();
+    ctx.arc(pEndX, pEndY, 6.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 하단 졸라맨 얼굴 & 슬림 말풍선
+    drawStickmanFace(ctx, 52, 498);
+
+    let bubbleMsg3 = "";
+    if (isPos) {
+      bubbleMsg3 = "기울기 +1.5 는 양수!\na 가 양수면 오른쪽 위 모양의 그래프.";
+    } else {
+      bubbleMsg3 = "기울기 -1.5 는 음수!\na 가 음수면 오른쪽 아래 모양의 그래프.";
+    }
+
+    drawCompactBubble(ctx, 88, 472, 840, 52, bubbleMsg3, 16.5);
+  }
+
+  // ==========================================
+  // [4화면] a의 값을 선택해서 그래프가 그려지는 화면
+  // ==========================================
+  function renderScene4() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 436;
+
+    const ox = 340;
+    const oy = 255;
+    const unit = 28;
+    const range = 5;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    const isSelected = (scene4SelectedA >= 0);
+    const bannerW = 830;
+    const bannerH = 48;
+    const bannerX = cardX + (cardW - bannerW) / 2;
+    const bannerY = cardY + 12;
+
+    ctx.fillStyle = isSelected ? "#f0fdf4" : "#eff6ff";
+    ctx.strokeStyle = isSelected ? "#16a34a" : "#3b82f6";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 12);
+    ctx.fill(); ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (!isSelected) {
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e40af";
+      ctx.fillText("🌀 오른쪽에서 [기울기 a의 값]을 선택하면 그에 맞는 그래프가 그려져요!", bannerX + bannerW / 2, bannerY + bannerH / 2);
+    } else {
+      const item = scene4AChoices[scene4SelectedA];
+      ctx.font = "900 20.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#15803d";
+      ctx.fillText(`✨ ${item.label} 선택!  ➔  관계식:  y = ${item.aText} · x   (${item.desc} 그래프 완성)`, bannerX + bannerW / 2, bannerY + bannerH / 2);
+    }
+
+    drawCoordinateGrid(ox, oy, unit, range);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(ox - range * unit, oy - range * unit, range * 2 * unit, range * 2 * unit);
+    ctx.clip();
+
+    if (!isSelected) {
+      const stickLen = 145;
+      const curDx = Math.cos(stickAngle4A) * stickLen;
+      const curDy = Math.sin(stickAngle4A) * stickLen;
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 5.5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(ox - curDx, oy - curDy);
+      ctx.lineTo(ox + curDx, oy + curDy);
+      ctx.stroke();
+    } else {
+      const item = scene4AChoices[scene4SelectedA];
+      ctx.strokeStyle = item.color;
+      ctx.lineWidth = 6;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(ox - range * 3 * unit, oy - item.a * (-range * 3) * unit);
+      ctx.lineTo(ox + range * 3 * unit, oy - item.a * (range * 3) * unit);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 원점 핀
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.arc(ox, oy, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 우측: 기울기 a 값 선택 버튼 4개
+    const rightPanelX = 590;
+    const rightPanelY = 82;
+    const rightPanelW = 300;
+
+    ctx.font = "900 16.5px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "left";
+    ctx.fillText("🎛️ 기울기 a의 값 선택하기", rightPanelX, rightPanelY + 16);
+
+    const btnH = 58;
+    const btnGap = 12;
+    const startBtnY = rightPanelY + 32;
+
+    scene4AChoices.forEach((item, idx) => {
+      const by = startBtnY + idx * (btnH + btnGap);
+      const isThis = (scene4SelectedA === idx);
+
+      scene4AHitBoxes.push({
+        idx: idx,
+        x: rightPanelX,
+        y: by,
+        w: rightPanelW,
+        h: btnH
+      });
+
+      ctx.beginPath();
+      ctx.roundRect(rightPanelX, by, rightPanelW, btnH, 12);
+
+      if (isThis) {
+        ctx.fillStyle = "#eff6ff";
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = 2.6;
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "900 18px 'Pretendard', sans-serif";
+        ctx.fillStyle = item.color;
+        ctx.textAlign = "left";
+        ctx.fillText(`👉 ${idx + 1}. 기울기 ${item.label}`, rightPanelX + 16, by + 23);
+
+        ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#0f172a";
+        ctx.fillText(`y = ${item.aText} · x  (${item.desc})`, rightPanelX + 16, by + 44);
+      } else {
+        ctx.fillStyle = "#f8fafc";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1.5;
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = item.color;
+        ctx.textAlign = "left";
+        ctx.fillText(`${idx + 1}. 기울기 ${item.label}`, rightPanelX + 16, by + 23);
+
+        ctx.font = "12.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(item.desc, rightPanelX + 16, by + 43);
+      }
+    });
+
+    drawStickmanFace(ctx, 52, 498);
+    const bubbleMsg4 = !isSelected
+      ? "기울기 a의 값을 선택해 봐! a가 정해지면 그에 맞는 그래프가 그려져."
+      : "a의 값을 정해주니 그래프가 딱 그려지지? 다음엔 좌표를 선택해서 a를 찾아보자!";
+    drawCompactBubble(ctx, 88, 472, 840, 52, bubbleMsg4, 16);
+  }
+
+  // ==========================================
+  // [5화면] 좌표를 선택해서 a가 정해지는 화면
+  // ==========================================
+  function renderScene5() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 436;
+
+    const ox = 340;
+    const oy = 255;
+    const unit = 28;
+    const range = 5;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    const isLocked = (scene5LockedPoint >= 0);
+    const bannerW = 830;
+    const bannerH = 48;
+    const bannerX = cardX + (cardW - bannerW) / 2;
+    const bannerY = cardY + 12;
+
+    ctx.fillStyle = isLocked ? "#f0fdf4" : "#eff6ff";
+    ctx.strokeStyle = isLocked ? "#16a34a" : "#3b82f6";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 12);
+    ctx.fill(); ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (!isLocked) {
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e40af";
+      ctx.fillText("🌀 오른쪽에서 [지나는 점의 좌표]를 선택하면 기울기 a의 값이 정해져요!", bannerX + bannerW / 2, bannerY + bannerH / 2);
+    } else {
+      const p = scene5Points[scene5LockedPoint];
+      ctx.font = "900 20.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#15803d";
+      ctx.fillText(`✨ 점 ${p.label} 선택!  ➔  기울기 a = ${p.aText} 로 결정!   (관계식:  y = ${p.aText} · x)`, bannerX + bannerW / 2, bannerY + bannerH / 2);
+    }
+
+    drawCoordinateGrid(ox, oy, unit, range);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(ox - range * unit, oy - range * unit, range * 2 * unit, range * 2 * unit);
+    ctx.clip();
+
+    if (!isLocked) {
+      const stickLen = 145;
+      const curDx = Math.cos(stickAngle5) * stickLen;
+      const curDy = Math.sin(stickAngle5) * stickLen;
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 5.5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(ox - curDx, oy - curDy);
+      ctx.lineTo(ox + curDx, oy + curDy);
+      ctx.stroke();
+    } else {
+      const p = scene5Points[scene5LockedPoint];
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 6;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(ox - range * 3 * unit, oy - p.a * (-range * 3) * unit);
+      ctx.lineTo(ox + range * 3 * unit, oy - p.a * (range * 3) * unit);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 4개 점 표시
+    scene5Points.forEach((p, idx) => {
+      const px = ox + p.x * unit;
+      const py = oy - p.y * unit;
+      const isThisLocked = (scene5LockedPoint === idx);
+
+      if (isThisLocked) {
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(px, py, 14, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, 8, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, 6.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      ctx.font = "bold 13px 'Pretendard', sans-serif";
+      ctx.fillStyle = p.color;
+      ctx.textAlign = "left";
+      ctx.fillText(p.label, px + 10, py - 6);
+    });
+
+    // 원점 핀
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.arc(ox, oy, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 우측: 4개 좌표 선택 카드
+    const rightPanelX = 590;
+    const rightPanelY = 82;
+    const rightPanelW = 300;
+
+    ctx.font = "900 16.5px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "left";
+    ctx.fillText("📍 지나는 점 4가지 예시 (눌러보세요)", rightPanelX, rightPanelY + 16);
+
+    const btnH = 58;
+    const btnGap = 12;
+    const startBtnY = rightPanelY + 32;
+
+    scene5Points.forEach((p, idx) => {
+      const by = startBtnY + idx * (btnH + btnGap);
+      const isSelected = (scene5LockedPoint === idx);
+
+      scene5HitBoxes.push({
+        idx: idx,
+        x: rightPanelX,
+        y: by,
+        w: rightPanelW,
+        h: btnH
+      });
+
+      ctx.beginPath();
+      ctx.roundRect(rightPanelX, by, rightPanelW, btnH, 12);
+
+      if (isSelected) {
+        ctx.fillStyle = "#eff6ff";
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 2.6;
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "900 18px 'Pretendard', sans-serif";
+        ctx.fillStyle = p.color;
+        ctx.textAlign = "left";
+        ctx.fillText(`👉 ${idx + 1}. 점 ${p.label}`, rightPanelX + 16, by + 23);
+
+        ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#0f172a";
+        ctx.fillText(`기울기 a = ${p.aText} 로 정해짐! (y = ${p.aText}x)`, rightPanelX + 16, by + 44);
+      } else {
+        ctx.fillStyle = "#f8fafc";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1.5;
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = p.color;
+        ctx.textAlign = "left";
+        ctx.fillText(`${idx + 1}. 점 ${p.label}`, rightPanelX + 16, by + 23);
+
+        ctx.font = "12.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText("이 점을 지날 때 a의 값은?", rightPanelX + 16, by + 43);
+      }
+    });
+
+    drawStickmanFace(ctx, 52, 498);
+    const bubbleMsg5 = !isLocked
+      ? "이번엔 지나는 점의 좌표를 눌러 봐! 좌표를 알면 기울기 a가 정해져."
+      : "좌표를 선택하니 기울기 a가 딱 정해졌어! 그런데... 도대체 함수가 뭐야?";
+    drawCompactBubble(ctx, 88, 472, 840, 52, bubbleMsg5, 16);
+  }
+
+  // ==========================================
+  // [6화면] 함수가 뭐야? (관계식을 선택해요 -> x=1,2,3 색깔별 투입 -> [함수란?] 클릭 시에만 말풍선 표시)
+  // ==========================================
+  function renderScene6() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 436;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    // 상단: 3개의 관계식 선택 탭
+    const tabW = 270;
+    const tabH = 44;
+    const tabGap = 16;
+    const startTabX = cardX + (cardW - (tabW * 3 + tabGap * 2)) / 2;
+    const tabY = cardY + 18;
+
+    machineConfigs.forEach((cfg, idx) => {
+      const tx = startTabX + idx * (tabW + tabGap);
+      const isSelected = (scene6MachineType === idx);
+
+      scene6MachineTabs.push({
+        type: idx,
+        x: tx,
+        y: tabY,
+        w: tabW,
+        h: tabH
+      });
+
+      ctx.beginPath();
+      ctx.roundRect(tx, tabY, tabW, tabH, 10);
+
+      if (isSelected) {
+        ctx.fillStyle = cfg.bg;
+        ctx.strokeStyle = cfg.color;
+        ctx.lineWidth = 2.6;
+        ctx.fill(); ctx.stroke();
+        ctx.font = "900 16px 'Pretendard', sans-serif";
+        ctx.fillStyle = cfg.color;
+      } else {
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1.6;
+        ctx.fill(); ctx.stroke();
+        ctx.font = "bold 15px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#475569";
+      }
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(cfg.title, tx + tabW / 2, tabY + tabH / 2);
+    });
+
+    // 중앙 자판기 위치
+    const machineCx = cardX + cardW / 2; // 480
+    const machineCy = cardY + 225;       // 241
+
+    // 1. 상단 깔때기 (x 넣는 입구)
+    ctx.fillStyle = "#fef08a";
+    ctx.strokeStyle = "#ca8a04";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(machineCx - 75, machineCy - 96);
+    ctx.lineTo(machineCx + 75, machineCy - 96);
+    ctx.lineTo(machineCx + 34, machineCy - 54);
+    ctx.lineTo(machineCx - 34, machineCy - 54);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#854d0e";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("x 넣는 입구", machineCx, machineCy - 75);
+
+    // 2. 중앙 챔버
+    const chamW = 340;
+    const chamH = 110;
+    ctx.beginPath();
+    ctx.roundRect(machineCx - chamW / 2, machineCy - 54, chamW, chamH, 20);
+
+    if (scene6MachineType === -1) {
+      // 초기 상태: "관계식을 선택해요" 만 표시 (아래 말풍선과 함수 정의는 전혀 나오지 않음!)
+      ctx.fillStyle = "#fefce8";
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2.4;
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "900 26px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#b45309";
+      ctx.fillText("관계식을 선택해요", machineCx, machineCy);
+    } else {
+      const curCfg = machineConfigs[scene6MachineType];
+      ctx.fillStyle = curCfg.bg;
+      ctx.strokeStyle = curCfg.color;
+      ctx.lineWidth = 3;
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "900 36px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText(curCfg.formula, machineCx, machineCy);
+    }
+
+    // 3. 하단 깔때기 (y 나오는 출구)
+    ctx.fillStyle = "#fef08a";
+    ctx.strokeStyle = "#ca8a04";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(machineCx - 34, machineCy + 56);
+    ctx.lineTo(machineCx + 34, machineCy + 56);
+    ctx.lineTo(machineCx + 64, machineCy + 96);
+    ctx.lineTo(machineCx - 64, machineCy + 96);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = "bold 14px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#854d0e";
+    ctx.textAlign = "center";
+    ctx.fillText("y 나오는 출구", machineCx, machineCy + 76);
+
+    // 관계식을 선택한 경우에만: 왼쪽에 색깔이 다른 x = 1, 2, 3 버튼 & 오른쪽에 [함수란?] 버튼 표시
+    if (scene6MachineType >= 0) {
+      const curCfg = machineConfigs[scene6MachineType];
+
+      // 왼쪽: x 값 1, 2, 3 선택 버튼 (색깔을 달리해서 표시)
+      const leftPanelX = cardX + 36;
+      const leftPanelY = machineCy - 80;
+
+      ctx.font = "900 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.textAlign = "left";
+      ctx.fillText("👉 x 값 넣기 (눌러보세요)", leftPanelX, leftPanelY);
+
+      const xNums = [1, 2, 3];
+      xNums.forEach((num, idx) => {
+        const bx = leftPanelX;
+        const by = leftPanelY + 18 + idx * 54;
+        const bw = 175;
+        const bh = 44;
+        const col = xColorMap[num];
+        const isThisX = (scene6SelectedX === num);
+
+        scene6XButtons.push({ num: num, x: bx, y: by, w: bw, h: bh });
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, 12);
+        if (isThisX) {
+          ctx.fillStyle = col.main;
+          ctx.fill();
+          ctx.font = "900 18px 'Pretendard', sans-serif";
+          ctx.fillStyle = "#ffffff";
+        } else {
+          ctx.fillStyle = col.bg;
+          ctx.strokeStyle = col.main;
+          ctx.lineWidth = 2.2;
+          ctx.fill(); ctx.stroke();
+          ctx.font = "900 17px 'Pretendard', sans-serif";
+          ctx.fillStyle = col.main;
+        }
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`x = ${num} 넣기`, bx + bw / 2, by + bh / 2);
+      });
+
+      // x 값(1, 2, 3)이 선택되었을 때에만: 입구의 x 공, 출구의 y 값, 오른쪽 위 좌표 (x, y), 그리고 마지막 [함수란?] 버튼 표시!
+      if (scene6SelectedX > 0) {
+        const col = xColorMap[scene6SelectedX];
+        const yVal = curCfg.rate * scene6SelectedX;
+
+        // 1) 입구 위 x 공
+        const inBallY = machineCy - 124;
+        ctx.fillStyle = col.main;
+        ctx.beginPath();
+        ctx.arc(machineCx, inBallY, 22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.font = "900 16px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.fillText(`x = ${scene6SelectedX}`, machineCx, inBallY);
+
+        // 2) 출구 아래 같은 색의 y 값 박스 (큼직하게!)
+        const outY = machineCy + 142;
+        ctx.fillStyle = col.bg;
+        ctx.strokeStyle = col.main;
+        ctx.lineWidth = 3.2;
+        ctx.beginPath();
+        ctx.roundRect(machineCx - 120, outY - 28, 240, 56, 16);
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "900 28px 'Pretendard', sans-serif";
+        ctx.fillStyle = col.main;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`y = ${yVal}`, machineCx, outY);
+
+        // 3) 오른쪽 위: 들어간 값(x)과 나오는 값(y)이 쌍으로 묶인 좌표 (x, y) 시각적 표시
+        const coordW = 216;
+        const coordH = 122;
+        const coordX = cardX + cardW - coordW - 28;
+        const coordY = cardY + 86;
+
+        ctx.fillStyle = "#f8fafc";
+        ctx.strokeStyle = col.main;
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.roundRect(coordX, coordY, coordW, coordH, 14);
+        ctx.fill(); ctx.stroke();
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "bold 13.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#475569";
+        ctx.fillText("📍 들어간 값과 나오는 값의 쌍", coordX + coordW / 2, coordY + 24);
+
+        ctx.font = "bold 14px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText("좌표  ( 들어간 x , 나오는 y )", coordX + coordW / 2, coordY + 48);
+
+        // 좌표 알약 박스
+        ctx.fillStyle = col.bg;
+        ctx.strokeStyle = col.main;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(coordX + 18, coordY + 66, coordW - 36, 42, 10);
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "900 24px 'Pretendard', sans-serif";
+        ctx.fillStyle = col.main;
+        ctx.fillText(`( ${scene6SelectedX} , ${yVal} )`, coordX + coordW / 2, coordY + 87);
+
+        // 4) 오른쪽 아래: 맨 마지막에 [ 함수란? 💡 ] 버튼 표시 및 클릭 유도
+        const defBtnW = 190;
+        const defBtnH = 54;
+        const defBtnX = coordX + (coordW - defBtnW) / 2;
+        const defBtnY = coordY + coordH + 46;
+
+        if (!scene6ShowDef) {
+          ctx.font = "900 15px 'Pretendard', sans-serif";
+          ctx.fillStyle = "#d97706";
+          ctx.textAlign = "center";
+          ctx.fillText("👇 마지막으로 눌러보세요!", defBtnX + defBtnW / 2, defBtnY - 16);
+        }
+
+        scene6DefBtnBox = { x: defBtnX, y: defBtnY, w: defBtnW, h: defBtnH };
+
+        ctx.beginPath();
+        ctx.roundRect(defBtnX, defBtnY, defBtnW, defBtnH, 14);
+        if (scene6ShowDef) {
+          ctx.fillStyle = "#d97706";
+          ctx.fill();
+          ctx.font = "900 20px 'Pretendard', sans-serif";
+          ctx.fillStyle = "#ffffff";
+        } else {
+          ctx.fillStyle = "#fef3c7";
+          ctx.strokeStyle = "#d97706";
+          ctx.lineWidth = 2.6;
+          ctx.fill(); ctx.stroke();
+          ctx.font = "900 20px 'Pretendard', sans-serif";
+          ctx.fillStyle = "#b45309";
+        }
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("함수란? 💡", defBtnX + defBtnW / 2, defBtnY + defBtnH / 2);
+      }
+    }
+
+    // 맨 마지막에 [함수란?]을 눌렀을 때만 하단 말풍선 딱 하나 표시!
+    if (scene6ShowDef) {
+      drawStickmanFace(ctx, 52, 498);
+      drawCompactBubble(ctx, 88, 472, 840, 52, "x가 하나 정해지면 y가 하나 정해지는 것을 함수라 한다.", 18);
+    }
+  }
+
+  // ==========================================
+  // [7화면] 정비례와 반비례 (오른쪽 설명 & 말풍선 제거, 그래프 아래에 한 줄 설명 하나로 통합)
+  // ==========================================
+  function renderScene7() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 504;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    // 상단 탭 버튼: [ 🚀 1. 정비례 ] vs [ 🎡 2. 반비례 ]
+    const tab1W = 200, tab2W = 200, tabH = 44;
+    const tab1X = cardX + cardW / 2 - tab1W - 8;
+    const tab2X = cardX + cardW / 2 + 8;
+    const tabY = cardY + 16;
+
+    scene7HitBoxes.push({ mode: 0, x: tab1X, y: tabY, w: tab1W, h: tabH });
+    scene7HitBoxes.push({ mode: 1, x: tab2X, y: tabY, w: tab2W, h: tabH });
+
+    ctx.beginPath();
+    ctx.roundRect(tab1X, tabY, tab1W, tabH, 12);
+    if (scene7Mode === 0) {
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2.6;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "900 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1d4ed8";
+    } else {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+    }
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🚀 1. 정비례", tab1X + tab1W / 2, tabY + tabH / 2);
+
+    ctx.beginPath();
+    ctx.roundRect(tab2X, tabY, tab2W, tabH, 12);
+    if (scene7Mode === 1) {
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 2.6;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "900 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#b91c1c";
+    } else {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+    }
+    ctx.fillText("🎡 2. 반비례", tab2X + tab2W / 2, tabY + tabH / 2);
+
+    // 중앙: 그래프 평면 (오른쪽 설명을 없애고 정중앙에 배치)
+    const ox = 480;
+    const oy = 235;
+    const unit = 27;
+    const range = 5;
+
+    drawCoordinateGrid(ox, oy, unit, range);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(ox - range * unit, oy - range * unit, range * 2 * unit, range * 2 * unit);
+    ctx.clip();
+
+    if (scene7Mode === 0) {
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 5.5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(ox - range * 3 * unit, oy - 2 * (-range * 3) * unit);
+      ctx.lineTo(ox + range * 3 * unit, oy - 2 * (range * 3) * unit);
+      ctx.stroke();
+
+      ctx.fillStyle = "#ef4444";
+      ctx.beginPath();
+      ctx.arc(ox, oy, 7, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      for (let xVal = 0.5; xVal <= range; xVal += 0.1) {
+        const yVal = 6 / xVal;
+        const px = ox + xVal * unit;
+        const py = oy - yVal * unit;
+        if (xVal === 0.5) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      ctx.beginPath();
+      for (let xVal = -range; xVal <= -0.5; xVal += 0.1) {
+        const yVal = 6 / xVal;
+        const px = ox + xVal * unit;
+        const py = oy - yVal * unit;
+        if (xVal === -range) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 그래프 아래: 관계식 정보와 핵심 한 줄 설명 (말풍선 없음!)
+    const infoW = 780;
+    const infoH = 84;
+    const infoX = cardX + (cardW - infoW) / 2;
+    const infoY = cardY + cardH - 102;
+
+    ctx.fillStyle = (scene7Mode === 0) ? "#eff6ff" : "#fef2f2";
+    ctx.strokeStyle = (scene7Mode === 0) ? "#3b82f6" : "#ef4444";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.roundRect(infoX, infoY, infoW, infoH, 14);
+    ctx.fill(); ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (scene7Mode === 0) {
+      ctx.font = "900 22px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e40af";
+      ctx.fillText("관계식 :  y = a · x   (예: y = 2 · x)", infoX + infoW / 2, infoY + 28);
+
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("a의 값에 따라 같은 비로 커지거나 작아진다.", infoX + infoW / 2, infoY + 60);
+    } else {
+      ctx.font = "900 22px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#b91c1c";
+      ctx.fillText("관계식 :  y = a / x   (예: y = 6 / x)", infoX + infoW / 2, infoY + 28);
+
+      ctx.font = "bold 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("x와 y의 곱(x · y = a)이 항상 일정하다.", infoX + infoW / 2, infoY + 60);
+    }
+  }
+
+  // ==========================================
+  // [8화면] 정비례와 반비례 예시 (같은 위치, 버튼 하나에 하나씩 단계별 노출, 중복/말풍선 제거)
+  // ==========================================
+  function renderScene8() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 504;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    // 상단 탭 버튼: [ 🚀 1. 정비례 예시 ] vs [ 🎡 2. 반비례 예시 ]
+    const tab1W = 210, tab2W = 210, tabH = 44;
+    const tab1X = cardX + cardW / 2 - tab1W - 8;
+    const tab2X = cardX + cardW / 2 + 8;
+    const tabY = cardY + 16;
+
+    scene8HitBoxes.push({ mode: 0, x: tab1X, y: tabY, w: tab1W, h: tabH });
+    scene8HitBoxes.push({ mode: 1, x: tab2X, y: tabY, w: tab2W, h: tabH });
+
+    ctx.beginPath();
+    ctx.roundRect(tab1X, tabY, tab1W, tabH, 12);
+    if (scene8Mode === 0) {
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2.6;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "900 16.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1d4ed8";
+    } else {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "bold 15.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+    }
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🚀 1. 정비례 예시", tab1X + tab1W / 2, tabY + tabH / 2);
+
+    ctx.beginPath();
+    ctx.roundRect(tab2X, tabY, tab2W, tabH, 12);
+    if (scene8Mode === 1) {
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 2.6;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "900 16.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#b91c1c";
+    } else {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "bold 15.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+    }
+    ctx.fillText("🎡 2. 반비례 예시", tab2X + tab2W / 2, tabY + tabH / 2);
+
+    // 중앙 정렬 단일 영역 (정비례/반비례 정확히 같은 위치!)
+    const contentW = 700;
+    const contentX = cardX + (cardW - contentW) / 2;
+    const isDirect = (scene8Mode === 0);
+    const mainColor = isDirect ? "#2563eb" : "#dc2626";
+    const subBg = isDirect ? "#eff6ff" : "#fef2f2";
+
+    // [1단계] 제목 배너 + 표 (항상 표시)
+    const titleY = cardY + 76;
+    ctx.fillStyle = subBg;
+    ctx.strokeStyle = mainColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(contentX, titleY, contentW, 44, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = "900 19px 'Pretendard', sans-serif";
+    ctx.fillStyle = isDirect ? "#1e40af" : "#b91c1c";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      isDirect ? "🥖 1개에 800원 하는 빵 관계식 만들기" : "🍕 피자 12조각 똑같이 나누어 먹기 관계식 만들기",
+      contentX + contentW / 2,
+      titleY + 22
+    );
+
+    // 표 그리기
+    const tblY = titleY + 56;
+    const rowH = 42;
+    const col0W = 180;
+    const colNW = (contentW - col0W) / 4;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.roundRect(contentX, tblY, contentW, rowH * 2, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(contentX, tblY + rowH);
+    ctx.lineTo(contentX + contentW, tblY + rowH);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(contentX + col0W, tblY);
+    ctx.lineTo(contentX + col0W, tblY + rowH * 2);
+    ctx.stroke();
+
+    for (let c = 1; c < 4; c++) {
+      ctx.beginPath();
+      ctx.moveTo(contentX + col0W + c * colNW, tblY);
+      ctx.lineTo(contentX + col0W + c * colNW, tblY + rowH * 2);
+      ctx.stroke();
+    }
+
+    ctx.font = "bold 16px 'Pretendard', sans-serif";
+    ctx.fillStyle = mainColor;
+    ctx.textAlign = "center";
+    ctx.fillText(isDirect ? "빵 개수 x (개)" : "사람 수 x (명)", contentX + col0W / 2, tblY + rowH / 2);
+    ctx.fillText(isDirect ? "가격 y (원)" : "1인당 조각 y (개)", contentX + col0W / 2, tblY + rowH * 1.5);
+
+    const xArr = [1, 2, 3, 4];
+    const yArr = isDirect ? [800, 1600, 2400, 3200] : [12, 6, 4, 3];
+
+    for (let i = 0; i < 4; i++) {
+      const cx = contentX + col0W + i * colNW + colNW / 2;
+      ctx.font = "900 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText(xArr[i], cx, tblY + rowH / 2);
+      ctx.fillStyle = mainColor;
+      ctx.fillText(yArr[i], cx, tblY + rowH * 1.5);
+    }
+
+    // 단계별 버튼 또는 내용 표시
+    if (scene8Step === 0) {
+      // [이걸 관계식으로? ▶] 버튼
+      const btnW = 240, btnH = 52;
+      const btnX = cardX + (cardW - btnW) / 2;
+      const btnY = tblY + rowH * 2 + 28;
+      scene8StepBtnBox = { x: btnX, y: btnY, w: btnW, h: btnH };
+
+      ctx.fillStyle = mainColor;
+      ctx.beginPath();
+      ctx.roundRect(btnX, btnY, btnW, btnH, 14);
+      ctx.fill();
+
+      ctx.font = "900 19px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.fillText("이걸 관계식으로? ▶", btnX + btnW / 2, btnY + btnH / 2);
+    }
+
+    if (scene8Step >= 1) {
+      // [2단계] 관계식 박스 표시
+      const formY = tblY + rowH * 2 + 16;
+      const formH = 68;
+      ctx.fillStyle = subBg;
+      ctx.strokeStyle = mainColor;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.roundRect(contentX, formY, contentW, formH, 12);
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "900 24px 'Pretendard', sans-serif";
+      ctx.fillStyle = isDirect ? "#1e40af" : "#b91c1c";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        isDirect ? "관계식 :  y = 800 · x" : "관계식 :  y = 12 / x   (x · y = 12)",
+        contentX + contentW / 2,
+        formY + formH / 2
+      );
+
+      if (scene8Step === 1) {
+        // [다른 예시 보기? ▶] 버튼
+        const btnW = 240, btnH = 52;
+        const btnX = cardX + (cardW - btnW) / 2;
+        const btnY = formY + formH + 24;
+        scene8StepBtnBox = { x: btnX, y: btnY, w: btnW, h: btnH };
+
+        ctx.fillStyle = "#059669";
+        ctx.beginPath();
+        ctx.roundRect(btnX, btnY, btnW, btnH, 14);
+        ctx.fill();
+
+        ctx.font = "900 19px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.fillText("다른 예시 보기? ▶", btnX + btnW / 2, btnY + btnH / 2);
+      }
+    }
+
+    if (scene8Step >= 2) {
+      // [3단계] 다른 예시 박스 표시
+      const otherY = tblY + rowH * 2 + 98;
+      const otherH = 126;
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(contentX, otherY, contentW, otherH, 12);
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "900 16.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.textAlign = "left";
+      ctx.fillText(isDirect ? "💡 다른 정비례 예시" : "💡 다른 반비례 예시", contentX + 24, otherY + 28);
+
+      ctx.font = "bold 16px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#334155";
+      if (isDirect) {
+        ctx.fillText("• 시속 60km 자동차의 달린 시간(x)과 거리(y)   ➔   y = 60 · x", contentX + 24, otherY + 64);
+        ctx.fillText("• 1분에 5L씩 받는 물의 시간(x)과 물의 양(y)   ➔   y = 5 · x", contentX + 24, otherY + 98);
+      } else {
+        ctx.fillText("• 넓이가 24㎠인 직사각형의 가로(x)와 세로(y)   ➔   y = 24 / x", contentX + 24, otherY + 64);
+        ctx.fillText("• 100km 거리를 갈 때 속력(x)과 걸린 시간(y)   ➔   y = 100 / x", contentX + 24, otherY + 98);
+      }
+    }
+  }
+
+  // ==========================================
+  // [9화면] 정비례·반비례에 따라 지나는 사분면
+  // ==========================================
+  function renderScene9() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+    scene9ModeTabs = [];
+    scene9SignBtns = [];
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 504;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    // 상단 탭: [ 🚀 1. 정비례 (y = a · x) ] vs [ 🎡 2. 반비례 (y = a / x) ]
+    const tab1W = 230, tab2W = 230, tabH = 44;
+    const tab1X = cardX + cardW / 2 - tab1W - 8;
+    const tab2X = cardX + cardW / 2 + 8;
+    const tabY = cardY + 16;
+
+    scene9ModeTabs.push({ mode: 0, x: tab1X, y: tabY, w: tab1W, h: tabH });
+    scene9ModeTabs.push({ mode: 1, x: tab2X, y: tabY, w: tab2W, h: tabH });
+
+    ctx.beginPath();
+    ctx.roundRect(tab1X, tabY, tab1W, tabH, 12);
+    if (scene9Mode === 0) {
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2.6;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "900 16.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1d4ed8";
+    } else {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "bold 15.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+    }
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🚀 1. 정비례 (y = a · x)", tab1X + tab1W / 2, tabY + tabH / 2);
+
+    ctx.beginPath();
+    ctx.roundRect(tab2X, tabY, tab2W, tabH, 12);
+    if (scene9Mode === 1) {
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 2.6;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "900 16.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#b91c1c";
+    } else {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.fill(); ctx.stroke();
+      ctx.font = "bold 15.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+    }
+    ctx.fillText("🎡 2. 반비례 (y = a / x)", tab2X + tab2W / 2, tabY + tabH / 2);
+
+    // 좌측: a의 부호 선택 버튼 영역 (그래프 왼쪽 여유 공간에 깔끔하게 배치)
+    const btnX = 72;
+    const btnW = 228;
+    const btnH = 56;
+    const btn1Y = 172;
+    const btn2Y = 246;
+
+    ctx.font = "900 15.5px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#334155";
+    ctx.textAlign = "center";
+    ctx.fillText("👉 a의 부호를 선택해 보세요", btnX + btnW / 2, 144);
+
+    scene9SignBtns.push({ sign: 0, x: btnX, y: btn1Y, w: btnW, h: btnH });
+    scene9SignBtns.push({ sign: 1, x: btnX, y: btn2Y, w: btnW, h: btnH });
+
+    // [ a > 0 (양수) ] 버튼
+    ctx.beginPath();
+    ctx.roundRect(btnX, btn1Y, btnW, btnH, 12);
+    if (scene9Sign === 0) {
+      ctx.fillStyle = "#2563eb";
+      ctx.strokeStyle = "#1d4ed8";
+      ctx.lineWidth = 2.5;
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 18px 'Pretendard', sans-serif";
+    } else {
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "#93c5fd";
+      ctx.lineWidth = 1.8;
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#1d4ed8";
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+    }
+    ctx.fillText("a > 0  (양수일 때)", btnX + btnW / 2, btn1Y + btnH / 2);
+
+    // [ a < 0 (음수) ] 버튼
+    ctx.beginPath();
+    ctx.roundRect(btnX, btn2Y, btnW, btnH, 12);
+    if (scene9Sign === 1) {
+      ctx.fillStyle = "#dc2626";
+      ctx.strokeStyle = "#b91c1c";
+      ctx.lineWidth = 2.5;
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 18px 'Pretendard', sans-serif";
+    } else {
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#fca5a5";
+      ctx.lineWidth = 1.8;
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#b91c1c";
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+    }
+    ctx.fillText("a < 0  (음수일 때)", btnX + btnW / 2, btn2Y + btnH / 2);
+
+    // 중앙: 좌표평면 (7화면과 동일한 중심 위치)
+    const ox = 480;
+    const oy = 235;
+    const unit = 27;
+    const range = 5;
+    const halfSpan = range * unit;
+
+    // 지나는 사분면 배경 하이라이트 칠하기
+    if (scene9Sign === 0) {
+      // a > 0 : 제1사분면(우상), 제3사분면(좌하) 하이라이트
+      ctx.fillStyle = "rgba(37, 99, 235, 0.13)";
+      ctx.fillRect(ox, oy - halfSpan, halfSpan, halfSpan);
+      ctx.fillRect(ox - halfSpan, oy, halfSpan, halfSpan);
+    } else if (scene9Sign === 1) {
+      // a < 0 : 제2사분면(좌상), 제4사분면(우하) 하이라이트
+      ctx.fillStyle = "rgba(220, 38, 38, 0.13)";
+      ctx.fillRect(ox - halfSpan, oy - halfSpan, halfSpan, halfSpan);
+      ctx.fillRect(ox, oy, halfSpan, halfSpan);
+    }
+
+    drawCoordinateGrid(ox, oy, unit, range);
+
+    // 그래프 곡선/직선 그리기 (a 부호 선택 시)
+    if (scene9Sign >= 0) {
+      const isPos = (scene9Sign === 0);
+      const graphColor = isPos ? "#2563eb" : "#dc2626";
+      const signMul = isPos ? 1 : -1;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(ox - halfSpan, oy - halfSpan, halfSpan * 2, halfSpan * 2);
+      ctx.clip();
+
+      ctx.strokeStyle = graphColor;
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+
+      if (scene9Mode === 0) {
+        // 정비례: y = ±2x
+        const aVal = 2 * signMul;
+        ctx.beginPath();
+        ctx.moveTo(ox - range * 3 * unit, oy - aVal * (-range * 3) * unit);
+        ctx.lineTo(ox + range * 3 * unit, oy - aVal * (range * 3) * unit);
+        ctx.stroke();
+
+        ctx.fillStyle = graphColor;
+        ctx.beginPath();
+        ctx.arc(ox, oy, 6.5, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // 반비례: y = ±6/x
+        const aVal = 6 * signMul;
+        ctx.beginPath();
+        for (let xVal = 0.5; xVal <= range; xVal += 0.1) {
+          const yVal = aVal / xVal;
+          const px = ox + xVal * unit;
+          const py = oy - yVal * unit;
+          if (xVal === 0.5) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        ctx.beginPath();
+        for (let xVal = -range; xVal <= -0.5; xVal += 0.1) {
+          const yVal = aVal / xVal;
+          const px = ox + xVal * unit;
+          const py = oy - yVal * unit;
+          if (xVal === -range) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 제1, 2, 3, 4사분면 라벨 칩 표시 (그래프 선과 절대 겹치지 않는 (±3.2, ±3.6) 대칭 위치)
+    const qPositions = [
+      { q: 1, name: "제1사분면", x: ox + 86, y: oy - 98, activeWhen: 0 },
+      { q: 2, name: "제2사분면", x: ox - 86, y: oy - 98, activeWhen: 1 },
+      { q: 3, name: "제3사분면", x: ox - 86, y: oy + 98, activeWhen: 0 },
+      { q: 4, name: "제4사분면", x: ox + 86, y: oy + 98, activeWhen: 1 }
+    ];
+
+    for (const qp of qPositions) {
+      const isHighlighted = (scene9Sign === qp.activeWhen);
+      const isNeutral = (scene9Sign === -1);
+
+      if (isHighlighted) {
+        const badgeColor = (scene9Sign === 0) ? "#1d4ed8" : "#b91c1c";
+        const badgeBg = (scene9Sign === 0) ? "#dbeafe" : "#fee2e2";
+        const badgeBorder = (scene9Sign === 0) ? "#2563eb" : "#dc2626";
+        drawBadgeChip(ctx, qp.name, qp.x, qp.y, badgeColor, badgeBg, badgeBorder);
+      } else if (isNeutral) {
+        drawBadgeChip(ctx, qp.name, qp.x, qp.y, "#334155", "#f8fafc", "#94a3b8");
+      } else {
+        drawBadgeChip(ctx, qp.name, qp.x, qp.y, "#94a3b8", "rgba(248, 250, 252, 0.8)", "#cbd5e1");
+      }
+    }
+
+    // 하단: 단일 핵심 설명 박스 (말풍선 없음, 중복 없음)
+    const infoW = 780;
+    const infoH = 84;
+    const infoX = cardX + (cardW - infoW) / 2;
+    const infoY = cardY + cardH - 102;
+
+    if (scene9Sign === -1) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(infoX, infoY, infoW, infoH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 20px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e293b";
+      ctx.fillText("좌표평면은 x축과 y축을 기준으로 제1, 2, 3, 4사분면으로 나뉜다.", infoX + infoW / 2, infoY + 28);
+
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("왼쪽에서 a > 0 (양수) 또는 a < 0 (음수) 버튼을 눌러 지나는 사분면을 확인해 보세요!", infoX + infoW / 2, infoY + 60);
+    } else {
+      const isPos = (scene9Sign === 0);
+      ctx.fillStyle = isPos ? "#eff6ff" : "#fef2f2";
+      ctx.strokeStyle = isPos ? "#3b82f6" : "#ef4444";
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.roundRect(infoX, infoY, infoW, infoH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      const modeTitle = (scene9Mode === 0) ? "정비례 (y = a · x)" : "반비례 (y = a / x)";
+      ctx.font = "900 22px 'Pretendard', sans-serif";
+      ctx.fillStyle = isPos ? "#1e40af" : "#b91c1c";
+      if (isPos) {
+        ctx.fillText(`${modeTitle}  :  a > 0 (양수)이면  제1사분면, 제3사분면을 지난다!`, infoX + infoW / 2, infoY + 28);
+      } else {
+        ctx.fillText(`${modeTitle}  :  a < 0 (음수)이면  제2사분면, 제4사분면을 지난다!`, infoX + infoW / 2, infoY + 28);
+      }
+
+      ctx.font = "bold 17.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("정비례와 반비례 모두 a > 0이면 제1·3사분면, a < 0이면 제2·4사분면을 지난다.", infoX + infoW / 2, infoY + 60);
+    }
+  }
+
+  // ==========================================
+  // [10화면] 반비례 좀 더 살펴보기 (1) - 두 좌표를 곱하면 반비례 관계식의 a 값이 됨 (사례 3개)
+  // ==========================================
+  function renderScene10() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+    scene9ModeTabs = [];
+    scene9SignBtns = [];
+    scene10HitBoxes = [];
+    scene11HitBoxes = [];
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 504;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    // 상단 제목 배너
+    const bannerW = 580;
+    const bannerH = 42;
+    const bannerX = cardX + (cardW - bannerW) / 2;
+    const bannerY = cardY + 16;
+
+    ctx.fillStyle = "#fef2f2";
+    ctx.strokeStyle = "#fca5a5";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 12);
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = "900 18px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#b91c1c";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🔎 반비례 (y = a / x) : 지나는 한 점의 두 좌표를 곱하면 a가 된다!", bannerX + bannerW / 2, bannerY + bannerH / 2);
+
+    // 좌측: 사례 3개 선택 버튼
+    const btnX = 68;
+    const btnW = 228;
+    const btnH = 58;
+    const startBtnY = 136;
+    const btnGap = 16;
+
+    ctx.font = "900 15.5px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#334155";
+    ctx.textAlign = "center";
+    ctx.fillText("👉 3가지 사례를 눌러보세요", btnX + btnW / 2, 110);
+
+    scene10Cases.forEach((item, idx) => {
+      const by = startBtnY + idx * (btnH + btnGap);
+      const isSelected = (scene10SelectedCase === idx);
+
+      scene10HitBoxes.push({ idx: idx, x: btnX, y: by, w: btnW, h: btnH });
+
+      ctx.beginPath();
+      ctx.roundRect(btnX, by, btnW, btnH, 12);
+      if (isSelected) {
+        ctx.fillStyle = item.color;
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = 2.5;
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 18px 'Pretendard', sans-serif";
+      } else {
+        ctx.fillStyle = item.bg;
+        ctx.strokeStyle = item.border;
+        ctx.lineWidth = 1.8;
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = item.color;
+        ctx.font = "bold 17px 'Pretendard', sans-serif";
+      }
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(item.label, btnX + btnW / 2, by + btnH / 2);
+    });
+
+    // 중앙: 좌표평면
+    const ox = 540;
+    const oy = 238;
+    const unit = 27;
+    const range = 5;
+    const halfSpan = range * unit;
+
+    drawCoordinateGrid(ox, oy, unit, range);
+
+    if (scene10SelectedCase >= 0) {
+      const cur = scene10Cases[scene10SelectedCase];
+
+      // 반비례 곡선 그리기
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(ox - halfSpan, oy - halfSpan, halfSpan * 2, halfSpan * 2);
+      ctx.clip();
+
+      ctx.strokeStyle = cur.color;
+      ctx.lineWidth = 4.8;
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      for (let xVal = 0.4; xVal <= range; xVal += 0.08) {
+        const yVal = cur.a / xVal;
+        const px = ox + xVal * unit;
+        const py = oy - yVal * unit;
+        if (xVal === 0.4) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      ctx.beginPath();
+      for (let xVal = -range; xVal <= -0.4; xVal += 0.08) {
+        const yVal = cur.a / xVal;
+        const px = ox + xVal * unit;
+        const py = oy - yVal * unit;
+        if (xVal === -range) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // 지나는 한 점 (x, y) 및 축 수선 점선 표시
+      const px = ox + cur.x * unit;
+      const py = oy - cur.y * unit;
+
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = cur.color;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px, oy);
+      ctx.moveTo(px, py);
+      ctx.lineTo(ox, py);
+      ctx.stroke();
+      ctx.restore();
+
+      // x축, y축 눈금 숫자 강조
+      ctx.font = "900 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = cur.color;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(cur.x, px, oy + 6);
+
+      ctx.textAlign = (cur.x > 0) ? "right" : "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(cur.y, (cur.x > 0) ? ox - 8 : ox + 8, py);
+
+      // 점 찍기
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = cur.color;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(px, py, 8, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+
+      // 점 좌표 배지
+      const badgeOffsetX = (cur.x > 0) ? 54 : -54;
+      const badgeOffsetY = -22;
+      drawBadgeChip(ctx, `점 ${cur.ptText}`, px + badgeOffsetX, py + badgeOffsetY, "#ffffff", cur.color, cur.color);
+
+      // 우측: 시각적 곱셈 공식 카드 (x좌표 × y좌표 = a -> 관계식)
+      const sideX = 716;
+      const sideY = 136;
+      const sideW = 176;
+      const sideH = 206;
+
+      ctx.fillStyle = cur.bg;
+      ctx.strokeStyle = cur.color;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.roundRect(sideX, sideY, sideW, sideH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      ctx.font = "bold 14px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#475569";
+      ctx.fillText("두 좌표의 곱 = a", sideX + sideW / 2, sideY + 28);
+
+      ctx.font = "900 22px 'Pretendard', sans-serif";
+      ctx.fillStyle = cur.color;
+      ctx.fillText(cur.calcText, sideX + sideW / 2, sideY + 66);
+
+      ctx.font = "900 20px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText(`∴  a = ${cur.a}`, sideX + sideW / 2, sideY + 106);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = cur.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(sideX + 14, sideY + 136, sideW - 28, 52, 10);
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "900 23px 'Pretendard', sans-serif";
+      ctx.fillStyle = cur.color;
+      ctx.fillText(cur.formula, sideX + sideW / 2, sideY + 162);
+    }
+
+    // 하단: 단일 핵심 설명 박스
+    const infoW = 780;
+    const infoH = 84;
+    const infoX = cardX + (cardW - infoW) / 2;
+    const infoY = cardY + cardH - 102;
+
+    if (scene10SelectedCase === -1) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(infoX, infoY, infoW, infoH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 20px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e293b";
+      ctx.fillText("반비례 그래프(y = a / x)는 지나는 한 점의 좌표만 알아도 a 값을 바로 구할 수 있다.", infoX + infoW / 2, infoY + 28);
+
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("왼쪽의 사례 1, 2, 3 버튼을 눌러 두 좌표(x좌표, y좌표)를 곱한 값을 확인해 보세요!", infoX + infoW / 2, infoY + 60);
+    } else {
+      const cur = scene10Cases[scene10SelectedCase];
+      ctx.fillStyle = cur.bg;
+      ctx.strokeStyle = cur.color;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.roundRect(infoX, infoY, infoW, infoH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 21px 'Pretendard', sans-serif";
+      ctx.fillStyle = cur.color;
+      ctx.fillText(`지나는 점 ${cur.ptText}  ➔  두 좌표의 곱 : ${cur.calcText} (a = ${cur.a})  ➔  관계식 : ${cur.formula}`, infoX + infoW / 2, infoY + 28);
+
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("반비례 그래프 위의 한 점 (x, y)에서 두 좌표를 곱하면 항상 관계식의 a 값(x · y = a)이 된다.", infoX + infoW / 2, infoY + 60);
+    }
+  }
+
+  // ==========================================
+  // [11화면] 반비례 좀 더 살펴보기 (2) - 원점에서부터의 직사각형 넓이가 같음
+  // ==========================================
+  function renderScene11() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+    scene9ModeTabs = [];
+    scene9SignBtns = [];
+    scene10HitBoxes = [];
+    scene11HitBoxes = [];
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 504;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    // 상단 제목 배너
+    const bannerW = 600;
+    const bannerH = 42;
+    const bannerX = cardX + (cardW - bannerW) / 2;
+    const bannerY = cardY + 16;
+
+    ctx.fillStyle = "#eff6ff";
+    ctx.strokeStyle = "#93c5fd";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 12);
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = "900 18px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#1d4ed8";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🟦 반비례 (y = 6 / x) 그래프 위의 점과 원점 사이의 직사각형 넓이", bannerX + bannerW / 2, bannerY + bannerH / 2);
+
+    // 좌측: 3개 점 직사각형 선택 + 모두 겹쳐 보기 버튼
+    const btnX = 68;
+    const btnW = 232;
+    const btnH = 50;
+    const startBtnY = 122;
+    const btnGap = 12;
+
+    ctx.font = "900 15px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#334155";
+    ctx.textAlign = "center";
+    ctx.fillText("👉 점을 눌러 넓이를 비교해 보세요", btnX + btnW / 2, 100);
+
+    scene11Rects.forEach((item, idx) => {
+      const by = startBtnY + idx * (btnH + btnGap);
+      const isSelected = (scene11SelectedRect === idx);
+
+      scene11HitBoxes.push({ idx: idx, x: btnX, y: by, w: btnW, h: btnH });
+
+      ctx.beginPath();
+      ctx.roundRect(btnX, by, btnW, btnH, 12);
+      if (isSelected) {
+        ctx.fillStyle = item.color;
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = 2.4;
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 17px 'Pretendard', sans-serif";
+      } else {
+        ctx.fillStyle = item.bg;
+        ctx.strokeStyle = item.border;
+        ctx.lineWidth = 1.8;
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = item.color;
+        ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+      }
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(item.label, btnX + btnW / 2, by + btnH / 2);
+    });
+
+    // 4번째 버튼: [ ✨ 3개 모두 겹쳐 비교하기 ]
+    const allBtnY = startBtnY + 3 * (btnH + btnGap);
+    const isAllSelected = (scene11SelectedRect === 3);
+    scene11HitBoxes.push({ idx: 3, x: btnX, y: allBtnY, w: btnW, h: btnH });
+
+    ctx.beginPath();
+    ctx.roundRect(btnX, allBtnY, btnW, btnH, 12);
+    if (isAllSelected) {
+      ctx.fillStyle = "#ea580c";
+      ctx.strokeStyle = "#c2410c";
+      ctx.lineWidth = 2.4;
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 17px 'Pretendard', sans-serif";
+    } else {
+      ctx.fillStyle = "#fff7ed";
+      ctx.strokeStyle = "#fdba74";
+      ctx.lineWidth = 1.8;
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#c2410c";
+      ctx.font = "bold 16.5px 'Pretendard', sans-serif";
+    }
+    ctx.fillText("✨ 3개 모두 겹쳐 비교하기", btnX + btnW / 2, allBtnY + btnH / 2);
+
+    // 중앙: 좌표평면 (range = 6, unit = 22.5 -> 135px로 (1,6), (2,3), (3,2) 모두 깔끔하게 포함)
+    const ox = 540;
+    const oy = 240;
+    const unit = 22.5;
+    const range = 6;
+    const halfSpan = range * unit;
+
+    drawCoordinateGrid(ox, oy, unit, range);
+
+    // 선택된 직사각형(원점 ~ (x, y)) 칠하기
+    if (scene11SelectedRect >= 0 && scene11SelectedRect <= 2) {
+      const cur = scene11Rects[scene11SelectedRect];
+      const rw = cur.x * unit;
+      const rh = cur.y * unit;
+      const rx = ox;
+      const ry = oy - rh;
+
+      ctx.fillStyle = cur.fill;
+      ctx.strokeStyle = cur.color;
+      ctx.lineWidth = 2.6;
+      ctx.fillRect(rx, ry, rw, rh);
+      ctx.strokeRect(rx, ry, rw, rh);
+
+      // 가로, 세로 눈금 표시
+      ctx.font = "900 14px 'Pretendard', sans-serif";
+      ctx.fillStyle = cur.color;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(`가로 ${cur.x}`, ox + rw / 2, oy + 6);
+
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`세로 ${cur.y}`, ox - 8, oy - rh / 2);
+    } else if (scene11SelectedRect === 3) {
+      // 3개 모두 겹쳐 그리기
+      scene11Rects.forEach((item) => {
+        const rw = item.x * unit;
+        const rh = item.y * unit;
+        ctx.fillStyle = item.fill;
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = 2.2;
+        ctx.fillRect(ox, oy - rh, rw, rh);
+        ctx.strokeRect(ox, oy - rh, rw, rh);
+      });
+    }
+
+    // 반비례 곡선 y = 6 / x 그리기
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(ox - halfSpan, oy - halfSpan, halfSpan * 2, halfSpan * 2);
+    ctx.clip();
+
+    ctx.strokeStyle = "#dc2626";
+    ctx.lineWidth = 4.2;
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    for (let xVal = 0.8; xVal <= range; xVal += 0.08) {
+      const yVal = 6 / xVal;
+      const px = ox + xVal * unit;
+      const py = oy - yVal * unit;
+      if (xVal === 0.8) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    ctx.beginPath();
+    for (let xVal = -range; xVal <= -0.8; xVal += 0.08) {
+      const yVal = 6 / xVal;
+      const px = ox + xVal * unit;
+      const py = oy - yVal * unit;
+      if (xVal === -range) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // 선택된 점 및 우측 넓이 카드 표시
+    if (scene11SelectedRect >= 0 && scene11SelectedRect <= 2) {
+      const cur = scene11Rects[scene11SelectedRect];
+      const px = ox + cur.x * unit;
+      const py = oy - cur.y * unit;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = cur.color;
+      ctx.lineWidth = 3.8;
+      ctx.beginPath();
+      ctx.arc(px, py, 7.5, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+
+      drawBadgeChip(ctx, `(${cur.x}, ${cur.y})`, px + 42, py - 14, "#ffffff", cur.color, cur.color);
+
+      // 우측 넓이 요약 카드
+      const sideX = 712;
+      const sideY = 148;
+      const sideW = 180;
+      const sideH = 176;
+
+      ctx.fillStyle = cur.bg;
+      ctx.strokeStyle = cur.color;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.roundRect(sideX, sideY, sideW, sideH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#475569";
+      ctx.fillText(`점 (${cur.x}, ${cur.y}) 직사각형`, sideX + sideW / 2, sideY + 30);
+
+      ctx.font = "900 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = cur.color;
+      ctx.fillText(`가로 ${cur.x} × 세로 ${cur.y}`, sideX + sideW / 2, sideY + 68);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = cur.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(sideX + 16, sideY + 102, sideW - 32, 52, 10);
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "900 24px 'Pretendard', sans-serif";
+      ctx.fillStyle = cur.color;
+      ctx.fillText("넓이 = 6", sideX + sideW / 2, sideY + 128);
+    } else if (scene11SelectedRect === 3) {
+      scene11Rects.forEach((item) => {
+        const px = ox + item.x * unit;
+        const py = oy - item.y * unit;
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.arc(px, py, 6.5, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+      });
+
+      const sideX = 712;
+      const sideY = 138;
+      const sideW = 180;
+      const sideH = 196;
+
+      ctx.fillStyle = "#fff7ed";
+      ctx.strokeStyle = "#ea580c";
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.roundRect(sideX, sideY, sideW, sideH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#9a3412";
+      ctx.fillText("직사각형 넓이 비교", sideX + sideW / 2, sideY + 28);
+
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("• (1, 6) : 1 × 6 = 6", sideX + sideW / 2, sideY + 62);
+      ctx.fillStyle = "#059669";
+      ctx.fillText("• (2, 3) : 2 × 3 = 6", sideX + sideW / 2, sideY + 90);
+      ctx.fillStyle = "#7c3aed";
+      ctx.fillText("• (3, 2) : 3 × 2 = 6", sideX + sideW / 2, sideY + 118);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#ea580c";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(sideX + 14, sideY + 138, sideW - 28, 44, 10);
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = "900 19px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#ea580c";
+      ctx.fillText("넓이 = 6 으로 같다!", sideX + sideW / 2, sideY + 160);
+    }
+
+    // 하단: 단일 핵심 설명 박스
+    const infoW = 780;
+    const infoH = 84;
+    const infoX = cardX + (cardW - infoW) / 2;
+    const infoY = cardY + cardH - 102;
+
+    if (scene11SelectedRect === -1) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(infoX, infoY, infoW, infoH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 20px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e293b";
+      ctx.fillText("반비례 그래프 위의 점에서 x축, y축에 수선을 그으면 원점과 직사각형이 만들어진다.", infoX + infoW / 2, infoY + 28);
+
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("왼쪽 버튼을 눌러 각 점에서 만들어지는 직사각형의 넓이를 확인해 보세요!", infoX + infoW / 2, infoY + 60);
+    } else {
+      const isAll = (scene11SelectedRect === 3);
+      const cur = isAll ? null : scene11Rects[scene11SelectedRect];
+
+      ctx.fillStyle = isAll ? "#fff7ed" : cur.bg;
+      ctx.strokeStyle = isAll ? "#ea580c" : cur.color;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.roundRect(infoX, infoY, infoW, infoH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 21px 'Pretendard', sans-serif";
+      ctx.fillStyle = isAll ? "#c2410c" : cur.color;
+      if (isAll) {
+        ctx.fillText("1 × 6 = 2 × 3 = 3 × 2 = 6   ➔   어느 점을 잡아도 직사각형의 넓이는 6으로 모두 같다!", infoX + infoW / 2, infoY + 28);
+      } else {
+        ctx.fillText(`점 (${cur.x}, ${cur.y})에서 원점까지의 직사각형 넓이  :  ${cur.desc}`, infoX + infoW / 2, infoY + 28);
+      }
+
+      ctx.font = "bold 17px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("반비례(y = a / x) 그래프를 지나는 점은 원점에서부터의 직사각형 넓이가 |a|로 항상 같다.", infoX + infoW / 2, infoY + 60);
+    }
+  }
+
+  // ==========================================
+  // [12화면 & 13화면 공통] 인터랙티브 5문제 퀴즈 렌더러
+  // ==========================================
+  function renderQuizScene(titleText, themeColor, themeBg, themeBorder, quizzes, qIdx, selectedArr, solvedArr) {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+    scene9ModeTabs = [];
+    scene9SignBtns = [];
+    scene10HitBoxes = [];
+    scene11HitBoxes = [];
+    quizTabHitBoxes = [];
+    quizChoiceHitBoxes = [];
+    quizNextQBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 504;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    ctx.fill(); ctx.stroke();
+
+    const innerX = 72;
+    const innerW = 816;
+
+    // 1. 상단 타이틀 배너 (좌측) + 1~5번 문제 탭 버튼 (우측)
+    const headerY = 32;
+    const headerH = 42;
+    const titleW = 436;
+
+    ctx.fillStyle = themeBg;
+    ctx.strokeStyle = themeBorder;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(innerX, headerY, titleW, headerH, 12);
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = "900 17.5px 'Pretendard', sans-serif";
+    ctx.fillStyle = themeColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(titleText, innerX + titleW / 2, headerY + headerH / 2);
+
+    // 우측 1~5번 문제 탭
+    const tabW = 64;
+    const tabGap = 9;
+    const tabStartX = innerX + innerW - (tabW * 5 + tabGap * 4);
+
+    for (let i = 0; i < 5; i++) {
+      const tx = tabStartX + i * (tabW + tabGap);
+      const isCur = (qIdx === i);
+      const isDone = solvedArr[i];
+
+      quizTabHitBoxes.push({ idx: i, x: tx, y: headerY, w: tabW, h: headerH });
+
+      ctx.beginPath();
+      ctx.roundRect(tx, headerY, tabW, headerH, 10);
+      if (isCur) {
+        ctx.fillStyle = themeColor;
+        ctx.strokeStyle = themeColor;
+        ctx.lineWidth = 2.4;
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 15.5px 'Pretendard', sans-serif";
+      } else if (isDone) {
+        ctx.fillStyle = "#dcfce7";
+        ctx.strokeStyle = "#22c55e";
+        ctx.lineWidth = 2;
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#15803d";
+        ctx.font = "900 15px 'Pretendard', sans-serif";
+      } else {
+        ctx.fillStyle = "#f8fafc";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1.5;
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#64748b";
+        ctx.font = "bold 15px 'Pretendard', sans-serif";
+      }
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(isDone ? `✓ ${i + 1}번` : `${i + 1}번`, tx + tabW / 2, headerY + headerH / 2);
+    }
+
+    const curQ = quizzes[qIdx];
+    const selChoice = selectedArr[qIdx];
+    const isSolved = solvedArr[qIdx];
+
+    // 2. 문제 지문 카드
+    const qBoxY = 88;
+    const qBoxH = 84;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(innerX, qBoxY, innerW, qBoxH, 14);
+    ctx.fill(); ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "900 19px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#0f172a";
+    if (curQ.qLines.length === 1) {
+      ctx.fillText(curQ.qLines[0], innerX + innerW / 2, qBoxY + qBoxH / 2);
+    } else {
+      ctx.fillText(curQ.qLines[0], innerX + innerW / 2, qBoxY + 28);
+      ctx.fillText(curQ.qLines[1], innerX + innerW / 2, qBoxY + 58);
+    }
+
+    // 3. 3개 선택지 버튼
+    const choiceStartY = 186;
+    const choiceH = 54;
+    const choiceGap = 12;
+
+    curQ.choices.forEach((cText, cIdx) => {
+      const cy = choiceStartY + cIdx * (choiceH + choiceGap);
+      quizChoiceHitBoxes.push({ idx: cIdx, x: innerX, y: cy, w: innerW, h: choiceH });
+
+      const isThisClicked = (selChoice === cIdx);
+      const isRightAns = (cIdx === curQ.ans);
+
+      ctx.beginPath();
+      ctx.roundRect(innerX, cy, innerW, choiceH, 12);
+
+      let statusLabel = "";
+      let statusColor = "";
+
+      if ((isThisClicked && isRightAns) || (isSolved && isRightAns)) {
+        ctx.fillStyle = "#dcfce7";
+        ctx.strokeStyle = "#16a34a";
+        ctx.lineWidth = 2.6;
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#14532d";
+        ctx.font = "900 17.5px 'Pretendard', sans-serif";
+        statusLabel = "⭕ 정답!";
+        statusColor = "#15803d";
+      } else if (isThisClicked && !isRightAns) {
+        ctx.fillStyle = "#fee2e2";
+        ctx.strokeStyle = "#dc2626";
+        ctx.lineWidth = 2.4;
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#991b1b";
+        ctx.font = "900 17.5px 'Pretendard', sans-serif";
+        statusLabel = "❌ 다시 골라보세요";
+        statusColor = "#dc2626";
+      } else {
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1.8;
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#1e293b";
+        ctx.font = "bold 17px 'Pretendard', sans-serif";
+      }
+
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(cText, innerX + 24, cy + choiceH / 2);
+
+      if (statusLabel) {
+        ctx.textAlign = "right";
+        ctx.font = "900 16px 'Pretendard', sans-serif";
+        ctx.fillStyle = statusColor;
+        ctx.fillText(statusLabel, innerX + innerW - 22, cy + choiceH / 2);
+      }
+    });
+
+    // 4. 하단 해설 및 개념 정리 박스
+    const expY = 388;
+    const expH = 114;
+
+    if (selChoice === -1 && !isSolved) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(innerX, expY, innerW, expH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 19px 'Pretendard', sans-serif";
+      ctx.fillStyle = themeColor;
+      ctx.fillText(`👆 위 보기(①, ②, ③) 중에서 Q${qIdx + 1}의 정답을 골라 눌러보세요!`, innerX + innerW / 2, expY + expH / 2);
+    } else if (selChoice !== curQ.ans && !isSolved) {
+      ctx.fillStyle = "#fef2f2";
+      ctx.strokeStyle = "#f87171";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.roundRect(innerX, expY, innerW, expH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 18px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#b91c1c";
+      ctx.fillText("💡 아쉽네요! 아래 개념 힌트를 읽고 다시 정답을 눌러보세요.", innerX + innerW / 2, expY + 34, innerW - 40);
+
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#1e293b";
+      ctx.fillText(curQ.explain, innerX + innerW / 2, expY + 76, innerW - 60);
+    } else {
+      ctx.fillStyle = "#f0fdf4";
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.roundRect(innerX, expY, innerW, expH, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 18.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#15803d";
+      ctx.fillText(`🎉 정답입니다! (${solvedArr.filter(Boolean).length} / 5 문제 완료)`, innerX + 24, expY + 34);
+
+      // 1~4번 문제에서는 박스 우측 상단에 [다음 문제 ▶] 바로가기 버튼도 함께 제공
+      if (qIdx < 4) {
+        const nBtnW = 165;
+        const nBtnH = 38;
+        const nBtnX = innerX + innerW - nBtnW - 20;
+        const nBtnY = expY + 15;
+        quizNextQBtnBox = { x: nBtnX, y: nBtnY, w: nBtnW, h: nBtnH };
+
+        ctx.fillStyle = "#16a34a";
+        ctx.beginPath();
+        ctx.roundRect(nBtnX, nBtnY, nBtnW, nBtnH, 10);
+        ctx.fill();
+
+        ctx.textAlign = "center";
+        ctx.font = "900 15px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(`다음 문제 (${qIdx + 2}번) ▶`, nBtnX + nBtnW / 2, nBtnY + nBtnH / 2);
+      }
+
+      ctx.textAlign = "center";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText(curQ.explain, innerX + innerW / 2, expY + 78, innerW - 60);
+    }
+  }
+
+  // [12화면] 정비례와 반비례 비교 퀴즈 5개
+  function renderScene12() {
+    renderQuizScene(
+      "🏆 정비례 vs 반비례 비교 퀴즈 (5문제)",
+      "#1d4ed8",
+      "#eff6ff",
+      "#93c5fd",
+      scene12Quizzes,
+      scene12QIdx,
+      scene12Selected,
+      scene12Solved
+    );
+  }
+
+  // [13화면] 함수의 개념을 알려주는 퀴즈 5개
+  function renderScene13() {
+    renderQuizScene(
+      "💡 함수의 개념을 깨우치는 퀴즈 (5문제)",
+      "#b45309",
+      "#fef3c7",
+      "#fcd34d",
+      scene13Quizzes,
+      scene13QIdx,
+      scene13Selected,
+      scene13Solved
+    );
+  }
+
+  // ==========================================
+  // [14화면] 퀴즈 결과 리포트 (1/2) : 내가 맞힌 핵심 개념
+  // ==========================================
+  function renderScene14() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+    scene9ModeTabs = [];
+    scene9SignBtns = [];
+    scene10HitBoxes = [];
+    scene11HitBoxes = [];
+    quizTabHitBoxes = [];
+    quizChoiceHitBoxes = [];
+    quizNextQBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 508;
+
+    // 메인 카드 배경
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 20);
+    ctx.fill(); ctx.stroke();
+
+    // 10문제 결과 집계
+    const correctItems = [];
+    const wrongItems = [];
+
+    all10QuizInfo.forEach((item) => {
+      let isCorrect = false;
+      if (item.scene === 12) {
+        isCorrect = (scene12FirstTry[item.qNum - 1] === true);
+      } else {
+        isCorrect = (scene13FirstTry[item.qNum - 6] === true);
+      }
+      if (isCorrect) {
+        correctItems.push(item);
+      } else {
+        wrongItems.push(item);
+      }
+    });
+
+    const score = correctItems.length * 10;
+    const correctCount = correctItems.length;
+
+    // 1. 상단 타이틀 & 스코어 헤더
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 20px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("🏆 [리포트 1/2] 🟢 내가 완벽히 맞힌 핵심 개념", cardX + 22, cardY + 36);
+
+    ctx.font = "bold 13px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#64748b";
+    ctx.fillText("첫 시도에 정확하게 짚어낸 나의 수학 강점 개념 리포트", cardX + 22, cardY + 54);
+
+    // 점수 배지
+    const scoreX = cardX + cardW - 275;
+    ctx.beginPath();
+    ctx.roundRect(scoreX, cardY + 20, 160, 36, 18);
+    ctx.fillStyle = "#2563eb";
+    ctx.fill();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 14.5px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`🎯 점수: ${score}점 (${correctCount}/10)`, scoreX + 80, cardY + 43);
+
+    // 등급 배지
+    const gradeX = scoreX + 170;
+    let gradeColor = "#10b981";
+    let gradeLabel = "🌟 만점 마스터!";
+    if (score === 100) {
+      gradeColor = "#10b981";
+      gradeLabel = "🌟 만점 마스터!";
+    } else if (score >= 80) {
+      gradeColor = "#7c3aed";
+      gradeLabel = "⚡ 우수 실력자";
+    } else if (score >= 60) {
+      gradeColor = "#f59e0b";
+      gradeLabel = "🌱 성장형 도전자";
+    } else {
+      gradeColor = "#ef4444";
+      gradeLabel = "💪 복습 필요";
+    }
+
+    ctx.beginPath();
+    ctx.roundRect(gradeX, cardY + 20, 95, 36, 18);
+    ctx.fillStyle = gradeColor;
+    ctx.fill();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 13px 'Pretendard', sans-serif";
+    ctx.fillText(gradeLabel, gradeX + 47, cardY + 43);
+
+    // 2. 전체 너비 패널 (y: 82, h: 346, w: 844)
+    const panelX = cardX + 18;
+    const panelY = cardY + 66;
+    const panelW = 844;
+    const panelH = 346;
+
+    ctx.fillStyle = "#f0fdf4";
+    ctx.strokeStyle = "#86efac";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(panelX, panelY, panelW, panelH, 14);
+    ctx.fill(); ctx.stroke();
+
+    // 헤더 밴드
+    ctx.fillStyle = "#dcfce7";
+    ctx.beginPath();
+    ctx.roundRect(panelX, panelY, panelW, 36, [14, 14, 0, 0]);
+    ctx.fill();
+
+    ctx.fillStyle = "#166534";
+    ctx.font = "900 14.5px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`🟢 내가 첫 시도에 맞힌 개념 목록 (${correctCount} / 10)`, panelX + 16, panelY + 23);
+
+    if (correctCount === 0) {
+      ctx.fillStyle = "#475569";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("첫 시도에 맞힌 문제가 아직 없지만, 실수하면서 진짜 실력이 쑥쑥 늡니다! 💪", panelX + panelW / 2, panelY + 140);
+      ctx.fillText("다음 화면에서 10대 핵심 개념에 대한 [족집게 오답 처방전]을 확인해 보세요!", panelX + panelW / 2, panelY + 175);
+    } else {
+      ctx.textAlign = "left";
+      correctItems.forEach((item, i) => {
+        const col = (i < 5) ? 0 : 1;
+        const row = (i < 5) ? i : i - 5;
+        const cx = (col === 0) ? panelX + 16 : panelX + panelW / 2 + 6;
+        const cw = panelW / 2 - 22;
+        const cy = panelY + 46 + row * 57;
+
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#bbf7d0";
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.roundRect(cx, cy, cw, 50, 10);
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "900 13.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#15803d";
+        ctx.fillText(`✅ ${item.title}`, cx + 12, cy + 19, cw - 24);
+
+        ctx.font = "bold 12px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#334155";
+        ctx.fillText(item.knowDesc, cx + 14, cy + 37, cw - 24);
+      });
+    }
+
+    // 3. 하단 캐릭터 & 말풍선 & 다음 버튼 (y: 426 ~ 516)
+    drawStickmanFace(ctx, 74, 468);
+
+    let bubbleMsg = "";
+    if (score === 100) {
+      bubbleMsg = "와! 10문제 올클리어 만점 달성! 수학 감각이 최고야! 🚀\n다음 화면에서 전체 오답 처방전 요약도 확인해 봐!";
+    } else {
+      bubbleMsg = "맞힌 개념은 완전히 네 실력이 되었어! 정말 훌륭해! 👍\n다음 화면으로 넘어가서 [오답 처방전]도 꼭 확인해 보자!";
+    }
+    drawCompactBubble(ctx, 110, 442, 495, 54, bubbleMsg, 14);
+
+    // 우측 [오답 처방전 보기 (2/2) ▶] 버튼 (x: 625~895, y: 442~496)
+    const nextBtnX = 625, nextBtnY = 442, nextBtnW = 270, nextBtnH = 54;
+    ctx.beginPath();
+    ctx.roundRect(nextBtnX, nextBtnY, nextBtnW, nextBtnH, 12);
+    ctx.fillStyle = "#ea580c";
+    ctx.fill();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 16px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("오답 처방전 보기 (2/2) ▶", nextBtnX + nextBtnW / 2, nextBtnY + 34);
+  }
+
+  // ==========================================
+  // [15화면] 퀴즈 결과 리포트 (2/2) : 족집게 오답 처방전
+  // ==========================================
+  function renderScene15() {
+    hintHitBoxes = [];
+    revealHitBox = null;
+    scene4AHitBoxes = [];
+    scene5HitBoxes = [];
+    scene6MachineTabs = [];
+    scene6XButtons = [];
+    scene6DefBtnBox = null;
+    scene7HitBoxes = [];
+    scene8HitBoxes = [];
+    scene8StepBtnBox = null;
+    scene9ModeTabs = [];
+    scene9SignBtns = [];
+    scene10HitBoxes = [];
+    scene11HitBoxes = [];
+    quizTabHitBoxes = [];
+    quizChoiceHitBoxes = [];
+    quizNextQBtnBox = null;
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, 960, 540);
+
+    const cardX = 40;
+    const cardY = 16;
+    const cardW = 880;
+    const cardH = 508;
+
+    // 메인 카드 배경
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 20);
+    ctx.fill(); ctx.stroke();
+
+    // 10문제 결과 집계
+    const correctItems = [];
+    const wrongItems = [];
+
+    all10QuizInfo.forEach((item) => {
+      let isCorrect = false;
+      if (item.scene === 12) {
+        isCorrect = (scene12FirstTry[item.qNum - 1] === true);
+      } else {
+        isCorrect = (scene13FirstTry[item.qNum - 6] === true);
+      }
+      if (isCorrect) {
+        correctItems.push(item);
+      } else {
+        wrongItems.push(item);
+      }
+    });
+
+    const score = correctItems.length * 10;
+    const correctCount = correctItems.length;
+    const wrongCount = wrongItems.length;
+
+    // 1. 상단 타이틀 & 스코어 헤더
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 20px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("💊 [리포트 2/2] 🔴 내가 틀렸던 문제 & 족집게 오답 처방전", cardX + 22, cardY + 36);
+
+    ctx.font = "bold 13px 'Pretendard', sans-serif";
+    ctx.fillStyle = "#64748b";
+    ctx.fillText("틀렸던 문제가 바로 시험에 나오는 핵심 포인트! 처방전으로 약점을 완벽 보완하세요", cardX + 22, cardY + 54);
+
+    // 점수 배지
+    const scoreX = cardX + cardW - 275;
+    ctx.beginPath();
+    ctx.roundRect(scoreX, cardY + 20, 160, 36, 18);
+    ctx.fillStyle = "#2563eb";
+    ctx.fill();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 14.5px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`🎯 점수: ${score}점 (${correctCount}/10)`, scoreX + 80, cardY + 43);
+
+    // 상태 배지
+    const gradeX = scoreX + 170;
+    const statusColor = (wrongCount === 0) ? "#10b981" : "#ef4444";
+    const statusLabel = (wrongCount === 0) ? "🌟 만점 마스터!" : `⚠️ 보완 ${wrongCount}개`;
+
+    ctx.beginPath();
+    ctx.roundRect(gradeX, cardY + 20, 95, 36, 18);
+    ctx.fillStyle = statusColor;
+    ctx.fill();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 13px 'Pretendard', sans-serif";
+    ctx.fillText(statusLabel, gradeX + 47, cardY + 43);
+
+    // 2. 전체 너비 패널 (y: 82, h: 346, w: 844)
+    const panelX = cardX + 18;
+    const panelY = cardY + 66;
+    const panelW = 844;
+    const panelH = 346;
+
+    ctx.fillStyle = "#fef2f2";
+    ctx.strokeStyle = "#fca5a5";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(panelX, panelY, panelW, panelH, 14);
+    ctx.fill(); ctx.stroke();
+
+    // 헤더 밴드
+    ctx.fillStyle = "#fee2e2";
+    ctx.beginPath();
+    ctx.roundRect(panelX, panelY, panelW, 36, [14, 14, 0, 0]);
+    ctx.fill();
+
+    ctx.fillStyle = "#991b1b";
+    ctx.font = "900 14.5px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`🔴 내가 틀렸던 문제 & 족집게 오답 처방전 (${wrongCount} / 10)`, panelX + 16, panelY + 23);
+
+    if (wrongCount === 0) {
+      ctx.fillStyle = "#991b1b";
+      ctx.font = "900 18px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🎉 10개 문제 퍼펙트 올클리어! 틀린 문제가 하나도 없습니다! 🎉", panelX + panelW / 2, panelY + 105);
+
+      ctx.font = "bold 14.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#334155";
+      ctx.fillText("정비례(y = ax)와 반비례(y = a/x) 관계식 구분부터 그래프 형태, 직사각형 넓이 불변,", panelX + panelW / 2, panelY + 155);
+      ctx.fillText("그리고 'x 하나에 y가 딱 하나 정해진다'는 함수의 핵심 정의까지 완벽 정복했습니다!", panelX + panelW / 2, panelY + 190);
+      ctx.fillText("어떤 시험 문제가 나와도 100점 맞을 준비가 끝났습니다! 💯✨", panelX + panelW / 2, panelY + 225);
+    } else if (wrongCount <= 5) {
+      ctx.textAlign = "left";
+      wrongItems.forEach((item, i) => {
+        const itemY = panelY + 46 + i * 58;
+        const itemW = panelW - 32;
+
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#fecaca";
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.roundRect(panelX + 16, itemY, itemW, 50, 10);
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "900 13.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#b91c1c";
+        ctx.fillText(`⚠️ ${item.title}`, panelX + 30, itemY + 19, itemW - 40);
+
+        ctx.font = "bold 12.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#1e293b";
+        ctx.fillText(`👉 핵심 처방: ${item.wrongDesc}`, panelX + 34, itemY + 37, itemW - 44);
+      });
+    } else {
+      ctx.textAlign = "left";
+      wrongItems.forEach((item, i) => {
+        const col = (i < 5) ? 0 : 1;
+        const row = (i < 5) ? i : i - 5;
+        const cx = (col === 0) ? panelX + 16 : panelX + panelW / 2 + 6;
+        const cw = panelW / 2 - 22;
+        const cy = panelY + 46 + row * 57;
+
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#fecaca";
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.roundRect(cx, cy, cw, 50, 10);
+        ctx.fill(); ctx.stroke();
+
+        ctx.font = "900 12.5px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#b91c1c";
+        ctx.fillText(`⚠️ ${item.title}`, cx + 12, cy + 19, cw - 24);
+
+        ctx.font = "bold 11px 'Pretendard', sans-serif";
+        ctx.fillStyle = "#1e293b";
+        ctx.fillText(`👉 ${item.wrongDesc}`, cx + 14, cy + 37, cw - 24);
+      });
+    }
+
+    // 3. 하단 캐릭터 & 말풍선 & 액션 버튼 (y: 426 ~ 516)
+    drawStickmanFace(ctx, 74, 468);
+
+    let bubbleMsg = "";
+    if (wrongCount === 0) {
+      bubbleMsg = "모든 개념을 완벽하게 마스터했어! 진짜 대단해! 🌟\n언제든지 다시 복습하고 싶으면 아래 버튼을 눌러줘!";
+    } else {
+      bubbleMsg = "틀렸던 문제들을 지금 바로 복습해 보면 기억에 평생 남아! 💪\n아래 버튼을 눌러 오답을 정복해 보자!";
+    }
+    drawCompactBubble(ctx, 110, 442, 510, 54, bubbleMsg, 14);
+
+    // 우측 액션 버튼들
+    if (wrongCount === 0) {
+      const btnAllX = 640, btnAllY = 442, btnAllW = 255, btnAllH = 54;
+      ctx.beginPath();
+      ctx.roundRect(btnAllX, btnAllY, btnAllW, btnAllH, 12);
+      ctx.fillStyle = "#2563eb";
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🔄 퀴즈 10문제 전체 다시 풀기", btnAllX + btnAllW / 2, btnAllY + 34);
+    } else {
+      const btn1X = 640, btn1Y = 432, btnW = 255, btnH = 36;
+      ctx.beginPath();
+      ctx.roundRect(btn1X, btn1Y, btnW, btnH, 10);
+      ctx.fillStyle = "#ea580c";
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 13.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`🎯 틀린 ${wrongCount}문제만 복습하기`, btn1X + btnW / 2, btn1Y + 23);
+
+      const btn2X = 640, btn2Y = 474;
+      ctx.beginPath();
+      ctx.roundRect(btn2X, btn2Y, btnW, btnH, 10);
+      ctx.fillStyle = "#2563eb";
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 13.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🔄 퀴즈 10문제 전체 다시 풀기", btn2X + btnW / 2, btn2Y + 23);
+    }
+  }
+
+  // ==========================================
+  // 메인 렌더링 루프
+  // ==========================================
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (currentScene === 1) {
+      renderScene1();
+    } else if (currentScene === 2) {
+      renderScene2();
+    } else if (currentScene === 3) {
+      renderScene3();
+    } else if (currentScene === 4) {
+      renderScene4();
+    } else if (currentScene === 5) {
+      renderScene5();
+    } else if (currentScene === 6) {
+      renderScene6();
+    } else if (currentScene === 7) {
+      renderScene7();
+    } else if (currentScene === 8) {
+      renderScene8();
+    } else if (currentScene === 9) {
+      renderScene9();
+    } else if (currentScene === 10) {
+      renderScene10();
+    } else if (currentScene === 11) {
+      renderScene11();
+    } else if (currentScene === 12) {
+      renderScene12();
+    } else if (currentScene === 13) {
+      renderScene13();
+    } else if (currentScene === 14) {
+      renderScene14();
+    } else if (currentScene === 15) {
+      renderScene15();
+    }
+  }
+
+  // 회전 애니메이션 루프
+  function animLoop() {
+    let keepRunning = false;
+
+    if (currentScene === 2 && isSpinningScene2) {
+      stickAngle2 += spinSpeed;
+      keepRunning = true;
+    }
+    if (currentScene === 4 && scene4SelectedA === -1 && isSpinningScene4A) {
+      stickAngle4A += spinSpeed;
+      keepRunning = true;
+    }
+    if (currentScene === 5 && scene5LockedPoint === -1 && isSpinningScene5) {
+      stickAngle5 += spinSpeed;
+      keepRunning = true;
+    }
+
+    if (keepRunning) {
+      render();
+      animReqId = requestAnimationFrame(animLoop);
+    } else {
+      animReqId = null;
+    }
+  }
+
+  function startStickSpin() {
+    if (currentScene === 2) isSpinningScene2 = true;
+    if (currentScene === 4) isSpinningScene4A = true;
+    if (currentScene === 5) isSpinningScene5 = true;
+    if (!animReqId) {
+      animReqId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function stopStickSpin() {
+    isSpinningScene2 = false;
+    isSpinningScene4A = false;
+    isSpinningScene5 = false;
+    if (animReqId) {
+      cancelAnimationFrame(animReqId);
+      animReqId = null;
+    }
+  }
+
+  // ==========================================
+  // UI 상태 업데이트
+  // ==========================================
+  function updateUI() {
+    const headerBadge = document.getElementById('header-badge');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+
+    // 상단 오른쪽 배지 텍스트 갱신
+    if (currentScene === 1) {
+      headerBadge.innerText = "내가 누구게?";
+    } else if (currentScene === 2) {
+      headerBadge.innerText = "넌 어떻게 생겼지?";
+    } else if (currentScene === 3) {
+      headerBadge.innerText = "기울기란?";
+    } else if (currentScene === 4) {
+      headerBadge.innerText = "a 값으로 그래프 그리기";
+    } else if (currentScene === 5) {
+      headerBadge.innerText = "좌표로 a 정하기";
+    } else if (currentScene === 6) {
+      headerBadge.innerText = "함수가 뭐야?";
+    } else if (currentScene === 7) {
+      headerBadge.innerText = "정비례와 반비례";
+    } else if (currentScene === 8) {
+      headerBadge.innerText = "정비례와 반비례 예시";
+    } else if (currentScene === 9) {
+      headerBadge.innerText = "지나는 사분면 알아보기";
+    } else if (currentScene === 10) {
+      headerBadge.innerText = "반비례 좀 더 살펴보기";
+    } else if (currentScene === 11) {
+      headerBadge.innerText = "반비례와 직사각형 넓이";
+    } else if (currentScene === 12) {
+      headerBadge.innerText = `정비례·반비례 퀴즈 (${scene12QIdx + 1}/5)`;
+    } else if (currentScene === 13) {
+      headerBadge.innerText = `함수의 개념 퀴즈 (${scene13QIdx + 1}/5)`;
+    } else if (currentScene === 14) {
+      headerBadge.innerText = "🏆 퀴즈 결과 (1/2) : 내가 맞힌 개념";
+    } else if (currentScene === 15) {
+      headerBadge.innerText = "💊 퀴즈 결과 (2/2) : 오답 처방전";
+    }
+
+    // 화면별 버튼 제어
+    if (currentScene === 1) {
+      btnPrev.disabled = true;
+      if (!scene1Revealed) {
+        btnNext.style.display = "none";
+      } else {
+        btnNext.style.display = "inline-flex";
+        btnNext.disabled = false;
+        btnNext.innerText = "보러가자 ▶";
+        btnNext.style.background = "#ea580c";
+      }
+    } else if (currentScene === 2) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = false;
+      btnNext.innerText = "기울기 알아보기 ▶";
+      btnNext.style.background = "#ea580c";
+    } else if (currentScene === 3) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = false;
+      if (stepScene3 === 0) {
+        btnNext.innerText = "음수 기울기 보기 ▶";
+        btnNext.style.background = "#dc2626";
+      } else {
+        btnNext.innerText = "a 값 선택해 보기 ▶";
+        btnNext.style.background = "#2563eb";
+      }
+    } else if (currentScene === 4) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = (scene4SelectedA < 0);
+      btnNext.innerText = "좌표로 a 정하기 ▶";
+      btnNext.style.background = "#2563eb";
+    } else if (currentScene === 5) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = (scene5LockedPoint < 0);
+      btnNext.innerText = "함수가 뭐야? ▶";
+      btnNext.style.background = "#2563eb";
+    } else if (currentScene === 6) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = !(scene6MachineType >= 0 && scene6SelectedX > 0 && scene6ShowDef);
+      btnNext.innerText = "정비례와 반비례 ▶";
+      btnNext.style.background = "#2563eb";
+    } else if (currentScene === 7) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = false;
+      btnNext.innerText = "예시 알아보기 ▶";
+      btnNext.style.background = "#2563eb";
+    } else if (currentScene === 8) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = (scene8Step < 2);
+      btnNext.innerText = "지나는 사분면 알아보기 ▶";
+      btnNext.style.background = "#2563eb";
+    } else if (currentScene === 9) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = (scene9Sign < 0);
+      btnNext.innerText = "반비례 좀 더 살펴보기 ▶";
+      btnNext.style.background = "#2563eb";
+    } else if (currentScene === 10) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = (scene10SelectedCase < 0);
+      btnNext.innerText = "직사각형 넓이 알아보기 ▶";
+      btnNext.style.background = "#2563eb";
+    } else if (currentScene === 11) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = (scene11SelectedRect < 0);
+      btnNext.innerText = "정비례·반비례 퀴즈 풀기 ▶";
+      btnNext.style.background = "#2563eb";
+    } else if (currentScene === 12) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = !scene12Solved[scene12QIdx];
+      if (scene12QIdx < 4) {
+        btnNext.innerText = `다음 문제 (${scene12QIdx + 2}/5) ▶`;
+        btnNext.style.background = "#2563eb";
+      } else {
+        btnNext.innerText = "함수 개념 퀴즈 풀기 ▶";
+        btnNext.style.background = "#ea580c";
+      }
+    } else if (currentScene === 13) {
+      btnPrev.disabled = false;
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = !scene13Solved[scene13QIdx];
+      if (scene13QIdx < 4) {
+        btnNext.innerText = `다음 문제 (${scene13QIdx + 2}/5) ▶`;
+        btnNext.style.background = "#2563eb";
+      } else {
+        btnNext.innerText = "맞힌 개념 보기 (1/2) 🏆";
+        btnNext.style.background = "#7c3aed";
+      }
+    } else if (currentScene === 14) {
+      btnPrev.disabled = false;
+      btnPrev.innerText = "◀ 함수 퀴즈";
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = false;
+      btnNext.innerText = "오답 처방전 보기 (2/2) ▶";
+      btnNext.style.background = "#ea580c";
+    } else if (currentScene === 15) {
+      btnPrev.disabled = false;
+      btnPrev.innerText = "◀ 맞힌 개념 보기 (1/2)";
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = false;
+      btnNext.innerText = "처음부터 다시 보기 ↺";
+      btnNext.style.background = "#10b981";
+    }
+  }
+
+  // ==========================================
+  // 이전 / 다음 네비게이션
+  // ==========================================
+  function goNext() {
+    stopStickSpin();
+
+    if (currentScene === 1) {
+      if (scene1Revealed) {
+        currentScene = 2;
+        playSound('step');
+        startStickSpin();
+      }
+    } else if (currentScene === 2) {
+      currentScene = 3;
+      stepScene3 = 0;
+      playSound('step');
+    } else if (currentScene === 3) {
+      if (stepScene3 === 0) {
+        stepScene3 = 1;
+        playSound('step');
+      } else {
+        currentScene = 4;
+        scene4SelectedA = -1;
+        playSound('step');
+        startStickSpin();
+      }
+    } else if (currentScene === 4) {
+      if (scene4SelectedA < 0) return;
+      currentScene = 5;
+      scene5LockedPoint = -1;
+      playSound('step');
+      startStickSpin();
+    } else if (currentScene === 5) {
+      if (scene5LockedPoint < 0) return;
+      currentScene = 6;
+      scene6MachineType = -1;
+      scene6SelectedX = 0;
+      scene6ShowDef = false;
+      playSound('step');
+    } else if (currentScene === 6) {
+      if (!(scene6MachineType >= 0 && scene6SelectedX > 0 && scene6ShowDef)) return;
+      currentScene = 7;
+      scene7Mode = 0;
+      playSound('step');
+    } else if (currentScene === 7) {
+      currentScene = 8;
+      scene8Mode = 0;
+      scene8Step = 0;
+      playSound('step');
+    } else if (currentScene === 8) {
+      if (scene8Step < 2) return;
+      currentScene = 9;
+      scene9Mode = 0;
+      scene9Sign = -1;
+      playSound('step');
+    } else if (currentScene === 9) {
+      if (scene9Sign < 0) return;
+      currentScene = 10;
+      scene10SelectedCase = -1;
+      playSound('step');
+    } else if (currentScene === 10) {
+      if (scene10SelectedCase < 0) return;
+      currentScene = 11;
+      scene11SelectedRect = -1;
+      playSound('step');
+    } else if (currentScene === 11) {
+      if (scene11SelectedRect < 0) return;
+      currentScene = 12;
+      scene12QIdx = 0;
+      playSound('step');
+    } else if (currentScene === 12) {
+      if (!scene12Solved[scene12QIdx]) return;
+      if (scene12QIdx < 4) {
+        scene12QIdx++;
+        playSound('step');
+      } else {
+        currentScene = 13;
+        scene13QIdx = 0;
+        playSound('step');
+      }
+    } else if (currentScene === 13) {
+      if (!scene13Solved[scene13QIdx]) return;
+      if (scene13QIdx < 4) {
+        scene13QIdx++;
+        playSound('step');
+      } else {
+        currentScene = 14;
+        playSound('fanfare');
+      }
+    } else if (currentScene === 14) {
+      currentScene = 15;
+      playSound('step');
+    } else if (currentScene === 15) {
+      currentScene = 1;
+      hintUnlocked = [false, false, false];
+      scene1Revealed = false;
+      stepScene3 = 0;
+      scene4SelectedA = -1;
+      scene5LockedPoint = -1;
+      scene6MachineType = -1;
+      scene6SelectedX = 0;
+      scene6ShowDef = false;
+      scene7Mode = 0;
+      scene8Mode = 0;
+      scene8Step = 0;
+      scene9Mode = 0;
+      scene9Sign = -1;
+      scene10SelectedCase = -1;
+      scene11SelectedRect = -1;
+      scene12QIdx = 0;
+      scene12Selected = [-1, -1, -1, -1, -1];
+      scene12Solved = [false, false, false, false, false];
+      scene12FirstTry = [null, null, null, null, null];
+      scene13QIdx = 0;
+      scene13Selected = [-1, -1, -1, -1, -1];
+      scene13Solved = [false, false, false, false, false];
+      scene13FirstTry = [null, null, null, null, null];
+      playSound('step');
+    }
+
+    updateUI();
+    render();
+  }
+
+  function goPrev() {
+    stopStickSpin();
+
+    if (currentScene === 1) {
+      if (scene1Revealed) {
+        scene1Revealed = false;
+        playSound('click');
+      }
+    } else if (currentScene === 2) {
+      currentScene = 1;
+      scene1Revealed = true;
+      hintUnlocked = [true, true, true];
+      playSound('click');
+    } else if (currentScene === 3) {
+      if (stepScene3 > 0) {
+        stepScene3--;
+        playSound('click');
+      } else {
+        currentScene = 2;
+        playSound('click');
+        startStickSpin();
+      }
+    } else if (currentScene === 4) {
+      currentScene = 3;
+      stepScene3 = 1;
+      playSound('click');
+    } else if (currentScene === 5) {
+      currentScene = 4;
+      scene4SelectedA = -1;
+      playSound('click');
+      startStickSpin();
+    } else if (currentScene === 6) {
+      currentScene = 5;
+      scene5LockedPoint = -1;
+      playSound('click');
+      startStickSpin();
+    } else if (currentScene === 7) {
+      currentScene = 6;
+      playSound('click');
+    } else if (currentScene === 8) {
+      currentScene = 7;
+      playSound('click');
+    } else if (currentScene === 9) {
+      currentScene = 8;
+      playSound('click');
+    } else if (currentScene === 10) {
+      currentScene = 9;
+      playSound('click');
+    } else if (currentScene === 11) {
+      currentScene = 10;
+      playSound('click');
+    } else if (currentScene === 12) {
+      if (scene12QIdx > 0) {
+        scene12QIdx--;
+      } else {
+        currentScene = 11;
+      }
+      playSound('click');
+    } else if (currentScene === 13) {
+      if (scene13QIdx > 0) {
+        scene13QIdx--;
+      } else {
+        currentScene = 12;
+        scene12QIdx = 4;
+      }
+      playSound('click');
+    } else if (currentScene === 14) {
+      currentScene = 13;
+      scene13QIdx = 4;
+      playSound('click');
+    } else if (currentScene === 15) {
+      currentScene = 14;
+      playSound('click');
+    }
+
+    updateUI();
+    render();
+  }
+
+  // ==========================================
+  // 캔버스 마우스 클릭 & 호버 이벤트
+  // ==========================================
+  function getCanvasPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  canvas.addEventListener('click', (e) => {
+    const { x, y } = getCanvasPos(e);
+
+    if (currentScene === 1) {
+      for (const box of hintHitBoxes) {
+        if (box.canClick && x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+          hintUnlocked[box.idx] = true;
+          playSound('pop');
+          updateUI();
+          render();
+          return;
+        }
+      }
+      if (revealHitBox && !scene1Revealed) {
+        if (x >= revealHitBox.x && x <= revealHitBox.x + revealHitBox.w &&
+            y >= revealHitBox.y && y <= revealHitBox.y + revealHitBox.h) {
+          scene1Revealed = true;
+          playSound('fanfare');
+          updateUI();
+          render();
+          return;
+        }
+      }
+    } else if (currentScene === 4) {
+      // 4화면: 기울기 a의 값 선택
+      for (const box of scene4AHitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+          stopStickSpin();
+          scene4SelectedA = box.idx;
+          playSound('pop');
+          updateUI();
+          render();
+          return;
+        }
+      }
+    } else if (currentScene === 5) {
+      // 5화면: 지나는 점의 좌표 선택
+      for (const box of scene5HitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+          stopStickSpin();
+          scene5LockedPoint = box.idx;
+          playSound('pop');
+          updateUI();
+          render();
+          return;
+        }
+      }
+    } else if (currentScene === 6) {
+      // 6화면: 상단 3개 관계식 탭 선택 (처음엔 관계식만 뜨고 x 버튼을 눌러야 입력과 출력이 함께 나타남)
+      for (const tab of scene6MachineTabs) {
+        if (x >= tab.x && x <= tab.x + tab.w && y >= tab.y && y <= tab.y + tab.h) {
+          scene6MachineType = tab.type;
+          scene6SelectedX = 0;
+          scene6ShowDef = false;
+          playSound('click');
+          updateUI();
+          render();
+          return;
+        }
+      }
+      // 6화면: 왼쪽 x = 1, 2, 3 버튼 클릭
+      for (const btn of scene6XButtons) {
+        if (x >= btn.x && x <= btn.x + btn.w && y >= btn.y && y <= btn.y + btn.h) {
+          scene6SelectedX = btn.num;
+          playSound('tok');
+          updateUI();
+          render();
+          return;
+        }
+      }
+      // 6화면: 오른쪽 [함수란?] 버튼 클릭
+      if (scene6DefBtnBox && x >= scene6DefBtnBox.x && x <= scene6DefBtnBox.x + scene6DefBtnBox.w &&
+          y >= scene6DefBtnBox.y && y <= scene6DefBtnBox.y + scene6DefBtnBox.h) {
+        scene6ShowDef = !scene6ShowDef;
+        playSound('fanfare');
+        updateUI();
+        render();
+        return;
+      }
+    } else if (currentScene === 7) {
+      // 7화면: 정비례 / 반비례 탭 클릭
+      for (const box of scene7HitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+          scene7Mode = box.mode;
+          playSound('click');
+          updateUI();
+          render();
+          return;
+        }
+      }
+    } else if (currentScene === 8) {
+      // 8화면: 정비례 예시 / 반비례 예시 탭 클릭
+      for (const box of scene8HitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+          scene8Mode = box.mode;
+          scene8Step = 0; // 탭 전환 시 1단계(표)부터 시작
+          playSound('click');
+          updateUI();
+          render();
+          return;
+        }
+      }
+      // 8화면: 단계별 진행 버튼 클릭 ([이걸 관계식으로? ▶] / [다른 예시 보기? ▶])
+      if (scene8StepBtnBox && x >= scene8StepBtnBox.x && x <= scene8StepBtnBox.x + scene8StepBtnBox.w &&
+          y >= scene8StepBtnBox.y && y <= scene8StepBtnBox.y + scene8StepBtnBox.h) {
+        scene8Step++;
+        playSound('pop');
+        updateUI();
+        render();
+        return;
+      }
+    } else if (currentScene === 9) {
+      // 9화면: 상단 정비례 / 반비례 탭 클릭
+      for (const tab of scene9ModeTabs) {
+        if (x >= tab.x && x <= tab.x + tab.w && y >= tab.y && y <= tab.y + tab.h) {
+          scene9Mode = tab.mode;
+          playSound('click');
+          updateUI();
+          render();
+          return;
+        }
+      }
+      // 9화면: 좌측 a > 0 / a < 0 부호 버튼 클릭
+      for (const btn of scene9SignBtns) {
+        if (x >= btn.x && x <= btn.x + btn.w && y >= btn.y && y <= btn.y + btn.h) {
+          scene9Sign = btn.sign;
+          playSound('pop');
+          updateUI();
+          render();
+          return;
+        }
+      }
+    } else if (currentScene === 10) {
+      // 10화면: 좌측 사례 1, 2, 3 클릭
+      for (const box of scene10HitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+          scene10SelectedCase = box.idx;
+          playSound('pop');
+          updateUI();
+          render();
+          return;
+        }
+      }
+    } else if (currentScene === 11) {
+      // 11화면: 좌측 직사각형 넓이 비교 버튼 클릭
+      for (const box of scene11HitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+          scene11SelectedRect = box.idx;
+          playSound('pop');
+          updateUI();
+          render();
+          return;
+        }
+      }
+    } else if (currentScene === 12) {
+      // 12화면: 상단 1~5번 탭 클릭
+      for (const tab of quizTabHitBoxes) {
+        if (x >= tab.x && x <= tab.x + tab.w && y >= tab.y && y <= tab.y + tab.h) {
+          scene12QIdx = tab.idx;
+          playSound('click');
+          updateUI();
+          render();
+          return;
+        }
+      }
+      // 12화면: 보기 1, 2, 3 클릭
+      for (const box of quizChoiceHitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+          scene12Selected[scene12QIdx] = box.idx;
+          const isCorrect = (box.idx === scene12Quizzes[scene12QIdx].ans);
+          if (scene12FirstTry[scene12QIdx] === null) {
+            scene12FirstTry[scene12QIdx] = isCorrect;
+          }
+          if (isCorrect) {
+            scene12Solved[scene12QIdx] = true;
+            playSound('fanfare');
+          } else {
+            playSound('click');
+          }
+          updateUI();
+          render();
+          return;
+        }
+      }
+      // 12화면: 해설 박스 안의 [다음 문제 ▶] 버튼 클릭
+      if (quizNextQBtnBox && x >= quizNextQBtnBox.x && x <= quizNextQBtnBox.x + quizNextQBtnBox.w &&
+          y >= quizNextQBtnBox.y && y <= quizNextQBtnBox.y + quizNextQBtnBox.h) {
+        if (scene12QIdx < 4) {
+          scene12QIdx++;
+          playSound('step');
+          updateUI();
+          render();
+        }
+        return;
+      }
+    } else if (currentScene === 13) {
+      // 13화면: 상단 1~5번 탭 클릭
+      for (const tab of quizTabHitBoxes) {
+        if (x >= tab.x && x <= tab.x + tab.w && y >= tab.y && y <= tab.y + tab.h) {
+          scene13QIdx = tab.idx;
+          playSound('click');
+          updateUI();
+          render();
+          return;
+        }
+      }
+      // 13화면: 보기 1, 2, 3 클릭
+      for (const box of quizChoiceHitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+          scene13Selected[scene13QIdx] = box.idx;
+          const isCorrect = (box.idx === scene13Quizzes[scene13QIdx].ans);
+          if (scene13FirstTry[scene13QIdx] === null) {
+            scene13FirstTry[scene13QIdx] = isCorrect;
+          }
+          if (isCorrect) {
+            scene13Solved[scene13QIdx] = true;
+            playSound('fanfare');
+          } else {
+            playSound('click');
+          }
+          updateUI();
+          render();
+          return;
+        }
+      }
+      // 13화면: 해설 박스 안의 [다음 문제 ▶] 버튼 클릭
+      if (quizNextQBtnBox && x >= quizNextQBtnBox.x && x <= quizNextQBtnBox.x + quizNextQBtnBox.w &&
+          y >= quizNextQBtnBox.y && y <= quizNextQBtnBox.y + quizNextQBtnBox.h) {
+        if (scene13QIdx < 4) {
+          scene13QIdx++;
+          playSound('step');
+          updateUI();
+          render();
+        }
+        return;
+      }
+    } else if (currentScene === 14) {
+      // 14화면: [오답 처방전 보기 (2/2) ▶] 버튼 클릭 (x: 625~895, y: 442~496)
+      if (x >= 625 && x <= 895 && y >= 442 && y <= 496) {
+        currentScene = 15;
+        playSound('step');
+        updateUI();
+        render();
+        return;
+      }
+    } else if (currentScene === 15) {
+      const wrongList = [];
+      all10QuizInfo.forEach((item) => {
+        const isCorrect = (item.scene === 12) ? (scene12FirstTry[item.qNum - 1] === true) : (scene13FirstTry[item.qNum - 6] === true);
+        if (!isCorrect) wrongList.push(item);
+      });
+
+      if (wrongList.length === 0) {
+        // 만점일 때: [🔄 퀴즈 10문제 전체 다시 풀기] (x: 640~895, y: 442~496)
+        if (x >= 640 && x <= 895 && y >= 442 && y <= 496) {
+          currentScene = 12;
+          scene12QIdx = 0;
+          scene12Selected = [-1, -1, -1, -1, -1];
+          scene12Solved = [false, false, false, false, false];
+          scene12FirstTry = [null, null, null, null, null];
+          scene13QIdx = 0;
+          scene13Selected = [-1, -1, -1, -1, -1];
+          scene13Solved = [false, false, false, false, false];
+          scene13FirstTry = [null, null, null, null, null];
+          playSound('step');
+          updateUI();
+          render();
+          return;
+        }
+      } else {
+        // 버튼 1: [🎯 틀린 문제만 복습하기] (x: 640~895, y: 432~468)
+        if (x >= 640 && x <= 895 && y >= 432 && y <= 468) {
+          const firstWrong = wrongList[0];
+          if (firstWrong.scene === 12) {
+            currentScene = 12;
+            scene12QIdx = firstWrong.qNum - 1;
+            wrongList.filter(it => it.scene === 12).forEach(it => {
+              const q = it.qNum - 1;
+              scene12Solved[q] = false;
+              scene12Selected[q] = -1;
+              scene12FirstTry[q] = null;
+            });
+          } else {
+            currentScene = 13;
+            scene13QIdx = firstWrong.qNum - 6;
+            wrongList.filter(it => it.scene === 13).forEach(it => {
+              const q = it.qNum - 6;
+              scene13Solved[q] = false;
+              scene13Selected[q] = -1;
+              scene13FirstTry[q] = null;
+            });
+          }
+          playSound('step');
+          updateUI();
+          render();
+          return;
+        }
+
+        // 버튼 2: [🔄 퀴즈 10문제 전체 다시 풀기] (x: 640~895, y: 474~510)
+        if (x >= 640 && x <= 895 && y >= 474 && y <= 510) {
+          currentScene = 12;
+          scene12QIdx = 0;
+          scene12Selected = [-1, -1, -1, -1, -1];
+          scene12Solved = [false, false, false, false, false];
+          scene12FirstTry = [null, null, null, null, null];
+          scene13QIdx = 0;
+          scene13Selected = [-1, -1, -1, -1, -1];
+          scene13Solved = [false, false, false, false, false];
+          scene13FirstTry = [null, null, null, null, null];
+          playSound('step');
+          updateUI();
+          render();
+          return;
+        }
+      }
+    }
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    const { x, y } = getCanvasPos(e);
+    let isHover = false;
+
+    if (currentScene === 1) {
+      for (const box of hintHitBoxes) {
+        if (box.canClick && x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) isHover = true;
+      }
+      if (revealHitBox && !scene1Revealed) {
+        if (x >= revealHitBox.x && x <= revealHitBox.x + revealHitBox.w &&
+            y >= revealHitBox.y && y <= revealHitBox.y + revealHitBox.h) isHover = true;
+      }
+    } else if (currentScene === 4) {
+      for (const box of scene4AHitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) isHover = true;
+      }
+    } else if (currentScene === 5) {
+      for (const box of scene5HitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) isHover = true;
+      }
+    } else if (currentScene === 6) {
+      for (const tab of scene6MachineTabs) {
+        if (x >= tab.x && x <= tab.x + tab.w && y >= tab.y && y <= tab.y + tab.h) isHover = true;
+      }
+      for (const btn of scene6XButtons) {
+        if (x >= btn.x && x <= btn.x + btn.w && y >= btn.y && y <= btn.y + btn.h) isHover = true;
+      }
+      if (scene6DefBtnBox && x >= scene6DefBtnBox.x && x <= scene6DefBtnBox.x + scene6DefBtnBox.w &&
+          y >= scene6DefBtnBox.y && y <= scene6DefBtnBox.y + scene6DefBtnBox.h) isHover = true;
+    } else if (currentScene === 7) {
+      for (const box of scene7HitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) isHover = true;
+      }
+    } else if (currentScene === 8) {
+      for (const box of scene8HitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) isHover = true;
+      }
+      if (scene8StepBtnBox && x >= scene8StepBtnBox.x && x <= scene8StepBtnBox.x + scene8StepBtnBox.w &&
+          y >= scene8StepBtnBox.y && y <= scene8StepBtnBox.y + scene8StepBtnBox.h) isHover = true;
+    } else if (currentScene === 9) {
+      for (const tab of scene9ModeTabs) {
+        if (x >= tab.x && x <= tab.x + tab.w && y >= tab.y && y <= tab.y + tab.h) isHover = true;
+      }
+      for (const btn of scene9SignBtns) {
+        if (x >= btn.x && x <= btn.x + btn.w && y >= btn.y && y <= btn.y + btn.h) isHover = true;
+      }
+    } else if (currentScene === 10) {
+      for (const box of scene10HitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) isHover = true;
+      }
+    } else if (currentScene === 11) {
+      for (const box of scene11HitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) isHover = true;
+      }
+    } else if (currentScene === 12 || currentScene === 13) {
+      for (const tab of quizTabHitBoxes) {
+        if (x >= tab.x && x <= tab.x + tab.w && y >= tab.y && y <= tab.y + tab.h) isHover = true;
+      }
+      for (const box of quizChoiceHitBoxes) {
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) isHover = true;
+      }
+      if (quizNextQBtnBox && x >= quizNextQBtnBox.x && x <= quizNextQBtnBox.x + quizNextQBtnBox.w &&
+          y >= quizNextQBtnBox.y && y <= quizNextQBtnBox.y + quizNextQBtnBox.h) isHover = true;
+    } else if (currentScene === 14) {
+      if (x >= 625 && x <= 895 && y >= 442 && y <= 496) isHover = true;
+    } else if (currentScene === 15) {
+      const wrongCount = all10QuizInfo.filter(it => (it.scene === 12 ? scene12FirstTry[it.qNum - 1] !== true : scene13FirstTry[it.qNum - 6] !== true)).length;
+      if (wrongCount === 0) {
+        if (x >= 640 && x <= 895 && y >= 442 && y <= 496) isHover = true;
+      } else {
+        if (x >= 640 && x <= 895 && y >= 432 && y <= 468) isHover = true;
+        if (x >= 640 && x <= 895 && y >= 474 && y <= 510) isHover = true;
+      }
+    }
+
+    canvas.style.cursor = isHover ? 'pointer' : 'default';
+  });
+
+  // 초기 실행
+  updateUI();
+  render();
+</script>
+
+</body>
+</html>

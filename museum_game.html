@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>중1-1 수학 총정리 : 국중박 유물 입히기 대작전!</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #1e293b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 10px 14px;
+      overflow: hidden;
+    }
+
+    #app-container {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 상단 타이틀 헤더 바 */
+    .top-header {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 10px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      border: 2px solid #f59e0b;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .header-main-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.4px;
+    }
+
+    .header-main-title .highlight {
+      color: #d97706;
+    }
+
+    .header-badge {
+      background: #fffbeb;
+      color: #b45309;
+      border: 2px solid #fcd34d;
+      font-size: 14.5px;
+      font-weight: 800;
+      padding: 6px 18px;
+      border-radius: 22px;
+      white-space: nowrap;
+    }
+
+    /* 메인 캔버스 카드 */
+    .canvas-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 960 / 540;
+      cursor: pointer;
+    }
+
+    /* 하단 내비게이션 바 */
+    #ui-panel {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 9px 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+      border: 2px solid #cbd5e1;
+    }
+
+    .nav-btn {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 9px 24px;
+      font-size: 15px;
+      font-weight: 800;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .nav-btn:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+    .nav-btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none;
+    }
+    .nav-btn.home {
+      background: #475569;
+    }
+    .nav-btn.home:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  <!-- 상단 타이틀 헤더 바 -->
+  <div class="top-header">
+    <div class="header-left">
+      <span class="header-icon">🏛️</span>
+      <span class="header-main-title"><span class="highlight">국중박 유물 입히기 게임</span> : 중1-1 수학 총정리</span>
+    </div>
+    <span class="header-badge" id="status-badge">획득 유물 : 0 / 10</span>
+  </div>
+
+  <!-- 메인 캔버스 -->
+  <div class="canvas-card">
+    <canvas id="canvas" width="960" height="540"></canvas>
+  </div>
+
+  <!-- 하단 내비게이션 바 -->
+  <div id="ui-panel">
+    <a href="index.html" class="nav-btn home" id="btn-index">🏠 목차</a>
+    <button class="nav-btn home" id="btn-home" onclick="goToIntro()">↺ 타이틀 화면</button>
+    <button class="nav-btn" id="btn-retry-missed" style="display: none; background: #ea580c;" onclick="retryMissedOnly()">🔥 못 입은 유물만 재도전</button>
+    <button class="nav-btn" id="btn-restart" style="display: none; background: #059669;" onclick="startNewGame()">↺ 새 문제로 다시하기</button>
+    <button class="nav-btn" id="btn-next" onclick="handleMainAction()">게임 시작 ▶</button>
+  </div>
+</div>
+
+<script>
+  // ==========================================================
+  // 효과음 합성기 (Web Audio API)
+  // ==========================================================
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = null;
+  function playSound(type) {
+    try {
+      if (!audioCtx) audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+
+      if (type === 'click') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(480, now);
+        osc.frequency.exponentialRampToValueAtTime(280, now + 0.07);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.07);
+        osc.start(now); osc.stop(now + 0.07);
+      } else if (type === 'equip') {
+        // 유물 장착 팡파레
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.18, now + idx * 0.08);
+          gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.08 + 0.22);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.22);
+        });
+      } else if (type === 'wrong') {
+        // 띠용~ 오답 효과음
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(240, now);
+        osc.frequency.linearRampToValueAtTime(120, now + 0.32);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.32);
+        osc.start(now); osc.stop(now + 0.32);
+      } else if (type === 'clear') {
+        const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.09);
+          gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.09 + 0.3);
+          osc.start(now + idx * 0.09);
+          osc.stop(now + idx * 0.09 + 0.3);
+        });
+      }
+    } catch (e) {}
+  }
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const statusBadge = document.getElementById('status-badge');
+  const btnNext = document.getElementById('btn-next');
+  const btnRetryMissed = document.getElementById('btn-retry-missed');
+  const btnRestart = document.getElementById('btn-restart');
+
+  // ==========================================================
+  // 중1-1 수학 10대 핵심 개념 & 국립중앙박물관(국중박) 10대 유물 문제 은행 (단원별 3문제씩 총 30문제)
+  // ==========================================================
+  const stagePool = [
+    {
+      id: "crown",
+      partName: "머리 유물",
+      relicName: "신라 금관 (천마총 금관)",
+      chapter: "1단원 : 소수와 합성수",
+      pool: [
+        {
+          question: "다음 중 '소수(Prime number)'에 대한 설명으로\n올바른 것은 무엇일까요?",
+          choices: [
+            "① 1은 모든 수의 약수이므로 소수이다.",
+            "② 2는 짝수 중에서 유일한 소수이다.",
+            "③ 9의 약수는 1, 9뿐이므로 소수이다.",
+            "④ 모든 소수는 홀수이다."
+          ],
+          ansIdx: 1,
+          successMsg: "딩동댕! 2는 유일한 짝수 소수야!\n머리에 국보 [신라 금관]을 멋지게 썼어! 👑",
+          failMsg: "앗! 1은 소수도 합성수도 아니고, 유일한 짝수 소수는 2야!\n[신라 금관]을 놓쳐서 머리가 허전해졌어... 😢"
+        },
+        {
+          question: "다음 자연수 중에서 약수가 1 과 자기 자신뿐인\n'소수'는 어느 것일까요?",
+          choices: [
+            "①  1",
+            "②  9",
+            "③  13",
+            "④  15"
+          ],
+          ansIdx: 2,
+          successMsg: "정답! 13은 약수가 1과 13뿐인 진짜 소수야!\n머리에 국보 [신라 금관]을 멋지게 썼어! 👑",
+          failMsg: "아깝다! 1은 소수가 아니고 9(3×3), 15(3×5)는 합성수야!\n[신라 금관]을 놓쳐서 머리가 허전해졌어... 😢"
+        },
+        {
+          question: "24 를 소수들의 곱으로만 나타내는 '소인수분해'를\n바르게 한 것은?",
+          choices: [
+            "①  2² × 6",
+            "②  2³ × 3",
+            "③  3 × 8",
+            "④  4 × 6"
+          ],
+          ansIdx: 1,
+          successMsg: "완벽해! 소수인 2와 3으로만 분해한 2³ × 3 이 정답!\n머리에 국보 [신라 금관]을 멋지게 썼어! 👑",
+          failMsg: "앗! 4, 6, 8은 합성수라서 끝까지 소수로 분해하면 2³ × 3 이야!\n[신라 금관]을 놓쳐서 머리가 허전해졌어... 😢"
+        }
+      ]
+    },
+    {
+      id: "earring",
+      partName: "귀걸이 유물",
+      relicName: "신라 금귀걸이 (부부총)",
+      chapter: "2단원 : 최대공약수와 최소공배수",
+      pool: [
+        {
+          question: "두 수 12 와 18 의 '최대공약수'는\n얼마일까요?",
+          choices: [
+            "①  2",
+            "②  3",
+            "③  6",
+            "④  36"
+          ],
+          ansIdx: 2,
+          successMsg: "정답! 12와 18을 동시에 나누는 가장 큰 수는 6!\n반짝이는 국보 [신라 금귀걸이] 장착 완료! ✨",
+          failMsg: "아깝다! 12와 18의 최대공약수는 6이야!\n[신라 금귀걸이]를 못 달았어... 😭"
+        },
+        {
+          question: "두 수 8 과 12 의 '최소공배수'는\n얼마일까요?",
+          choices: [
+            "①  4",
+            "②  16",
+            "③  24",
+            "④  48"
+          ],
+          ansIdx: 2,
+          successMsg: "딩동댕! 8의 배수와 12의 배수 중 가장 작은 공통 배수는 24!\n반짝이는 국보 [신라 금귀걸이] 장착 완료! ✨",
+          failMsg: "앗! 4는 최대공약수고, 최소공배수는 24야!\n[신라 금귀걸이]를 못 달았어... 😭"
+        },
+        {
+          question: "최대공약수가 1 인 두 자연수(예: 4와 9)를\n무엇이라고 부를까요?",
+          choices: [
+            "①  소인수",
+            "②  서로소",
+            "③  합성수",
+            "④  절댓값"
+          ],
+          ansIdx: 1,
+          successMsg: "정확해! 공약수가 1뿐인 두 자연수를 '서로소'라고 해!\n반짝이는 국보 [신라 금귀걸이] 장착 완료! ✨",
+          failMsg: "아깝다! 최대공약수가 1인 두 수는 '서로소'라고 불러!\n[신라 금귀걸이]를 못 달았어... 😭"
+        }
+      ]
+    },
+    {
+      id: "top",
+      partName: "상의 유물 (윗옷)",
+      relicName: "반가사유상 황금 천의·영락",
+      chapter: "3단원 : 수직선과 절댓값",
+      pool: [
+        {
+          question: "수직선에서 원점(0)으로부터의 거리가 4 인\n두 수를 모두 고른 것은?",
+          choices: [
+            "①  +4 뿐이다",
+            "②  -4 뿐이다",
+            "③  +2 와 -2",
+            "④  +4 와 -4"
+          ],
+          ansIdx: 3,
+          successMsg: "맞았어! 절댓값이 4인 수는 +4와 -4 두 개야!\n런닝셔츠 탈출! [반가사유상 황금 상의] 장착! 🧥",
+          failMsg: "으악! 원점에서 거리가 4인 수는 +4와 -4야!\n윗옷 유물을 못 입어서 하얀 런닝셔츠 바람이야! 🥶"
+        },
+        {
+          question: "다음 음수들의 크기 비교 중\n올바른 것은 어느 것일까요?",
+          choices: [
+            "①  -5 > -2",
+            "②  -3 < -7",
+            "③  -1 > -4",
+            "④  0 < -2"
+          ],
+          ansIdx: 2,
+          successMsg: "정답! 음수는 절댓값이 작을수록 원점에 가까워서 더 커 (-1 > -4)!\n런닝셔츠 탈출! [반가사유상 황금 상의] 장착! 🧥",
+          failMsg: "으악! 음수는 숫자가 작을수록 더 큰 수야 (-1 > -4)!\n윗옷 유물을 못 입어서 하얀 런닝셔츠 바람이야! 🥶"
+        },
+        {
+          question: "|-7| + |+3| 을 계산한 값은\n얼마일까요?",
+          choices: [
+            "①  -10",
+            "②  -4",
+            "③  +4",
+            "④  +10"
+          ],
+          ansIdx: 3,
+          successMsg: "딩동댕! 절댓값은 원점과의 거리니까 7 + 3 = 10!\n런닝셔츠 탈출! [반가사유상 황금 상의] 장착! 🧥",
+          failMsg: "앗! |-7|은 +7이 되므로 7 + 3 = 10 이야!\n윗옷 유물을 못 입어서 하얀 런닝셔츠 바람이야! 🥶"
+        }
+      ]
+    },
+    {
+      id: "pants",
+      partName: "하의 유물 (바지!)",
+      relicName: "고구려 수렵도 무사 비단바지",
+      chapter: "4단원 : 정수의 부호 연산",
+      pool: [
+        {
+          question: "부호 충돌 규칙!  ( -5 ) - ( -8 ) 을\n계산한 결과로 올바른 것은?",
+          choices: [
+            "①  -13",
+            "②  -3",
+            "③  +3",
+            "④  +13"
+          ],
+          ansIdx: 2,
+          successMsg: "휴~ 다행이다! -(-8)은 +8이 되어 -5 + 8 = +3!\n멋진 [무사 비단바지]를 입어서 팬티 바람을 면했어! 👖",
+          failMsg: "으아악!! -(-8)은 +8이 되니까 정답은 +3이야!\n바지 유물을 놓쳐서 땡땡이 팬티 바람이 됐어!! 🩲🙈"
+        },
+        {
+          question: "음수의 곱셈!  ( -4 ) × ( -3 ) 을\n계산한 결과로 올바른 것은?",
+          choices: [
+            "①  -12",
+            "②  -7",
+            "③  +7",
+            "④  +12"
+          ],
+          ansIdx: 3,
+          successMsg: "휴~ 다행이다! 음수끼리 곱하면 부호가 (+)가 되어 +12!\n멋진 [무사 비단바지]를 입어서 팬티 바람을 면했어! 👖",
+          failMsg: "으아악!! (-) × (-) 는 (+)가 되니까 +12야!\n바지 유물을 놓쳐서 땡땡이 팬티 바람이 됐어!! 🩲🙈"
+        },
+        {
+          question: "거듭제곱의 부호 주의!  (-2)² 과 -2² 을\n각각 바르게 계산한 것은?",
+          choices: [
+            "①  (-2)² = +4,   -2² = -4",
+            "②  (-2)² = -4,   -2² = -4",
+            "③  (-2)² = +4,   -2² = +4",
+            "④  (-2)² = -4,   -2² = +4"
+          ],
+          ansIdx: 0,
+          successMsg: "대단해! 괄호가 있는 (-2)²은 +4, 괄호 없는 -2²은 -4야!\n멋진 [무사 비단바지]를 입어서 팬티 바람을 면했어! 👖",
+          failMsg: "으아악!! (-2)² = +4 이고 -2² = -(2×2) = -4 야!\n바지 유물을 놓쳐서 땡땡이 팬티 바람이 됐어!! 🩲🙈"
+        }
+      ]
+    },
+    {
+      id: "belt",
+      partName: "허리띠 유물",
+      relicName: "신라 금제 허리띠 (금관총 과대)",
+      chapter: "5단원 : 다항식 (항·계수·차수)",
+      pool: [
+        {
+          question: "다항식  3x - 5y - 7  에서\n'y 의 계수' 와 '상수항' 을 바르게 짝지은 것은?",
+          choices: [
+            "①  y의 계수: 5,   상수항: 7",
+            "②  y의 계수: -5,  상수항: -7",
+            "③  y의 계수: 3,   상수항: -7",
+            "④  y의 계수: -5,  상수항: 7"
+          ],
+          ansIdx: 1,
+          successMsg: "정확해! 앞의 마이너스 부호까지 꼭 챙겨서 -5와 -7!\n물고기 장식이 달린 [신라 금제 허리띠] 장착! 🎗️",
+          failMsg: "앗! 항을 나눌 땐 앞의 - 부호까지 포함해야 해 (-5, -7)!\n[신라 금제 허리띠]를 놓쳤어... 😢"
+        },
+        {
+          question: "x = -3 일 때, 식  2x + 10  의\n값(대입 결과)은 얼마일까요?",
+          choices: [
+            "①  -16",
+            "②  +4",
+            "③  +7",
+            "④  +16"
+          ],
+          ansIdx: 1,
+          successMsg: "딩동댕! 2 × (-3) + 10 = -6 + 10 = +4!\n물고기 장식이 달린 [신라 금제 허리띠] 장착! 🎗️",
+          failMsg: "아깝다! 2 × (-3) = -6 이므로 -6 + 10 = +4 야!\n[신라 금제 허리띠]를 놓쳤어... 😢"
+        },
+        {
+          question: "다음 식 중에서 차수가 1인\n'일차식'은 어느 것일까요?",
+          choices: [
+            "①  2x² + 3",
+            "②  0 × x + 5",
+            "③  -4x + 9",
+            "④  7"
+          ],
+          ansIdx: 2,
+          successMsg: "정답! 문자의 최고 차수가 1인 -4x + 9 가 일차식이야!\n물고기 장식이 달린 [신라 금제 허리띠] 장착! 🎗️",
+          failMsg: "앗! 2x²은 이차식, 7은 상수항, -4x + 9 가 일차식이야!\n[신라 금제 허리띠]를 놓쳤어... 😢"
+        }
+      ]
+    },
+    {
+      id: "shoes",
+      partName: "신발 유물",
+      relicName: "무령왕릉 백제 금동신발",
+      chapter: "6단원 : 일차식의 괄호·부호 계산",
+      pool: [
+        {
+          question: "일차식  2(x + 3) - (x - 4)  를\n간단히 정리한 결과는?",
+          choices: [
+            "①  x + 2",
+            "②  x + 10",
+            "③  3x + 2",
+            "④  x - 1"
+          ],
+          ansIdx: 1,
+          successMsg: "딩동댕! -(x - 4) = -x + 4 가 되어 정답은 x + 10!\n구멍 난 양말 대신 화려한 [백제 금동신발] 장착! 👞",
+          failMsg: "앗! 괄호 앞의 -는 안의 부호를 모두 바꿔서 2x+6-x+4 = x+10!\n신발을 못 신어서 구멍 난 양말 바람이야! 🧦"
+        },
+        {
+          question: "동류항끼리 모아서  (5x - 2) - (3x - 7)  을\n계산한 결과는?",
+          choices: [
+            "①  2x - 9",
+            "②  2x + 5",
+            "③  8x - 9",
+            "④  2x - 5"
+          ],
+          ansIdx: 1,
+          successMsg: "정답! 5x - 2 - 3x + 7 = 2x + 5!\n구멍 난 양말 대신 화려한 [백제 금동신발] 장착! 👞",
+          failMsg: "아깝다! -(-7)은 +7이 되어 -2 + 7 = +5, 정답은 2x + 5 야!\n신발을 못 신어서 구멍 난 양말 바람이야! 🧦"
+        },
+        {
+          question: "분배법칙!  -3(2x - 5)  의\n괄호를 바르게 푼 것은?",
+          choices: [
+            "①  -6x - 15",
+            "②  -6x - 5",
+            "③  -6x + 15",
+            "④  +6x + 15"
+          ],
+          ansIdx: 2,
+          successMsg: "완벽해! -3을 뒤의 -5에도 곱하면 +15가 되어 -6x + 15!\n구멍 난 양말 대신 화려한 [백제 금동신발] 장착! 👞",
+          failMsg: "앗! (-3) × (-5) = +15 이므로 -6x + 15 가 돼!\n신발을 못 신어서 구멍 난 양말 바람이야! 🧦"
+        }
+      ]
+    },
+    {
+      id: "celadon",
+      partName: "오른손 유물",
+      relicName: "고려청자 상감운학문 매병",
+      chapter: "7단원 : 일차방정식과 이항",
+      pool: [
+        {
+          question: "일차방정식  3x - 4 = x + 6  에서\n이항을 이용해 구한 해(x의 값)는?",
+          choices: [
+            "①  x = 1",
+            "②  x = 3",
+            "③  x = 5",
+            "④  x = 10"
+          ],
+          ansIdx: 2,
+          successMsg: "정답! 3x - x = 6 + 4 ➔ 2x = 10 ➔ x = 5!\n오른손에 우아한 국보 [고려청자 매병] 장착! 🏺",
+          failMsg: "아깝다! 이항하면 부호가 바뀌어 2x = 10, x = 5가 돼!\n[고려청자 매병]을 손에 들지 못했어... 😭"
+        },
+        {
+          question: "일차방정식  5x - 8 = 2x + 7  을\n풀어 구한 x 의 값은?",
+          choices: [
+            "①  x = -5",
+            "②  x = 3",
+            "③  x = 5",
+            "④  x = 15"
+          ],
+          ansIdx: 2,
+          successMsg: "딩동댕! 5x - 2x = 7 + 8 ➔ 3x = 15 ➔ x = 5!\n오른손에 우아한 국보 [고려청자 매병] 장착! 🏺",
+          failMsg: "앗! -8을 이항하면 +8이 되어 3x = 15, x = 5야!\n[고려청자 매병]을 손에 들지 못했어... 😭"
+        },
+        {
+          question: "괄호가 있는 방정식  2(x - 1) = x + 4  의\n해(x의 값)는?",
+          choices: [
+            "①  x = 2",
+            "②  x = 3",
+            "③  x = 5",
+            "④  x = 6"
+          ],
+          ansIdx: 3,
+          successMsg: "완벽해! 2x - 2 = x + 4 ➔ x = 6!\n오른손에 우아한 국보 [고려청자 매병] 장착! 🏺",
+          failMsg: "아깝다! 2x - 2 = x + 4 에서 이항하면 x = 6 이야!\n[고려청자 매병]을 손에 들지 못했어... 😭"
+        }
+      ]
+    },
+    {
+      id: "burner",
+      partName: "왼손 유물",
+      relicName: "백제 금동대향로",
+      chapter: "8단원 : 좌표평면과 사분면·대칭",
+      pool: [
+        {
+          question: "제2사분면 위의 점 (-3, 4) 를\n'x축 대칭이동' 한 점의 좌표와 사분면은?",
+          choices: [
+            "①  (-3, -4) ➔ 제3사분면",
+            "②  (3, 4) ➔ 제1사분면",
+            "③  (3, -4) ➔ 제4사분면",
+            "④  (-3, 4) ➔ 제2사분면"
+          ],
+          ansIdx: 0,
+          successMsg: "완벽해! x축으로 접으면 y좌표 부호가 바뀌어 (-3, -4) 제3사분면!\n왼손에 전설의 국보 [백제 금동대향로] 장착! 🔥🐉",
+          failMsg: "앗! x축 대칭은 y좌표 부호가 바뀌어서 (-3, -4) 제3사분면이야!\n[백제 금동대향로]를 놓쳤어... 😢"
+        },
+        {
+          question: "점 (a, b) 가 '제3사분면' 위의 점일 때,\n점 (-a, b) 는 몇 사분면 위의 점일까요?",
+          choices: [
+            "①  제1사분면",
+            "②  제2사분면",
+            "③  제3사분면",
+            "④  제4사분면"
+          ],
+          ansIdx: 3,
+          successMsg: "천재야! a<0, b<0 이므로 -a>0, b<0 (+, -) ➔ 제4사분면!\n왼손에 전설의 국보 [백제 금동대향로] 장착! 🔥🐉",
+          failMsg: "앗! 제3사분면은 (-, -)이므로 (-a, b)는 (+, -) 제4사분면이야!\n[백제 금동대향로]를 놓쳤어... 😢"
+        },
+        {
+          question: "점 (2, -5) 를 '원점 대칭이동' 한 점의\n좌표는 무엇일까요?",
+          choices: [
+            "①  (2, 5)",
+            "②  (-2, -5)",
+            "③  (-2, 5)",
+            "④  (-5, 2)"
+          ],
+          ansIdx: 2,
+          successMsg: "정답! 원점 대칭은 x, y 부호가 둘 다 바뀌어서 (-2, 5)!\n왼손에 전설의 국보 [백제 금동대향로] 장착! 🔥🐉",
+          failMsg: "아깝다! 원점 대칭은 x, y 부호가 모두 바뀌어 (-2, 5)가 돼!\n[백제 금동대향로]를 놓쳤어... 😢"
+        }
+      ]
+    },
+    {
+      id: "cape",
+      partName: "망토 & 후광 유물",
+      relicName: "천마도 황금 망토 & 일월 후광",
+      chapter: "9단원 : 함수의 뜻과 정비례 (y = ax)",
+      pool: [
+        {
+          question: "함수  y = ax  의 그래프에서  a > 0 (양수) 일 때,\n원점을 지나는 직선의 모양으로 올바른 것은?",
+          choices: [
+            "①  오른쪽 위(↗)로 올라가는 직선",
+            "②  오른쪽 아래(↘)로 내려가는 직선",
+            "③  x축에 평행한 수평선",
+            "④  원점을 지나지 않는 둥근 곡선"
+          ],
+          ansIdx: 0,
+          successMsg: "딩동댕! a가 양수(+)면 오른쪽 위(↗)로 힘차게 올라가!\n화려한 국보급 [천마도 황금 망토 & 일월 후광] 장착! 🦸‍♂️✨",
+          failMsg: "앗! a > 0(양수)이면 오른쪽 위(↗)로 향하는 직선이야!\n[천마도 황금 망토 & 일월 후광]을 놓쳤어... 😢"
+        },
+        {
+          question: "정비례 함수  y = ax  의 그래프가 점 (2, -6) 을 지날 때,\n기울기(비례상수)  a 의 값은 얼마일까요?",
+          choices: [
+            "①  a = -12",
+            "②  a = -3",
+            "③  a = +3",
+            "④  a = +4"
+          ],
+          ansIdx: 1,
+          successMsg: "정답! x=2, y=-6을 대입하면 -6 = 2a ➔ a = -3 이야!\n화려한 국보급 [천마도 황금 망토 & 일월 후광] 장착! 🦸‍♂️✨",
+          failMsg: "아깝다! y = ax 에 x=2, y=-6을 넣으면 a = -3 이야!\n[천마도 황금 망토 & 일월 후광]을 놓쳤어... 😢"
+        },
+        {
+          question: "x 가 2배, 3배 될 때 y 도 2배, 3배가 되는 '정비례'와\nx · y = 일정한 '반비례' 식을 바르게 짝지은 것은?",
+          choices: [
+            "①  정비례: y = a/x,   반비례: y = ax",
+            "②  정비례: y = ax,    반비례: y = a/x",
+            "③  정비례: y = x + a, 반비례: y = x - a",
+            "④  정비례와 반비례 모두 y = ax 이다"
+          ],
+          ansIdx: 1,
+          successMsg: "완벽해! 정비례는 y = ax, 반비례는 y = a/x (xy=a)!\n화려한 국보급 [천마도 황금 망토 & 일월 후광] 장착! 🦸‍♂️✨",
+          failMsg: "앗! 정비례는 y = ax 이고, 반비례는 y = a/x 야!\n[천마도 황금 망토 & 일월 후광]을 놓쳤어... 😢"
+        }
+      ]
+    },
+    {
+      id: "sword",
+      partName: "전설의 보검 유물",
+      relicName: "조선 왕실 사인참사검",
+      chapter: "10단원 : 반비례와 함숫값 (y = a/x)",
+      pool: [
+        {
+          question: "반비례 관계  y = 12 / x  (x > 0) 의 그래프에 대한\n설명으로 올바른 것은 어느 것일까요?",
+          choices: [
+            "①  원점을 지나는 한 개의 직선이다.",
+            "②  좌표축과 만나지 않는 매끄러운 한 쌍의 곡선이다.",
+            "③  x의 값이 커질수록 y의 값도 계속 커진다.",
+            "④  제2사분면과 제4사분면을 지난다."
+          ],
+          ansIdx: 1,
+          successMsg: "딩동댕! a>0인 반비례는 제1, 3사분면의 매끄러운 쌍곡선!\n대미를 장식할 국보 [조선 왕실 사인참사검] 장착! ⚔️✨",
+          failMsg: "앗! 반비례 y = a/x의 그래프는 축과 만나지 않는 한 쌍의 곡선이야!\n마지막 [사인참사검]을 놓쳤어... 😢"
+        },
+        {
+          question: "함수  f(x) = -3x + 5  일 때,\nx = 2 에서의 함숫값  f(2) 의 값은 얼마일까요?",
+          choices: [
+            "①  -1",
+            "②  +1",
+            "③  +6",
+            "④  -11"
+          ],
+          ansIdx: 0,
+          successMsg: "정답! x=2를 대입하면 -3×2 + 5 = -6 + 5 = -1 이야!\n대미를 장식할 국보 [조선 왕실 사인참사검] 장착! ⚔️✨",
+          failMsg: "아깝다! f(2)는 x 자리에 2를 쏙 넣어 계산하면 -1 이야!\n마지막 [사인참사검]을 놓쳤어... 😢"
+        },
+        {
+          question: "반비례 함수  y = a / x  의 그래프가 점 (3, 4) 를 지날 때,\n상수  a 의 값(두 변수의 곱 x·y)은 얼마일까요?",
+          choices: [
+            "①  a = 1",
+            "②  a = 7",
+            "③  a = 12",
+            "④  a = 4/3"
+          ],
+          ansIdx: 2,
+          successMsg: "완벽해! 반비례는 x × y = a 이므로 3 × 4 = 12!\n대미를 장식할 국보 [조선 왕실 사인참사검] 장착! ⚔️✨",
+          failMsg: "앗! 반비례 식 y = a/x 에 x=3, y=4를 대입하면 a = 12 야!\n마지막 [사인참사검]을 놓쳤어... 😢"
+        }
+      ]
+    }
+  ];
+
+  // 현재 판에서 선택된 10개 스테이지 문제 배열
+  let stages = [];
+  function pickRandomStages() {
+    stages = stagePool.map(sp => {
+      const q = sp.pool[Math.floor(Math.random() * sp.pool.length)];
+      return {
+        id: sp.id,
+        partName: sp.partName,
+        relicName: sp.relicName,
+        chapter: sp.chapter,
+        question: q.question,
+        choices: q.choices,
+        ansIdx: q.ansIdx,
+        successMsg: q.successMsg,
+        failMsg: q.failMsg
+      };
+    });
+  }
+  pickRandomStages();
+
+  // ==========================================================
+  // 게임 상태 관리
+  // gamePhase: 'intro' (인트로 화면), 'quiz' (문제 풀이), 'result' (최종 런웨이 결과 화면)
+  // ==========================================================
+  let gamePhase = 'intro';
+  let activeQueue = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; // 현재 진행할 문제 인덱스 목록
+  let queuePos = 0;                                 // activeQueue 내 현재 위치
+  let equipped = {
+    crown: false,
+    earring: false,
+    top: false,
+    pants: false,
+    belt: false,
+    shoes: false,
+    celadon: false,
+    burner: false,
+    cape: false,
+    sword: false
+  };
+
+  let answeredState = null; // null (선택 전), 'correct' (정답!), 'wrong' (오답!)
+  let selectedChoice = -1;
+  let hoverChoice = -1;
+  let choiceBoxes = [];
+  let animFrame = 0;
+
+  function countEquipped() {
+    return Object.values(equipped).filter(Boolean).length;
+  }
+
+  function goToIntro() {
+    playSound('click');
+    gamePhase = 'intro';
+    updateTopUI();
+  }
+
+  function updateTopUI() {
+    const cnt = countEquipped();
+    statusBadge.innerText = `획득 유물 : ${cnt} / 10`;
+
+    if (gamePhase === 'intro') {
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = false;
+      btnNext.innerText = "게임 시작 ▶";
+      btnNext.style.background = "#d97706";
+      btnRetryMissed.style.display = "none";
+      btnRestart.style.display = "none";
+    } else if (gamePhase === 'quiz') {
+      btnNext.style.display = "inline-flex";
+      btnNext.disabled = (answeredState === null);
+      btnNext.innerText = (queuePos < activeQueue.length - 1) ? "다음 문제 ▶" : "최종 모습 보기 🎉";
+      btnNext.style.background = "#2563eb";
+      btnRetryMissed.style.display = "none";
+      btnRestart.style.display = "none";
+    } else if (gamePhase === 'result') {
+      btnNext.style.display = "none";
+      btnRestart.style.display = "inline-flex";
+      btnRetryMissed.style.display = (cnt < 10) ? "inline-flex" : "none";
+    }
+  }
+
+  function startNewGame() {
+    playSound('click');
+    pickRandomStages();
+    equipped = {
+      crown: false, earring: false, top: false, pants: false,
+      belt: false, shoes: false, celadon: false, burner: false,
+      cape: false, sword: false
+    };
+    activeQueue = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    queuePos = 0;
+    answeredState = null;
+    selectedChoice = -1;
+    gamePhase = 'quiz';
+    updateTopUI();
+  }
+
+  function retryMissedOnly() {
+    playSound('click');
+    const missed = [];
+    stagePool.forEach((sp, idx) => {
+      if (!equipped[sp.id]) {
+        missed.push(idx);
+        const q = sp.pool[Math.floor(Math.random() * sp.pool.length)];
+        stages[idx] = {
+          id: sp.id,
+          partName: sp.partName,
+          relicName: sp.relicName,
+          chapter: sp.chapter,
+          question: q.question,
+          choices: q.choices,
+          ansIdx: q.ansIdx,
+          successMsg: q.successMsg,
+          failMsg: q.failMsg
+        };
+      }
+    });
+    if (missed.length === 0) {
+      startNewGame();
+      return;
+    }
+    activeQueue = missed;
+    queuePos = 0;
+    answeredState = null;
+    selectedChoice = -1;
+    gamePhase = 'quiz';
+    updateTopUI();
+  }
+
+  function handleMainAction() {
+    if (gamePhase === 'intro') {
+      startNewGame();
+      return;
+    }
+    if (gamePhase === 'quiz') {
+      if (answeredState === null) return;
+      playSound('click');
+      if (queuePos < activeQueue.length - 1) {
+        queuePos++;
+        answeredState = null;
+        selectedChoice = -1;
+        updateTopUI();
+      } else {
+        gamePhase = 'result';
+        if (countEquipped() === 10) playSound('clear');
+        else playSound('equip');
+        updateTopUI();
+      }
+    }
+  }
+
+  // ==========================================================
+  // 마우스 및 키보드 이벤트
+  // ==========================================================
+  function getCanvasMouse(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      mx: (e.clientX - rect.left) * (canvas.width / rect.width),
+      my: (e.clientY - rect.top) * (canvas.height / rect.height)
+    };
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (gamePhase !== 'quiz' || answeredState !== null) {
+      hoverChoice = -1;
+      return;
+    }
+    const { mx, my } = getCanvasMouse(e);
+    hoverChoice = -1;
+    for (const b of choiceBoxes) {
+      if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) {
+        hoverChoice = b.idx;
+        break;
+      }
+    }
+  });
+
+  canvas.addEventListener('click', (e) => {
+    if (gamePhase === 'intro') {
+      startNewGame();
+      return;
+    }
+    if (gamePhase === 'quiz') {
+      if (answeredState === null) {
+        const { mx, my } = getCanvasMouse(e);
+        for (const b of choiceBoxes) {
+          if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) {
+            selectAnswer(b.idx);
+            return;
+          }
+        }
+      } else {
+        handleMainAction();
+      }
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (gamePhase === 'quiz' && answeredState === null) {
+      if (e.key === '1') selectAnswer(0);
+      else if (e.key === '2') selectAnswer(1);
+      else if (e.key === '3') selectAnswer(2);
+      else if (e.key === '4') selectAnswer(3);
+    } else if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') {
+      if (gamePhase === 'intro' || (gamePhase === 'quiz' && answeredState !== null)) {
+        e.preventDefault();
+        handleMainAction();
+      }
+    }
+  });
+
+  function selectAnswer(choiceIdx) {
+    if (answeredState !== null) return;
+    selectedChoice = choiceIdx;
+    const st = stages[activeQueue[queuePos]];
+    if (choiceIdx === st.ansIdx) {
+      answeredState = 'correct';
+      equipped[st.id] = true;
+      playSound('equip');
+    } else {
+      answeredState = 'wrong';
+      playSound('wrong');
+    }
+    updateTopUI();
+  }
+
+  // ==========================================================
+  // 캐릭터 + 국립중앙박물관 유물 아바타 드로잉 함수
+  // ==========================================================
+  function drawCharacterAvatar(cx, cy, scale = 1.0, mood = 'normal', isResultScreen = false) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(scale, scale);
+
+    const bounce = Math.sin(animFrame * 0.08) * 3;
+    const isShivering = (!equipped.pants || !equipped.top) && (mood === 'shy' || mood === 'sad' || isResultScreen);
+    const shiverX = isShivering ? Math.sin(animFrame * 0.8) * 2.5 : 0;
+
+    ctx.translate(shiverX, bounce);
+
+    // 0) [유물 9: 천마도 황금 망토 & 일월 후광] (등 뒤 대후광 + 해·달 + 비단 망토)
+    if (equipped.cape) {
+      ctx.save();
+      const glowR = 122 + Math.sin(animFrame * 0.1) * 6;
+      const grad = ctx.createRadialGradient(0, -15, 20, 0, -15, glowR);
+      grad.addColorStop(0, "rgba(251, 191, 36, 0.58)");
+      grad.addColorStop(0.6, "rgba(245, 158, 11, 0.24)");
+      grad.addColorStop(1, "rgba(245, 158, 11, 0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, -15, glowR, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 전통 일월(해와 달) 불꽃무늬 후광 테두리
+      ctx.strokeStyle = "rgba(217, 119, 6, 0.6)";
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.arc(0, -15, 104, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 일월오봉도풍 붉은 해(좌상단)와 흰 달(우상단) 심벌
+      ctx.fillStyle = "#ef4444";
+      ctx.strokeStyle = "#fde047";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(-68, -88, 11, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#fde047";
+      ctx.beginPath();
+      ctx.arc(68, -88, 11, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+
+      // 등 뒤로펄럭이는 천마도 붉은·황금 비단 망토
+      const wave = Math.sin(animFrame * 0.09) * 4;
+      ctx.fillStyle = "#991b1b";
+      ctx.strokeStyle = "#fbbf24";
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(-42, -26);
+      ctx.lineTo(42, -26);
+      ctx.quadraticCurveTo(68 + wave, 45, 62 + wave, 114);
+      ctx.quadraticCurveTo(0, 124, -62 + wave, 114);
+      ctx.quadraticCurveTo(-68 + wave, 45, -42, -26);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 망토 하단 백색 천마 구름무늬 금선 장식
+      ctx.strokeStyle = "rgba(254, 240, 138, 0.85)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(-44 + wave * 0.6, 94, 8, Math.PI, Math.PI * 2);
+      ctx.arc(44 + wave * 0.6, 94, 8, Math.PI, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 0-B) [유물 10: 조선 왕실 사인참사검] (등 뒤에 멘 황금 용문 보검)
+    if (equipped.sword) {
+      ctx.save();
+      ctx.translate(22, -10);
+      ctx.rotate(0.38);
+
+      // 1) 검집 (길고 날렵한 흑칠 + 금빛 띠)
+      ctx.fillStyle = "#1e1b4b";
+      ctx.strokeStyle = "#fbbf24";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(-6, -45, 12, 110, 4);
+      ctx.fill(); ctx.stroke();
+
+      // 검집 황금 띠 & 용문양 금선
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(-6, -20, 12, 7);
+      ctx.fillRect(-6, 15, 12, 7);
+      ctx.fillRect(-6, 50, 12, 7);
+
+      // 사인검 북두칠성 7개 황금 별자리 각인
+      ctx.fillStyle = "#fef08a";
+      [-32, -24, -14, -4, 6, 18, 28].forEach((sy, sidx) => {
+        const sx = (sidx % 2 === 0) ? -2 : 2;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 2) 검 코등이 (황금 용머리 / 방패형 가드)
+      ctx.fillStyle = "#fbbf24";
+      ctx.strokeStyle = "#78350f";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.roundRect(-14, -53, 28, 8, 3);
+      ctx.fill(); ctx.stroke();
+
+      // 3) 검 손잡이 (어깨 위로 솟은 자루)
+      ctx.fillStyle = "#7f1d1d";
+      ctx.strokeStyle = "#fbbf24";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(-5, -82, 10, 29, 2);
+      ctx.fill(); ctx.stroke();
+
+      // 손잡이 금실 격자무늬
+      ctx.strokeStyle = "#fef08a";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(-5, -74); ctx.lineTo(5, -70);
+      ctx.moveTo(-5, -64); ctx.lineTo(5, -60);
+      ctx.stroke();
+
+      // 4) 칼자루 끝 용머리 폼멜 (원형 황금 보주)
+      ctx.fillStyle = "#fbbf24";
+      ctx.strokeStyle = "#78350f";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -86, 6.5, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+
+      // 5) 칼자루 끝에 늘어뜨린 왕실 붉은 비취 수슬 (매듭술)
+      const sway = Math.sin(animFrame * 0.1) * 3;
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -80);
+      ctx.quadraticCurveTo(8 + sway, -68, 5 + sway, -52);
+      ctx.stroke();
+
+      // 비취 구슬
+      ctx.fillStyle = "#10b981";
+      ctx.beginPath();
+      ctx.arc(6 + sway, -52, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 별빛 반짝임 효과
+      const glint = (Math.sin(animFrame * 0.15) + 1) * 0.5;
+      if (glint > 0.6) {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.beginPath();
+        ctx.arc(0, -86, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    // 박물관 전시 받침대 (발 아래)
+    ctx.save();
+    ctx.fillStyle = "#e2e8f0";
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(0, 128, 76, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#cbd5e1";
+    ctx.beginPath();
+    ctx.roundRect(-68, 128, 136, 16, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // 1) 다리 (맨다리)
+    ctx.fillStyle = "#fde68a";
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 3;
+    // 왼쪽 다리
+    ctx.beginPath();
+    ctx.roundRect(-30, 50, 20, 68, 8);
+    ctx.fill(); ctx.stroke();
+    // 오른쪽 다리
+    ctx.beginPath();
+    ctx.roundRect(10, 50, 20, 68, 8);
+    ctx.fill(); ctx.stroke();
+
+    // 2) [유물 4: 고구려 수렵도 무사 비단바지] vs [못 입었을 때: 줄무늬 팬티!]
+    if (equipped.pants) {
+      // 멋진 감청색+금빛 문양 전통 비단 무사 바지 (한복 바지 핏)
+      ctx.save();
+      ctx.fillStyle = "#1e3a8a";
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 3;
+
+      // 왼쪽 통바지
+      ctx.beginPath();
+      ctx.moveTo(-38, 32);
+      ctx.quadraticCurveTo(-48, 75, -34, 108);
+      ctx.lineTo(-6, 108);
+      ctx.lineTo(-2, 56);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 오른쪽 통바지
+      ctx.beginPath();
+      ctx.moveTo(38, 32);
+      ctx.quadraticCurveTo(48, 75, 34, 108);
+      ctx.lineTo(6, 108);
+      ctx.lineTo(2, 56);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 허리춤 연결부
+      ctx.beginPath();
+      ctx.roundRect(-38, 28, 76, 30, 8);
+      ctx.fill(); ctx.stroke();
+
+      // 바지 금빛 구름/수렵 문양 & 발목 대님(금색 리본)
+      ctx.strokeStyle = "#fbbf24";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(-22, 78, 7, 0, Math.PI * 1.5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(22, 78, 7, 0, Math.PI * 1.5);
+      ctx.stroke();
+
+      // 발목 대님
+      ctx.fillStyle = "#dc2626";
+      ctx.fillRect(-33, 101, 26, 7);
+      ctx.fillRect(7, 101, 26, 7);
+      ctx.restore();
+    } else {
+      // 바지를 못 입었을 때: 코믹한 하늘색·흰색 줄무늬 팬티(또는 딸기 무늬 팬티)!
+      ctx.save();
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-36, 30);
+      ctx.lineTo(36, 30);
+      ctx.lineTo(34, 66);
+      ctx.lineTo(6, 66);
+      ctx.lineTo(0, 56);
+      ctx.lineTo(-6, 66);
+      ctx.lineTo(-34, 66);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 귀여운 빨간 땡땡이(하트/점) 무늬 팬티
+      ctx.fillStyle = "#f43f5e";
+      const dots = [[-22, 44], [-8, 39], [8, 44], [22, 39], [-18, 56], [18, 56], [0, 48]];
+      dots.forEach(([dx, dy]) => {
+        ctx.beginPath();
+        ctx.arc(dx, dy, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 팬티 고무줄 밴드
+      ctx.fillStyle = "#38bdf8";
+      ctx.fillRect(-35, 30, 70, 7);
+      ctx.strokeRect(-35, 30, 70, 7);
+
+      // 무릎에 삐질삐질 땀/부끄러움 표시
+      ctx.strokeStyle = "#f43f5e";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-24, 82); ctx.lineTo(-16, 82);
+      ctx.moveTo(16, 82); ctx.lineTo(24, 82);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 3) [유물 6: 무령왕릉 백제 금동신발] vs [구멍 난 양말]
+    if (equipped.shoes) {
+      ctx.save();
+      ctx.fillStyle = "#f59e0b";
+      ctx.strokeStyle = "#78350f";
+      ctx.lineWidth = 2.8;
+      // 왼발 금동신발 (코가 살짝 들린 화려한 금빛 신발)
+      ctx.beginPath();
+      ctx.moveTo(-36, 108);
+      ctx.lineTo(-6, 108);
+      ctx.lineTo(-4, 126);
+      ctx.quadraticCurveTo(-28, 129, -46, 118);
+      ctx.quadraticCurveTo(-48, 110, -36, 108);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 오른발 금동신발
+      ctx.beginPath();
+      ctx.moveTo(6, 108);
+      ctx.lineTo(36, 108);
+      ctx.quadraticCurveTo(48, 110, 46, 118);
+      ctx.quadraticCurveTo(28, 129, 4, 126);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 금동신발 바닥 스파이크 징 & 금빛 달개 장식
+      ctx.fillStyle = "#fef08a";
+      [-34, -22, -10, 10, 22, 34].forEach(sx => {
+        ctx.beginPath();
+        ctx.arc(sx, 116, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.restore();
+    } else {
+      // 신발 못 신었을 때: 엄지발가락이 뽕 튀어나온 구멍 난 흰 양말!
+      ctx.save();
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(-38, 108, 30, 16, 7);
+      ctx.roundRect(8, 108, 30, 16, 7);
+      ctx.fill(); ctx.stroke();
+
+      // 왼발 양말 구멍 + 삐져나온 발가락
+      ctx.fillStyle = "#fde68a";
+      ctx.beginPath();
+      ctx.arc(-36, 118, 6, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
+
+    // 4) 상체 & 팔 (기본 런닝셔츠 vs [유물 3: 반가사유상 황금 천의 & 영락 상의])
+    ctx.save();
+    // 양팔
+    ctx.fillStyle = equipped.top ? "#fef3c7" : "#fde68a";
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 3;
+    // 왼팔 (화면 기준 왼쪽 = 캐릭터 오른팔)
+    ctx.beginPath();
+    ctx.roundRect(-58, -22, 22, 54, 10);
+    ctx.fill(); ctx.stroke();
+    // 오른팔 (화면 기준 오른쪽 = 캐릭터 왼팔)
+    ctx.beginPath();
+    ctx.roundRect(36, -22, 22, 54, 10);
+    ctx.fill(); ctx.stroke();
+
+    if (equipped.top) {
+      // [유물 3 장착] 반가사유상 스타일 금빛 상의 + 붉은 비단 천의(숄) + 화려한 국보 영락(목걸이)
+      ctx.fillStyle = "#fcd34d";
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(-40, -28, 80, 64, 14);
+      ctx.fill(); ctx.stroke();
+
+      // 소매 덮개
+      ctx.fillStyle = "#f59e0b";
+      ctx.beginPath();
+      ctx.roundRect(-60, -24, 24, 34, 8);
+      ctx.roundRect(36, -24, 24, 34, 8);
+      ctx.fill(); ctx.stroke();
+
+      // 붉은 비단 천의(어깨에서 대각선으로 흐르는 옷자락)
+      ctx.fillStyle = "#dc2626";
+      ctx.beginPath();
+      ctx.moveTo(-40, -26);
+      ctx.lineTo(-14, -26);
+      ctx.lineTo(38, 28);
+      ctx.lineTo(12, 34);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 가슴의 화려한 비취/금빛 영락 목걸이 장식
+      ctx.strokeStyle = "#b45309";
+      ctx.fillStyle = "#10b981";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(0, -18, 22, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+      [-14, 0, 14].forEach(nx => {
+        ctx.beginPath();
+        ctx.arc(nx, -2, 5, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+      });
+    } else {
+      // 상의 못 입었을 때: 하얀 민소매 런닝셔츠!
+      ctx.fillStyle = "#fde68a";
+      ctx.beginPath();
+      ctx.roundRect(-36, -28, 72, 62, 12);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.moveTo(-34, -26);
+      ctx.lineTo(-18, -26);
+      ctx.quadraticCurveTo(0, -6, 18, -26);
+      ctx.lineTo(34, -26);
+      ctx.lineTo(34, 32);
+      ctx.lineTo(-34, 32);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 런닝셔츠에 귀여운 패치 자국
+      ctx.fillStyle = "#e2e8f0";
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(8, 2, 14, 14);
+      ctx.strokeRect(8, 2, 14, 14);
+    }
+
+    // [유물 9 장착 시] 어깨 위의 황금 망토 고정 브로치(금동 매듭)
+    if (equipped.cape) {
+      ctx.fillStyle = "#fbbf24";
+      ctx.strokeStyle = "#78350f";
+      ctx.lineWidth = 2.2;
+      [-36, 36].forEach(bx => {
+        ctx.beginPath();
+        ctx.arc(bx, -24, 7, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+      });
+    }
+    ctx.restore();
+
+    // 5) [유물 5: 신라 금제 허리띠 (금관총 과대 & 요패 드리개)]
+    if (equipped.belt) {
+      ctx.save();
+      ctx.fillStyle = "#fbbf24";
+      ctx.strokeStyle = "#92400e";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(-41, 24, 82, 12, 4);
+      ctx.fill(); ctx.stroke();
+
+      // 허리띠 아래로 주렁주렁 내려오는 금빛 드리개(요패)와 비취 곡옥/물고기 장식
+      const pendants = [-28, -14, 0, 14, 28];
+      pendants.forEach((px, i) => {
+        const len = (i % 2 === 0) ? 26 : 19;
+        ctx.strokeStyle = "#d97706";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(px, 36);
+        ctx.lineTo(px, 36 + len);
+        ctx.stroke();
+
+        ctx.fillStyle = (i === 2) ? "#10b981" : "#fcd34d";
+        ctx.beginPath();
+        ctx.arc(px, 36 + len, 4.5, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    // 6) 얼굴 & 머리 (우리 수학책 주인공 동그란 코믹 얼굴!)
+    ctx.save();
+    ctx.fillStyle = "#fde68a";
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 3.2;
+    ctx.beginPath();
+    ctx.arc(0, -68, 44, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    // 양쪽 귀
+    ctx.beginPath();
+    ctx.arc(-44, -66, 9, 0, Math.PI * 2);
+    ctx.arc(44, -66, 9, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    // [유물 2: 신라 금귀걸이 (보문동 부부총 굵은고리 금귀걸이)]
+    if (equipped.earring) {
+      ctx.save();
+      [-45, 45].forEach(ex => {
+        // 굵은 금고리
+        ctx.strokeStyle = "#d97706";
+        ctx.fillStyle = "#fbbf24";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(ex, -56, 6, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 중간 구체 + 나뭇잎 모양 금빛 펜던트
+        ctx.beginPath();
+        ctx.arc(ex, -44, 5, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#f59e0b";
+        ctx.beginPath();
+        ctx.moveTo(ex, -38);
+        ctx.lineTo(ex - 7, -25);
+        ctx.lineTo(ex, -20);
+        ctx.lineTo(ex + 7, -25);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    // 표정 (눈, 볼터치, 입)
+    const isBlushing = (!equipped.pants || !equipped.top) && (isResultScreen || mood === 'wrong');
+    // 볼터치
+    ctx.fillStyle = isBlushing ? "rgba(244, 63, 94, 0.55)" : "rgba(251, 113, 133, 0.35)";
+    ctx.beginPath();
+    ctx.ellipse(-24, -58, isBlushing ? 11 : 8, 5.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(24, -58, isBlushing ? 11 : 8, 5.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 눈
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2.8;
+    ctx.beginPath();
+    ctx.arc(-15, -72, 11, 0, Math.PI * 2);
+    ctx.arc(15, -72, 11, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    // 눈동자
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(-15, -72, 5.5, 0, Math.PI * 2);
+    ctx.arc(15, -72, 5.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(-17, -74, 2, 0, Math.PI * 2);
+    ctx.arc(13, -74, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 입 모양
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 3;
+    if (mood === 'happy' || (isResultScreen && countEquipped() === 10)) {
+      ctx.fillStyle = "#f43f5e";
+      ctx.beginPath();
+      ctx.arc(0, -52, 11, 0, Math.PI);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    } else if (mood === 'wrong' || isBlushing) {
+      // 당황한 물결 입 + 삐질 땀방울
+      ctx.beginPath();
+      ctx.moveTo(-10, -48);
+      ctx.quadraticCurveTo(-5, -53, 0, -48);
+      ctx.quadraticCurveTo(5, -43, 10, -48);
+      ctx.stroke();
+
+      // 이마 땀방울
+      ctx.fillStyle = "#38bdf8";
+      ctx.strokeStyle = "#0284c7";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(32, -92);
+      ctx.quadraticCurveTo(38, -82, 32, -78);
+      ctx.quadraticCurveTo(26, -82, 32, -92);
+      ctx.fill(); ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, -53, 8, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+    }
+
+    // 7) [유물 1: 신라 금관 (천마총 금관)] vs [세모 꼬깔/바가지 머리]
+    if (equipped.crown) {
+      ctx.save();
+      ctx.fillStyle = "#fbbf24";
+      ctx.strokeStyle = "#92400e";
+      ctx.lineWidth = 2.8;
+
+      // 금관 하단 머리띠(대륜)
+      ctx.beginPath();
+      ctx.roundRect(-42, -108, 84, 16, 5);
+      ctx.fill(); ctx.stroke();
+
+      // 중앙 및 좌우 출(出)자형 나뭇가지 세움장식 3개
+      [-28, 0, 28].forEach((tx, idx) => {
+        const h = (idx === 1) ? 48 : 38;
+        // 기둥
+        ctx.fillRect(tx - 4, -108 - h, 8, h);
+        ctx.strokeRect(tx - 4, -108 - h, 8, h);
+        // 아래 단 가지
+        ctx.fillRect(tx - 12, -108 - h * 0.45, 24, 6);
+        ctx.strokeRect(tx - 12, -108 - h * 0.45, 24, 6);
+        // 위 단 가지
+        ctx.fillRect(tx - 10, -108 - h * 0.8, 20, 6);
+        ctx.strokeRect(tx - 10, -108 - h * 0.8, 20, 6);
+        // 꼭대기 보주
+        ctx.beginPath();
+        ctx.arc(tx, -108 - h - 4, 6, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+      });
+
+      // 비취색 곱은옥(곡옥) 장식 콕콕
+      ctx.fillStyle = "#10b981";
+      ctx.strokeStyle = "#065f46";
+      ctx.lineWidth = 1.8;
+      [[-28, -135], [0, -145], [28, -135], [-16, -100], [0, -100], [16, -100]].forEach(([jx, jy]) => {
+        ctx.beginPath();
+        ctx.arc(jx, jy, 4.2, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+      });
+      ctx.restore();
+    } else {
+      // 금관이 없을 때: 휑한 세 가닥 바가지 앞머리
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(-12, -110); ctx.lineTo(-16, -98);
+      ctx.moveTo(0, -112);   ctx.lineTo(0, -98);
+      ctx.moveTo(12, -110);  ctx.lineTo(16, -98);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 8) [유물 7: 고려청자 상감운학문 매병] (캐릭터 오른손 = 화면 왼쪽 손에 들기)
+    if (equipped.celadon) {
+      ctx.save();
+      ctx.translate(-68, 8);
+      // 비색 고려청자 매병 실루엣
+      ctx.fillStyle = "#5eead4";
+      ctx.strokeStyle = "#0f766e";
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      // 작은 입구
+      ctx.moveTo(-6, -28);
+      ctx.lineTo(6, -28);
+      ctx.lineTo(5, -22);
+      // 풍만한 어깨에서 날렵한 허리로 이어지는 매병 곡선
+      ctx.bezierCurveTo(22, -18, 20, 4, 10, 26);
+      ctx.lineTo(-10, 26);
+      ctx.bezierCurveTo(-20, 4, -22, -18, -5, -22);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 흰색 학/구름 상감 문양
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -2, 6, 0, Math.PI);
+      ctx.moveTo(-8, -6); ctx.quadraticCurveTo(0, -14, 8, -6);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 9) [유물 8: 백제 금동대향로] (캐릭터 왼손 = 화면 오른쪽 손에 들기)
+    if (equipped.burner) {
+      ctx.save();
+      ctx.translate(68, 6);
+      ctx.fillStyle = "#f59e0b";
+      ctx.strokeStyle = "#78350f";
+      ctx.lineWidth = 2.5;
+
+      // 용 받침대 + 연꽃 몸체 + 박산 뚜껑
+      ctx.beginPath();
+      ctx.moveTo(-10, 26);
+      ctx.lineTo(10, 26);
+      ctx.lineTo(4, 14);
+      ctx.lineTo(-4, 14);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 연꽃/산 모양 몸체
+      ctx.beginPath();
+      ctx.moveTo(-18, -2);
+      ctx.lineTo(0, -20);
+      ctx.lineTo(18, -2);
+      ctx.quadraticCurveTo(14, 14, 0, 14);
+      ctx.quadraticCurveTo(-14, 14, -18, -2);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // 꼭대기 봉황 장식 + 신비로운 금빛 향연기
+      ctx.fillStyle = "#fde047";
+      ctx.beginPath();
+      ctx.arc(0, -26, 5, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, -26); ctx.lineTo(12, -34);
+      ctx.moveTo(0, -26); ctx.lineTo(-10, -32);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(251, 191, 36, 0.7)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -35);
+      ctx.quadraticCurveTo(8, -45, -2, -54);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  // ==========================================================
+  // 화면 1: 인트로 화면
+  // ==========================================================
+  function renderIntro() {
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 왼쪽: 팬티 & 런닝셔츠 바람의 캐릭터
+    drawCharacterAvatar(220, 290, 1.15, 'shy', true);
+
+    // 오른쪽: 게임 안내 보드
+    ctx.save();
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.roundRect(390, 30, 530, 480, 24);
+    ctx.fill();
+    ctx.stroke();
+
+    // 타이틀 배지
+    ctx.fillStyle = "#fffbeb";
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect(425, 52, 460, 46, 14);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#b45309";
+    ctx.font = "900 22px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🏛️ 국립중앙박물관 유물 입히기 대작전!", 655, 75);
+
+    const descLines = [
+      "으악! 우리 캐릭터가 아직 런닝셔츠에 줄무늬 팬티 바람이에요!",
+      "중학교 1학년 수학 핵심 개념 10문제를 하나씩 풀어보세요.",
+      "문제를 맞출 때마다 '국중박' 국보 유물 아이템을 하나씩 장착합니다!",
+      "",
+      "👑 1. 소수와 합성수 ➔ 신라 금관 (머리)",
+      "✨ 2. 최대공약수 ➔ 신라 금귀걸이 (귀)",
+      "🧥 3. 수직선과 절댓값 ➔ 반가사유상 황금 상의 (윗옷)",
+      "👖 4. 정수의 부호 연산 ➔ 고구려 무사 비단바지 (바지!)",
+      "🎗️ 5. 다항식의 계수·상수항 ➔ 신라 금제 허리띠 (허리)",
+      "👞 6. 일차식의 계산 ➔ 무령왕릉 금동신발 (신발)",
+      "🏺 7. 일차방정식 풀이 ➔ 고려청자 매병 (오른손)",
+      "🔥 8. 좌표평면과 대칭 ➔ 백제 금동대향로 (왼손)",
+      "🦸‍♂️ 9. 함수의 뜻과 정비례 ➔ 천마도 황금 망토 (등·망토)",
+      "⚔️ 10. 반비례와 함숫값 ➔ 조선 왕실 사인참사검 (보검)"
+    ];
+
+    ctx.textAlign = "left";
+    descLines.forEach((line, i) => {
+      if (i < 3) {
+        ctx.fillStyle = (i === 0) ? "#dc2626" : "#1e293b";
+        ctx.font = "bold 15px 'Pretendard', sans-serif";
+        ctx.fillText(line, 430, 118 + i * 22);
+      } else if (i >= 4) {
+        ctx.fillStyle = (i >= 12) ? "#b45309" : "#334155";
+        ctx.font = (i >= 12) ? "900 14px 'Pretendard', sans-serif" : "bold 14px 'Pretendard', sans-serif";
+        ctx.fillText(line, 440, 118 + i * 22);
+      }
+    });
+
+    // 캐릭터 말풍선
+    ctx.fillStyle = "#fef2f2";
+    ctx.strokeStyle = "#dc2626";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(45, 22, 310, 74, 18);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#dc2626";
+    ctx.font = "900 17px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("추워!! 바지 문제라도 꼭 맞춰줘!", 200, 48);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 15px 'Pretendard', sans-serif";
+    ctx.fillText("못 맞추면 끝까지 팬티 바람이야~ 🙈", 200, 74);
+    ctx.restore();
+  }
+
+  // ==========================================================
+  // 화면 2: 퀴즈 진행 화면 (왼쪽에 실시간 캐릭터, 오른쪽에 문제)
+  // ==========================================================
+  function renderQuiz() {
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const stIdx = activeQueue[queuePos];
+    const st = stages[stIdx];
+
+    // 왼쪽: 캐릭터 실시간 장착 모습
+    let mood = 'normal';
+    if (answeredState === 'correct') mood = 'happy';
+    else if (answeredState === 'wrong') mood = 'wrong';
+    drawCharacterAvatar(195, 315, 1.05, mood, false);
+
+    // 왼쪽 상단: 현재 걸려있는 국중박 유물 카드
+    ctx.save();
+    ctx.fillStyle = "#fffbeb";
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 2.8;
+    ctx.beginPath();
+    ctx.roundRect(28, 18, 330, 68, 16);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#d97706";
+    ctx.font = "900 14px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`🎁 이번 문제 보상 : [ ${st.partName} ]`, 193, 39);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 18px 'Pretendard', sans-serif";
+    ctx.fillText(st.relicName, 193, 64);
+    ctx.restore();
+
+    // 오른쪽: 문제 출제 및 4지선다 보드
+    ctx.save();
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect(380, 18, 552, 504, 22);
+    ctx.fill(); ctx.stroke();
+
+    // 상단 단원 배지 + 진행 번호 (예: 4 / 10)
+    ctx.fillStyle = "#eff6ff";
+    ctx.strokeStyle = "#2563eb";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(406, 36, 340, 36, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#1d4ed8";
+    ctx.font = "900 15px 'Pretendard', sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`📘 ${st.chapter}`, 422, 54);
+
+    // 오른쪽 상단 문제 번호 크게
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 24px 'Pretendard', sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`${queuePos + 1} / ${activeQueue.length}`, 904, 55);
+
+    // 문제 질문 박스
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#334155";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.roundRect(406, 86, 500, 94, 14);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 19px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    const qLines = st.question.split('\n');
+    qLines.forEach((l, idx) => {
+      ctx.fillText(l, 656, 118 + idx * 28);
+    });
+
+    // 4지선다 선택지 버튼
+    choiceBoxes = [];
+    let cy = 196;
+    for (let c = 0; c < st.choices.length; c++) {
+      const bx = 406, bw = 500, bh = 48;
+      let bg = "#ffffff", border = "#cbd5e1", txtColor = "#1e293b", lw = 2;
+
+      if (answeredState === null) {
+        if (hoverChoice === c) {
+          bg = "#eff6ff"; border = "#2563eb"; txtColor = "#1d4ed8"; lw = 2.8;
+        }
+      } else {
+        if (c === st.ansIdx) {
+          bg = "#dcfce7"; border = "#16a34a"; txtColor = "#15803d"; lw = 3;
+        } else if (c === selectedChoice && answeredState === 'wrong') {
+          bg = "#fef2f2"; border = "#dc2626"; txtColor = "#dc2626"; lw = 3;
+        }
+      }
+
+      ctx.fillStyle = bg;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = lw;
+      ctx.beginPath();
+      ctx.roundRect(bx, cy, bw, bh, 12);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = txtColor;
+      ctx.font = "900 16.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(st.choices[c], bx + 22, cy + bh / 2);
+
+      choiceBoxes.push({ x: bx, y: cy, w: bw, h: bh, idx: c });
+      cy += bh + 10;
+    }
+
+    // 하단 결과 해설 말풍선 박스
+    if (answeredState !== null) {
+      const isOk = (answeredState === 'correct');
+      ctx.fillStyle = isOk ? "#f0fdf4" : "#fef2f2";
+      ctx.strokeStyle = isOk ? "#16a34a" : "#dc2626";
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      ctx.roundRect(406, 432, 500, 74, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = isOk ? "#15803d" : "#b91c1c";
+      ctx.font = "900 15.5px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      const mLines = (isOk ? st.successMsg : st.failMsg).split('\n');
+      mLines.forEach((ml, i) => {
+        ctx.fillText(ml, 656, 456 + i * 24);
+      });
+    } else {
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 15px 'Pretendard', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("👆 정답 번호를 클릭해서 국중박 유물을 입혀주세요!", 656, 468);
+    }
+
+    ctx.restore();
+  }
+
+  // ==========================================================
+  // 화면 3: 최종 결과 & 유물 패션쇼 화면!
+  // ==========================================================
+  function renderResult() {
+    const cnt = countEquipped();
+    const isAllClear = (cnt === 10);
+
+    // 배경
+    ctx.fillStyle = isAllClear ? "#fffbeb" : "#f8fafc";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 왼쪽: 최종 완성된 캐릭터 모습 크게!
+    drawCharacterAvatar(235, 330, 1.18, isAllClear ? 'happy' : 'shy', true);
+
+    // 캐릭터 위 코믹 말풍선 (뭘 안 입었는지에 따라 대사가 달라짐!)
+    let finalTalk = "";
+    if (isAllClear) {
+      finalTalk = "와아!! 10개 국중박 국보 유물 풀세트 완성!!\n전설의 수학 왕 등극이야! 고마워~ 👑✨";
+    } else if (!equipped.pants && !equipped.top) {
+      finalTalk = "으아악!! 상의도 바지도 못 입어서\n런닝셔츠에 줄무늬 팬티 바람이야!! 너무 추워~ 🥶🩲";
+    } else if (!equipped.pants) {
+      finalTalk = "잠깐만!! 위에는 멋지게 꾸몄는데...\n바지를 못 입어서 아래가 줄무늬 팬티 바람이야!! 🙈🩲";
+    } else if (!equipped.top) {
+      finalTalk = "바지는 입었는데 윗옷 유물을 놓쳐서\n런닝셔츠 바람이야! 부끄러워~ 😅";
+    } else if (!equipped.shoes) {
+      finalTalk = "옷은 입었는데 금동신발을 못 신어서\n구멍 난 양말에서 발가락이 나왔어! 🧦";
+    } else {
+      finalTalk = `10개 중에 ${cnt}개 유물을 장착했어!\n놓친 유물도 다시 도전해서 풀세트를 완성해 볼까?`;
+    }
+
+    ctx.save();
+    ctx.fillStyle = isAllClear ? "#fef3c7" : "#fef2f2";
+    ctx.strokeStyle = isAllClear ? "#d97706" : "#dc2626";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(30, 18, 390, 78, 18);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 16px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    finalTalk.split('\n').forEach((line, idx) => {
+      ctx.fillText(line, 225, 44 + idx * 25);
+    });
+
+    // 오른쪽: 획득 유물 도감 & 장착 현황 보드
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = isAllClear ? "#f59e0b" : "#cbd5e1";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(445, 18, 485, 504, 22);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = isAllClear ? "#b45309" : "#0f172a";
+    ctx.font = "900 21px 'Pretendard', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      isAllClear ? "🏆 국중박 국보 유물 10종 완벽 장착!" : `🏛️ 최종 유물 장착 결과 (${cnt} / 10)`,
+      687, 46
+    );
+
+    // 10개 유물 체크리스트
+    let ry = 70;
+    stages.forEach((st) => {
+      const hasIt = equipped[st.id];
+      ctx.fillStyle = hasIt ? "#f0fdf4" : "#fef2f2";
+      ctx.strokeStyle = hasIt ? "#16a34a" : "#fca5a5";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(468, ry, 439, 36, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = "left";
+      ctx.font = "900 13.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = hasIt ? "#15803d" : "#dc2626";
+      ctx.fillText(
+        hasIt ? `✔ [장착 완료] ${st.relicName}` : `✖ [미장착] ${st.relicName}`,
+        482, ry + 18
+      );
+
+      ctx.textAlign = "right";
+      ctx.font = "bold 11.5px 'Pretendard', sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText(st.chapter, 895, ry + 18);
+
+      ry += 42;
+    });
+
+    ctx.restore();
+  }
+
+  function animate() {
+    animFrame++;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (gamePhase === 'intro') renderIntro();
+    else if (gamePhase === 'quiz') renderQuiz();
+    else if (gamePhase === 'result') renderResult();
+    requestAnimationFrame(animate);
+  }
+
+  updateTopUI();
+  animate();
+</script>
+</body>
+</html>
