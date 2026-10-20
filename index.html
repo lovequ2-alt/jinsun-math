@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>중·초등 수학 개념 탐구실</title>
+
+  <!-- PWA 설정 파일 연결 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111827">
+
+  <!-- 아이폰(iOS) 사파리 홈 화면 추가 지원 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="수학탐구실">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -12,8 +22,8 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
-      padding: 24px 16px;
+      align-items: flex-start;
+      padding: 32px 16px 80px;
     }
 
     .main-container {
@@ -150,6 +160,14 @@
 
     .menu-item:hover .item-right {
       color: #38bdf8;
+    }
+
+    .item-right.highlight-action {
+      color: #f97316;
+      font-weight: 800;
+    }
+    .menu-item:hover .item-right.highlight-action {
+      color: #fb923c;
     }
 
     /* 서브/연계 메뉴 항목 스타일 (일차식 계산 하위 연계) */
@@ -326,28 +344,38 @@
 
   <!-- 🍎 헷갈리는 초등수학 -->
   <div class="section-title" style="margin-top: 28px;">
-    <span>🍎</span> 헷갈리는 초등수학
+    <span>🍎</span> 헷갈리는 초등수학 (초·중등 연계)
   </div>
   <div class="menu-list">
     <!-- 1. 헷갈리는 나눗셈 식 세우기 -->
-    <a href="fraction.html" class="menu-item">
+    <a href="fraction.html" class="menu-item" onclick="location.href='fraction.html'">
       <div class="item-left">
-        <span class="badge bg-blue">분수와 나눗셈</span>
-        <span class="item-text">1. 헷갈리는 나눗셈 식 세우기</span>
+        <span class="badge bg-emerald">분수와 나눗셈</span>
+        <span class="item-text">1. 헷갈리는 나눗셈 식 세우기 (어떤 수를 나눌까? 벽과 페인트 탐험)</span>
       </div>
       <div class="item-right">시작하기 ▶</div>
     </a>
 
     <!-- 2. 헷갈리는 분수셈 -->
-    <a href="fraction_calc.html" class="menu-item">
+    <a href="fraction_calc.html" class="menu-item" onclick="location.href='fraction_calc.html'">
       <div class="item-left">
-        <span class="badge bg-blue">곱하기 vs 나누기</span>
-        <span class="item-text">2. 헷갈리는 분수셈</span>
+        <span class="badge bg-teal">곱하기 vs 나누기</span>
+        <span class="item-text">2. 헷갈리는 분수셈 (곱셈 vs 나눗셈 완벽 탐험 & 실전 퀴즈)</span>
       </div>
-      <div class="item-right">시작하기 ▶</div>
+      <div class="item-right highlight-action">도전하기 🔥</div>
     </a>
   </div>
 </div>
 
+  <script>
+    // PWA 서비스 워커 등록
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('PWA Service Worker 등록 완료'))
+          .catch(err => console.log('Service Worker 등록 실패:', err));
+      });
+    }
+  </script>
 </body>
 </html>
