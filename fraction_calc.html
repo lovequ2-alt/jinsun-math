@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>중1 수학 - 분수 곱셈 vs 나눗셈 완벽 탐험 & 실전 퀴즈</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>[초등·중등 연계] 헷갈리는 분수셈 - 곱셈 vs 나눗셈 완벽 탐험 & 실전 퀴즈</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -89,6 +89,46 @@
     }
     .nav-btn:hover:not(:disabled) { background: #1e293b; }
     .nav-btn:active:not(:disabled) { transform: scale(0.96); }
+    .nav-btn.home {
+      background: #475569;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav-btn.home:hover {
+      background: #334155;
+      color: #38bdf8;
+    }
+
+    .top-home-btn {
+      position: absolute;
+      top: 10px;
+      left: 16px;
+      z-index: 10000;
+      background: #1e293b;
+      color: #f8fafc;
+      text-decoration: none;
+      padding: 6px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: 12px;
+      border: 1.5px solid #475569;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .top-home-btn:hover {
+      background: #334155;
+      color: #38bdf8;
+      border-color: #64748b;
+      transform: translateY(-1px);
+    }
+    .top-home-btn:active {
+      transform: scale(0.96);
+    }
     .nav-btn:disabled {
       background: #cbd5e1 !important;
       color: #94a3b8 !important;
@@ -227,6 +267,9 @@
 
 <div id="scale-wrapper">
   <div id="game-container">
+    <!-- 좌측 상단 목차 복귀 버튼 -->
+    <a href="index.html" class="top-home-btn" title="목차로 돌아가기">🏠 목차</a>
+
     <div id="top-status-bar">
       <span id="status-text">1단계: 곱해지는 수와 나눠지는 수가 분수일때 헷갈리는 개념</span>
     </div>
@@ -281,14 +324,16 @@
           </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end;">
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
           <button class="nav-btn" style="background:#2563eb; padding:10px 24px; font-size:15px;" onclick="restartAll()">처음으로 돌아가기 🔄</button>
+          <a href="index.html" class="nav-btn home" style="background:#475569; padding:10px 24px; font-size:15px; text-decoration:none;">🏠 목차로</a>
         </div>
       </div>
     </div>
 
     <div id="ui-panel">
       <div class="btn-row">
+        <a href="index.html" class="nav-btn home" style="text-decoration:none;">🏠 목차</a>
         <button id="prev-btn" class="nav-btn" onclick="goPrevScene()">◀ 이전 단계</button>
         <button id="talk-btn" class="nav-btn" onclick="advanceSubStep()">뭔 얘기? ▶</button>
         <button id="next-btn" class="nav-btn" onclick="goNextScene()">다음 단계 ▶</button>

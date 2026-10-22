@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>중1 수학 - 헷갈리는 나눗셈 탐험</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>[초등·중등 연계] 헷갈리는 나눗셈 탐험 (벽과 페인트)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -91,6 +91,38 @@
     .nav-btn:hover { background: #1d4ed8; }
     .nav-btn:active { transform: scale(0.96); }
 
+    .nav-btn.home { background: #475569; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .nav-btn.home:hover { background: #334155; color: #38bdf8; }
+
+    .top-home-btn {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      z-index: 10000;
+      background: #1e293b;
+      color: #f8fafc;
+      text-decoration: none;
+      padding: 7px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 12px;
+      border: 1.5px solid #475569;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .top-home-btn:hover {
+      background: #334155;
+      color: #38bdf8;
+      border-color: #64748b;
+      transform: translateY(-1px);
+    }
+    .top-home-btn:active {
+      transform: scale(0.96);
+    }
+
     #quiz-controls { display: none; gap: 16px; align-items: center; }
     .quiz-choice-btn {
       background: #4f46e5; color: #fff; border: 2px solid #3730a3;
@@ -107,6 +139,9 @@
 
 <div id="scale-wrapper">
   <div id="game-container">
+    <!-- 좌측 상단 목차 복귀 버튼 -->
+    <a href="index.html" class="top-home-btn" title="목차로 돌아가기">🏠 목차</a>
+
     <div id="top-status-bar">
       <span id="status-text">1단계: 상황 제시 (벽과 페인트)</span>
     </div>
@@ -115,6 +150,7 @@
 
     <div id="ui-panel">
       <div class="btn-row" id="normal-controls">
+        <a href="index.html" class="nav-btn home">🏠 목차</a>
         <button id="prev-btn" class="nav-btn" onclick="goPrev()" style="display:none;">◀ 이전</button>
         <button id="next-btn" class="nav-btn" onclick="goNext()">다음 ▶</button>
       </div>
@@ -125,9 +161,10 @@
       </div>
 
       <div id="result-controls">
+        <a href="index.html" class="nav-btn home">🏠 목차</a>
         <button class="nav-btn" onclick="loadScene(5)">◀ 설명 화면</button>
         <button class="nav-btn" style="background:#7c3aed;" onclick="loadScene(6)">🔄 퀴즈 다시하기</button>
-        <button class="nav-btn" style="background:#10b981;" onclick="loadScene(0)">🏠 처음으로</button>
+        <button class="nav-btn" style="background:#10b981;" onclick="loadScene(0)">🔄 처음부터</button>
       </div>
     </div>
   </div>

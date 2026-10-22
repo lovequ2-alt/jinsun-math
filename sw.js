@@ -1,5 +1,5 @@
 // 서비스 워커 기본 등록 및 캐시 처리
-const CACHE_NAME = 'jinsun-math-v2';
+const CACHE_NAME = 'jinsun-math-v3';
 
 // 설치 시 즉시 활성화
 self.addEventListener('install', (event) => {
